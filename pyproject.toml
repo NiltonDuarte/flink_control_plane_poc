@@ -1,0 +1,24 @@
+[project]
+name = "flink-control-plane-poc"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.13.4",
+    "temporalio>=1.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+testpaths = ["tests"]
+# The crash test needs a real server and real seconds; everything else runs on
+# the time-skipping test server. Deselected by default via -m "not crash".
+markers = [
+    "crash: worker-crash durability test (real dev server, slow)",
+]
