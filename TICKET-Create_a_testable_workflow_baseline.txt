@@ -1,0 +1,41 @@
+Create a testable workflow baseline to be implemented by different framework/tools
+
+CONTEXT
+
+To evaluate and compare different durable execution engines for the Persistent Workflow Component of the Control Plane, we need a standardized, deterministic baseline workflow. This baseline will serve as a common benchmark to test key capabilities across candidate tools without introducing friction from complex application logic.
+
+GOAL
+
+Design and implement a reusable, baseline testable workflow containing generic, controllable activities to evaluate success paths, transient failures, retries, and compensation mechanisms.
+
+ACCEPTANCE CRITERIA (Apply only to this issue type)
+
+Implement a generic workflow utilizing controllable activities (e.g., configurable public HTTP endpoints, mock internal functions).
+
+Provide explicit toggles/hooks to trigger specific execution scenarios:
+
+Success path
+
+Failure paths (transient vs. permanent)
+
+Retry behavior
+
+Compensation/rollback execution
+
+Actor capabilities
+
+Replay test
+
+Ensure the implementation remains lightweight and isolated from complex internal or external system dependencies.
+
+Document input/output contracts and expected execution outcomes for benchmarking engines against this baseline.
+
+DEFINITION OF DONE (Apply for all issues types)
+
+Baseline workflow code and mock activity dependencies are committed to the repository.
+
+Unit and integration test suites validate the baseline scenarios in isolation.
+
+Clear instructions and documentation are provided on how to execute and trigger each failure/success mode.
+
+Code review is completed and approved by the team.
