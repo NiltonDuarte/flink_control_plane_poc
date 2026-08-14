@@ -1,0 +1,29 @@
+CONTEXT
+
+As part of our evaluation of durable execution technology for the Persistent Workflow Component of the Control Plane, we need to test Temporal against our benchmark requirements.
+
+GOAL
+
+Implement the standardized baseline workflow using Temporal and evaluate its developer experience, debugging capabilities, testing infrastructure, and UI.
+
+ACCEPTANCE CRITERIA (Apply only to this issue type)
+
+Implement the baseline testable workflow (success, failures, retries, compensations) using Temporal.
+
+Evaluate and document local replay and unit testing capabilities (using Temporal test environments).
+
+Assess debugging capabilities, stack trace visibility, and time-skipping capabilities during testing.
+
+Review the Temporal Web UI experience, history inspection, and execution tracing.
+
+Document key findings, pros, cons, and architectural suitability in an assessment report.
+
+DEFINITION OF DONE (Apply for all issues types)
+
+Temporal PoC repository/code is fully functional and committed.
+
+Automated test cases validate that the baseline workflow scenarios execute properly in Temporal.
+
+Completed assessment document covering testing, debugging, UI, and operational trade-offs.
+
+Code review completed and findings documented for team review.
