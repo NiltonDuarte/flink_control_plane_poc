@@ -1,0 +1,88 @@
+"""The actor guarantee: one writer per job family.
+
+Temporal has no Virtual Object, so the guarantee is built from two pieces - a
+workflow id derived from the family name, and a lock inside the actor. This is
+the test that the second piece is load-bearing.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import uuid
+
+from temporalio.client import Client
+
+from poc.actor import FlinkJobFamilyActor, actor_id
+from poc.cluster import MockCluster
+from poc.domain import FamilyState
+from poc.scenarios import SOURCE
+from poc.worker import build_worker
+from tests.conftest import ops
+
+
+async def test_concurrent_pauses_are_serialized(
+    client: Client, cluster: MockCluster
+) -> None:
+    """Five simultaneous pauses must produce one savepoint, not five.
+
+    Temporal delivers concurrent updates as concurrent tasks. Without the lock,
+    all five handlers would read state == RUNNING before any of them wrote
+    SUSPENDED, and all five would take a savepoint and suspend - the classic
+    lost-update race. With it, the first wins and the rest observe SUSPENDED and
+    no-op, which is what "queues concurrent commands implicitly" means in the RFC.
+    """
+    task_queue = f"tq-{uuid.uuid4()}"
+    async with build_worker(client, task_queue):
+        handle = await client.start_workflow(
+            FlinkJobFamilyActor.run,
+            args=[SOURCE],
+            id=actor_id(SOURCE),
+            task_queue=task_queue,
+        )
+        results = await asyncio.gather(
+            *(
+                handle.execute_update(FlinkJobFamilyActor.pause, id=f"pause-{index}")
+                for index in range(5)
+            )
+        )
+        state = await handle.query(FlinkJobFamilyActor.current_state)
+
+    # Exactly one call did the work; the other four returned None (already suspended).
+    assert sum(1 for result in results if result is not None) == 1
+    assert ops(cluster) == [
+        f"trigger_savepoint({SOURCE})",
+        f"suspend_job({SOURCE})",
+    ]
+    assert state == FamilyState.SUSPENDED
+
+
+async def test_actor_state_survives_across_commands(
+    client: Client, cluster: MockCluster
+) -> None:
+    """The actor holds its own state - no external store is consulted between commands."""
+    task_queue = f"tq-{uuid.uuid4()}"
+    async with build_worker(client, task_queue):
+        handle = await client.start_workflow(
+            FlinkJobFamilyActor.run,
+            args=[SOURCE],
+            id=actor_id(SOURCE),
+            task_queue=task_queue,
+        )
+
+        await handle.execute_update(FlinkJobFamilyActor.pause, id="p1")
+        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.SUSPENDED
+
+        # A second pause is a no-op precisely because the actor remembers.
+        assert await handle.execute_update(FlinkJobFamilyActor.pause, id="p2") is None
+
+        assert await handle.execute_update(FlinkJobFamilyActor.resume, id="r1") is True
+        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+
+        # Likewise a redundant resume.
+        assert await handle.execute_update(FlinkJobFamilyActor.resume, id="r2") is False
+
+    assert ops(cluster) == [
+        f"trigger_savepoint({SOURCE})",
+        f"suspend_job({SOURCE})",
+        f"resume_job({SOURCE})",
+    ]
