@@ -12,10 +12,10 @@ from temporalio.client import Client
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.worker import Worker
 
-from poc.activities import ALL_ACTIVITIES
-from poc.actor import FlinkJobFamilyActor
-from poc.actor_proxy import ActorProxy
-from poc.saga import MoveDatatypeWorkflow
+from poc.adapters.temporal.activities import ALL_ACTIVITIES
+from poc.adapters.temporal.actor import FlinkJobFamilyActor
+from poc.adapters.temporal.actor_proxy import ActorProxy
+from poc.adapters.temporal.saga import MoveDatatypeWorkflow
 
 TASK_QUEUE = "flink-control-plane"
 

@@ -34,13 +34,13 @@ import pytest
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 
+from poc.adapters.temporal.saga import MoveDatatypeWorkflow
 from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.saga import MoveDatatypeWorkflow
 from poc.scenarios import REQUEST, SEED, SOURCE, TARGET
 
 pytestmark = pytest.mark.crash
 
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).parent.parent.parent
 
 
 @pytest.fixture
@@ -53,7 +53,14 @@ async def local_env() -> AsyncIterator[WorkflowEnvironment]:
 
 def _spawn_worker(address: str, task_queue: str, cluster_root: Path) -> subprocess.Popen[bytes]:
     return subprocess.Popen(
-        [sys.executable, "-m", "tests.worker_process", address, task_queue, str(cluster_root)],
+        [
+            sys.executable,
+            "-m",
+            "tests.temporal.worker_process",
+            address,
+            task_queue,
+            str(cluster_root),
+        ],
         cwd=REPO_ROOT,
         env={**os.environ, "PYTHONPATH": str(REPO_ROOT)},
         stdout=subprocess.DEVNULL,

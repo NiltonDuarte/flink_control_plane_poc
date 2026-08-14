@@ -100,22 +100,58 @@ any failure unwinds the stack LIFO and aborts.
 Every failure test asserts against `audit.jsonl`, and asserts the cluster files end
 byte-identical to their pre-saga state.
 
+## The core / adapter split
+
+> Added 2026-08-14, after the Temporal baseline was validated. Issue #10.
+
+`TICKET_PoC-Restate.txt` asks for this same baseline on Restate, assessed the same
+way. Building that as a second project would have forked the saga, the scenario
+matrix, and the assertions — and a comparison between two engines is worth
+nothing if they are running two different implementations that merely look alike.
+
+So the saga moved into `poc/core/`, which is **engine-free by construction**, and
+Temporal became one adapter over it. The core is synchronous: the saga and the
+family handlers are generators that `yield` the operation they want performed and
+are handed the result — or the failure — back. They cannot await, so they cannot
+do I/O, cannot reach an engine, and cannot drift from the version the other
+engine runs. Restate implements the same four obligations Temporal does:
+execution, idempotency-key derivation, retry configuration, and the single-writer
+mechanism for a job family.
+
+**On the generator experiment.** The concern going in was that a
+generator/driver would fight the workflow sandbox or the replay determinism
+checks. It did not: every recorded history replays unchanged and every
+audit-order assertion held without edit, because Temporal only requires that
+workflow code decide deterministically what to schedule next. The costs are real
+but small — results arriving through `yield` are untyped, and a failed step has
+to re-enter the core through `throw()`, so the driver carries a second code path.
+What it buys is that `poc/core/` structurally cannot perform I/O, and the whole
+compensation matrix is assertable with no engine, no server and no worker
+(`tests/test_core_saga.py`, milliseconds).
+
 ## Layout
 
 ```
 poc/
-  domain.py       models, states, error taxonomy
-  cluster.py      file-backed mock: audit + chaos
-  activities.py
-  actor.py        FlinkJobFamilyActor
-  saga.py         MoveDatatypeWorkflow + compensation stack
-  worker.py
-  cli.py          trigger any scenario by name
+  core/               no engine import, ever - enforced by a test
+    domain.py         models, states, error taxonomy
+    ports.py          ClusterPort / CommandPort + the values the core yields
+    saga.py           move_datatype + compensation stack
+    family.py         pause / resume / patch_config semantics
+  cluster.py          file-backed mock: audit + chaos
+  scenarios.py        the named scenarios, shared by CLI and tests
+  adapters/
+    driver.py         runs a core generator against an adapter
+    temporal/         MoveDatatypeWorkflow, FlinkJobFamilyActor, proxy, activities
+    restate/          stub - issue #11
+  cli.py              trigger any scenario by name, on any engine
 tests/
-  histories/      replay fixtures
-README.md         how to run each success/failure mode
+  test_core_*.py      the saga with no engine underneath it
+  test_saga.py        the shared scenario matrix, parameterized by engine
+  temporal/           update dedup, replay, worker-kill + replay fixtures
+README.md             how to run each success/failure mode
 Makefile
-pyproject.toml    uv, Python 3.12, temporalio + pydantic + pytest
+pyproject.toml        uv, Python 3.12, temporalio + pydantic + pytest
 ```
 
 ## Assumption to confirm

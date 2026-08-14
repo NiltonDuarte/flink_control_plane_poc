@@ -1,6 +1,6 @@
 """Record workflow histories as replay fixtures.
 
-    uv run python -m tests.record_histories
+    uv run python -m tests.temporal.record_histories
 
 Run this whenever the saga's *intended* shape changes, and commit the result.
 The recorded histories are the input to `test_replay.py`, which is the guard
@@ -21,10 +21,10 @@ from pathlib import Path
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 
+from poc.adapters.temporal.saga import MoveDatatypeWorkflow
+from poc.adapters.temporal.worker import build_worker
 from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.saga import MoveDatatypeWorkflow
 from poc.scenarios import REQUEST, SCENARIOS, SEED
-from poc.worker import build_worker
 
 HISTORY_DIR = Path(__file__).parent / "histories"
 

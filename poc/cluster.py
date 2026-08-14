@@ -32,7 +32,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from poc.domain import (
+from poc.core.domain import (
     FamilyState,
     FamilyStatus,
     PermanentClusterError,

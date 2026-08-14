@@ -1,18 +1,20 @@
 """Shared fixtures.
 
-One time-skipping Temporal environment for the whole session, because starting
-one costs seconds and the tests do not need isolation at that level. What they do
-need is a clean *cluster* and clean *actors* per test:
+Two things every test needs, and one that only the engine-parameterized ones do.
 
-* each test gets its own tmpdir cluster, pointed at by ``POC_CLUSTER_ROOT``;
-* actors are terminated after each test, since they are long-lived by design and
-  would otherwise carry cached state into the next one.
+A clean **cluster** per test (its own tmpdir, pointed at by ``POC_CLUSTER_ROOT``)
+and clean **actors** per test, since actors are long-lived by design and would
+otherwise carry cached state into the next one.
+
+The Temporal environment is session-scoped because starting one costs seconds and
+the tests do not need isolation at that level. It lives here rather than in
+`tests/temporal/` so that `tests/temporal/*` inherits it and the
+engine-parameterized `engine` fixture can pull it on demand - see `engines.py`.
 """
 
 from __future__ import annotations
 
 import os
-import uuid
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
@@ -21,11 +23,10 @@ from temporalio.client import Client
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 
-from poc.actor import actor_id
+from poc.adapters.temporal.actor import actor_id
 from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.saga import MoveDatatypeWorkflow
-from poc.scenarios import REQUEST, SEED, Scenario
-from poc.worker import build_worker
+from poc.scenarios import SEED, Scenario
+from tests.engines import HARNESSES, EngineHarness
 
 
 @pytest.fixture(scope="session")
@@ -63,25 +64,25 @@ async def client(env: WorkflowEnvironment) -> AsyncIterator[Client]:
             pass
 
 
+@pytest.fixture(params=list(HARNESSES), ids=lambda name: name)
+def engine(request: pytest.FixtureRequest) -> EngineHarness:
+    """One engine to run the scenario matrix against.
+
+    Parameterized, so every scenario assertion is made once per registered
+    engine. Today that is Temporal alone; the point is that adding Restate adds
+    a column rather than a second test suite.
+    """
+    return HARNESSES[request.param](request)
+
+
 async def run_scenario(
-    client: Client,
+    engine: EngineHarness,
     cluster: MockCluster,
     scenario: Scenario,
 ) -> tuple[list[str] | None, Exception | None]:
     """Run a scenario end to end. Returns (steps, error) - exactly one is set."""
     cluster.set_chaos(scenario.chaos)
-    task_queue = f"tq-{uuid.uuid4()}"
-    async with build_worker(client, task_queue):
-        try:
-            steps: list[str] = await client.execute_workflow(
-                MoveDatatypeWorkflow.run,
-                REQUEST,
-                id=f"move-{scenario.name}-{uuid.uuid4()}",
-                task_queue=task_queue,
-            )
-            return steps, None
-        except Exception as err:  # noqa: BLE001 - failure scenarios expect this
-            return None, err
+    return await engine.run_saga(scenario)
 
 
 def ops(cluster: MockCluster, *, successful_only: bool = True) -> list[str]:

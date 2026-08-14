@@ -16,9 +16,9 @@ a task timeout, a transient connection error - and a naive retry would issue the
 command a second time, pausing an already-paused family or double-patching a
 config. `execute_update` accepts an `id`, and Temporal deduplicates updates by
 that id, so a retry attaches to the original update and returns its result
-instead of re-running it. The saga derives that id deterministically from its own
-workflow id plus the step name, which is what makes crash recovery provably free
-of duplicated side effects.
+instead of re-running it. That id is derived deterministically from the execution
+plus the core's step name - see `ProxyCommandPort` in `ports.py` - which is what
+makes crash recovery provably free of duplicated side effects.
 """
 
 from __future__ import annotations
@@ -30,8 +30,9 @@ from temporalio.client import Client, WorkflowUpdateFailedError
 from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
 
-from poc.actor import FlinkJobFamilyActor, actor_id
-from poc.domain import CommandRequest, CommandResult, FamilyCommand
+from poc.adapters.temporal.actor import FlinkJobFamilyActor, actor_id
+from poc.adapters.temporal.ports import CommandRequest
+from poc.core.domain import CommandResult, FamilyCommand
 
 
 class ActorProxy:

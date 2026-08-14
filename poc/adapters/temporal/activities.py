@@ -1,8 +1,9 @@
 """Temporal activities: the only code that touches the cluster.
 
-Each activity is a thin wrapper over `MockCluster`. Keeping them thin is what
-makes the production swap cheap - the real implementation changes `cluster.py`,
-and these signatures stay put.
+Each activity is a thin wrapper over `MockCluster`, and together they are this
+adapter's implementation of `poc/core/ports.py:ClusterPort` - one activity per
+operation the core can yield. Keeping them thin is what makes the production swap
+cheap: the real implementation changes `cluster.py`, and these signatures stay put.
 
 The cluster root is resolved per call from the environment rather than captured
 at import time, so a test can point each case at its own tmpdir.
@@ -13,7 +14,7 @@ from __future__ import annotations
 from temporalio import activity
 
 from poc.cluster import MockCluster
-from poc.domain import FamilyStatus
+from poc.core.domain import FamilyStatus
 
 
 @activity.defn

@@ -12,11 +12,11 @@ import uuid
 
 from temporalio.client import Client
 
-from poc.actor import FlinkJobFamilyActor, actor_id
+from poc.adapters.temporal.actor import FlinkJobFamilyActor, actor_id
+from poc.adapters.temporal.worker import build_worker
 from poc.cluster import MockCluster
-from poc.domain import FamilyState
+from poc.core.domain import FamilyState
 from poc.scenarios import SOURCE
-from poc.worker import build_worker
 from tests.conftest import ops
 
 

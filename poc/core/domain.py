@@ -1,8 +1,9 @@
 """Domain models and error taxonomy.
 
-Deliberately free of any Temporal or infrastructure import. Everything here is
-plain Python + Pydantic so it can be reused unchanged when the mock cluster is
-replaced by real Flink/Kubernetes calls.
+Deliberately free of any engine or infrastructure import - see
+`poc/core/__init__.py` for what that buys. Everything here is plain Python +
+Pydantic so it can be reused unchanged when the mock cluster is replaced by real
+Flink/Kubernetes calls, and by every engine adapter.
 """
 
 from __future__ import annotations
@@ -16,10 +17,11 @@ from pydantic import BaseModel, Field
 # Errors
 # --------------------------------------------------------------------------
 # The split between transient and permanent is the whole error taxonomy of the
-# POC. It is enforced by configuration rather than by try/except plumbing:
-# Temporal's RetryPolicy matches on the exception *type name*, so listing
-# "PermanentClusterError" in non_retryable_error_types is enough to make
-# permanent failures abort on the first attempt. See poc/saga.py.
+# POC. It is enforced by configuration rather than by try/except plumbing, and
+# how is the adapter's business: Temporal's RetryPolicy matches on the exception
+# *type name*, so listing "PermanentClusterError" in non_retryable_error_types is
+# enough to make permanent failures abort on the first attempt. See
+# poc/adapters/temporal/actor.py.
 
 
 class ClusterError(Exception):
@@ -104,21 +106,6 @@ class MoveDatatypeRequest(BaseModel):
         return [self.source_family, self.target_family]
 
 
-class CommandRequest(BaseModel):
-    """What the saga asks an actor to do, via the proxy activity.
-
-    `update_id` is the important field. It is derived deterministically from the
-    workflow and step, so a retried proxy activity dedupes onto the same Temporal
-    update instead of executing the command a second time. Without it, an
-    activity timeout during a pause would pause twice.
-    """
-
-    family: str
-    command: FamilyCommand
-    update_id: str
-    datatypes: list[str] | None = None
-
-
 class CommandResult(BaseModel):
     """What an actor handler returns, flattened into one shape.
 
@@ -140,3 +127,32 @@ class SagaFailure(BaseModel):
     reason: str
     compensated: list[str]
     compensation_errors: list[str] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------
+# How the core saga ends badly
+# --------------------------------------------------------------------------
+# Two distinct outcomes, and adapters must map both onto whatever their engine
+# calls a terminal, non-retryable failure. Getting that mapping wrong is not a
+# cosmetic problem on Temporal: an exception that is not a FailureError fails the
+# *workflow task* and is retried forever, so the saga would hang instead of
+# failing. See poc/adapters/temporal/saga.py.
+
+
+class SagaRejected(Exception):
+    """The request cannot be executed. Raised before anything is mutated.
+
+    The cheapest place to fail: no side effects happened, so nothing is owed.
+    """
+
+
+class SagaAborted(Exception):
+    """A step failed and the compensation stack has been unwound.
+
+    Carries the `SagaFailure` report, which the adapter attaches to the engine's
+    own failure so a caller can read *what* failed and *what was rolled back*.
+    """
+
+    def __init__(self, message: str, failure: SagaFailure) -> None:
+        super().__init__(message)
+        self.failure = failure
