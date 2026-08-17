@@ -88,9 +88,7 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
         case WorkflowEngine.TEMPORAL:
             from poc.temporal.cli import _run_workflow
         case _:
-            raise AttributeError(
-                f"Chosen engine [{engine}] is not supported. Choose on of {[x.value for x in WorkflowEngine]}"
-            )
+            raise RuntimeError("Invalid Engine")
 
     failed = await _run_workflow(scenario)
 
@@ -123,7 +121,10 @@ def main() -> int:
         "--root", type=Path, default=DEFAULT_ROOT, help="cluster directory"
     )
     run.add_argument(
-        "--engine", type=str, default=DEFAULT_ENGINE, help="Run engine {None, Temporal}"
+        "--engine",
+        type=WorkflowEngine,
+        default=DEFAULT_ENGINE,
+        help=f"Run engine {[x.value for x in WorkflowEngine]}",
     )
 
     args = parser.parse_args()
