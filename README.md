@@ -13,8 +13,8 @@ mock cluster. No Flink, no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_S
 ```sh
 uv sync
 uv run pytest                          # 21 tests, ~45s
-uv run python -m poc.cli list          # Temporal scenarios
-uv run python -m poc_baseline.cli list # baseline scenarios
+uv run python -m poc.cli list          # List scenarios
+uv run python -m poc.cli run happy --engine None # Run Happy scenario with no engine
 ```
 
 To watch a scenario run against a real Temporal server:

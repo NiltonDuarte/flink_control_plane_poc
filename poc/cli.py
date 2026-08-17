@@ -31,11 +31,40 @@ class WorkflowEngine(StrEnum):
     TEMPORAL = "Temporal"
 
 
+import shutil
+import textwrap
+
+
 def _print_scenarios() -> None:
-    width = max(len(name) for name in SCENARIOS)
+    name_width = max(len(name) for name in SCENARIOS)
+
+    # Calculate the exact number of spaces needed to align wrapped lines
+    # "  " (2) + name_width + "  [" (3) + marker (5) + "]  " (3) = name_width + 13
+    indent_spaces = " " * (name_width + 13)
+
+    # Get the current terminal width (defaults to 80 if it can't detect it)
+    terminal_width = shutil.get_terminal_size(fallback=(80, 24)).columns
+
     for name, scenario in SCENARIOS.items():
         marker = "fails" if scenario.expect_failure else "ok   "
-        print(f"  {name:<{width}}  [{marker}]  {scenario.description}")
+        prefix = f"  {name:<{name_width}}  [{marker}]  "
+
+        # Wrap the text dynamically based on terminal size
+        formatted_text = textwrap.fill(
+            scenario.description,
+            width=terminal_width,
+            initial_indent=prefix,  # The first line starts with our name/marker
+            subsequent_indent=indent_spaces,  # Subsequent lines start with empty spaces
+        )
+
+        print(formatted_text)
+
+
+def _print_engines() -> None:
+    print("------  WorkflowEngines ------")
+    print(f"WorkflowEngines: {', '.join([x.value for x in WorkflowEngine])}")
+    print("None:      Runs with bare python, no engined backed")
+    print("Temporal:  Run the workflow backed by temporal engine")
 
 
 async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
@@ -63,7 +92,7 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
             from poc.temporal.cli import _run_workflow
         case _:
             raise AttributeError(
-                f"Chosen engine [{engine}] is not supported. Choose on of {list(map(lambda x: x.value, WorkflowEngine))}"
+                f"Chosen engine [{engine}] is not supported. Choose on of {[x.value for x in WorkflowEngine]}"
             )
 
     failed = await _run_workflow(scenario)
@@ -103,6 +132,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.command == "list":
         _print_scenarios()
+        _print_engines()
         return 0
     return asyncio.run(_run(args.scenario, args.root, args.engine))
 
