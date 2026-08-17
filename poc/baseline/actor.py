@@ -30,7 +30,6 @@ class FamilyActor:
 
     def __new__(cls, name):
         if name not in cls._instances:
-            print(f"Creating new class for {name}")
             cls._instances[name] = super().__new__(cls)
         return cls._instances[name]
 
@@ -41,29 +40,52 @@ class FamilyActor:
     def read_status(self) -> FamilyStatus:
         return self.cluster.read(self.name)
 
+    @retryable(4)
     def _trigger_savepoint(self):
         self.cluster.trigger_savepoint(self.name)
 
+    @retryable(4)
     def _suspend(self):
         self.cluster.suspend_job(self.name)
 
-    @retryable(4)
-    def pause(self) -> UpdateStatus:
-        if self.read_status().state == FamilyState.SUSPENDED:
-            return UpdateStatus.UNCHANGED
+    def pause(self):
         self._trigger_savepoint()
         self._suspend()
-        return UpdateStatus.CHANGED
 
     @retryable(4)
-    def patch_config(self, config) -> list[str]:
-        previous_datatypes = self.read_status().datatypes
+    def patch_config(self, config):
         self.cluster.patch_configmap(self.name, config)
-        return previous_datatypes
 
     @retryable(4)
-    def resume(self) -> UpdateStatus:
-        if self.read_status().state == FamilyState.RUNNING:
-            return UpdateStatus.UNCHANGED
+    def resume(self):
         self.cluster.resume_job(self.name)
-        return UpdateStatus.CHANGED
+
+    def restore(
+        self,
+        desired_state: FamilyState | None,
+        datatypes: list[str] | None,
+    ) -> bool:
+        """Reconcile a compensation intent against authoritative cluster state.
+
+        Normal commands deliberately trust the actor cache. Compensation is
+        different: a forward activity may have committed and then lost its
+        response, leaving that cache stale. The fresh read and any needed repair
+        therefore happen under the same lock as every other actor command.
+        """
+
+        status = self.read_status()
+        changed = False
+
+        if desired_state is not None and status.state != desired_state:
+            if desired_state == FamilyState.SUSPENDED:
+                self._trigger_savepoint()
+                self._suspend()
+            else:
+                self.resume()
+            changed = True
+
+        if datatypes is not None and status.datatypes != datatypes:
+            self.patch_config(datatypes)
+            changed = True
+
+        return changed
