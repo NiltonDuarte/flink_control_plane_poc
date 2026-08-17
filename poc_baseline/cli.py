@@ -1,8 +1,8 @@
 """Run any scenario by name against a local Temporal server.
 
     temporal server start-dev            # in another terminal
-    uv run python -m poc.cli list
-    uv run python -m poc.cli run fail-in-resume
+    uv run python -m poc_baseline.cli list
+    uv run python -m poc_baseline.cli run fail-in-resume
 
 Seeds a fresh cluster directory, installs the scenario's chaos rules, runs the
 saga with an in-process worker, then prints the audit log and the resulting
@@ -76,7 +76,7 @@ async def _run(name: str, root: Path) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="poc.cli", description=__doc__)
+    parser = argparse.ArgumentParser(prog="poc_baseline.cli", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("list", help="list available scenarios")
     run = sub.add_parser("run", help="run one scenario")

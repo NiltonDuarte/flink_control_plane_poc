@@ -11,7 +11,7 @@ help:
 	@echo "make clean        remove the local cluster directory"
 	@echo ""
 	@echo "run one scenario (needs 'make server' in another terminal):"
-	@echo "  uv run python -m poc.cli run fail-in-resume"
+	@echo "  uv run python -m poc_baseline.cli run fail-in-resume"
 
 sync:
 	uv sync
@@ -29,7 +29,7 @@ server:
 	temporal server start-dev
 
 list:
-	uv run python -m poc.cli list
+	uv run python -m poc_baseline.cli list
 
 histories:
 	uv run python -m tests.record_histories
