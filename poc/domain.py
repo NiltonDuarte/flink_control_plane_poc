@@ -75,11 +75,12 @@ class FamilyStatus(BaseModel):
 
 
 class FamilyCommand(str, Enum):
-    """The actor handlers, as named by the RFC's Virtual Actor Handlers section."""
+    """Normal RFC actor handlers plus the compensation-only restore handler."""
 
     PAUSE = "pause"
     RESUME = "resume"
     PATCH_CONFIG = "patch_config"
+    RESTORE = "restore"
 
 
 class MoveDatatypeRequest(BaseModel):
@@ -117,20 +118,19 @@ class CommandRequest(BaseModel):
     command: FamilyCommand
     update_id: str
     datatypes: list[str] | None = None
+    desired_state: FamilyState | None = None
 
 
 class CommandResult(BaseModel):
     """What an actor handler returns, flattened into one shape.
 
-    `changed` is the field the saga actually cares about: a pause of an
-    already-suspended family changed nothing, so no compensating resume is owed.
-    Recording compensations for no-op commands is how rollbacks end up resuming
-    families that were never running to begin with.
+    During compensation, `changed` distinguishes a restore that mutated the
+    cluster from one that found the snapshot state already present. The saga
+    reports those outcomes separately.
     """
 
     changed: bool = True
     savepoint_uri: str | None = None
-    previous_datatypes: list[str] | None = None
 
 
 class SagaFailure(BaseModel):
@@ -139,4 +139,5 @@ class SagaFailure(BaseModel):
     failed_step: str
     reason: str
     compensated: list[str]
+    compensation_noops: list[str] = Field(default_factory=list)
     compensation_errors: list[str] = Field(default_factory=list)

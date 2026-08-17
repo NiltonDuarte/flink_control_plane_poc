@@ -1,8 +1,10 @@
 """MoveDatatypeWorkflow - the fail-fast saga.
 
-Three phases across both job families: pause -> patch config -> resume. Every
-step that succeeds pushes its inverse onto a compensation stack; the first
-failure unwinds that stack LIFO and aborts the transaction.
+Three phases across both job families: pause -> patch config -> resume. Before
+each forward call, the workflow pushes a snapshot-derived restore intent onto a
+compensation stack; the first failure unwinds that stack LIFO and aborts the
+transaction. Registering first covers the ambiguous case where a mutation lands
+but its response is lost.
 
 The stack is worth a note. The RFC spells out four compensation scenarios, and
 the fourth (failure during resume) needs a layered rollback: pause what was
@@ -28,6 +30,7 @@ with workflow.unsafe.imports_passed_through():
         CommandRequest,
         CommandResult,
         FamilyCommand,
+        FamilyState,
         FamilyStatus,
         MoveDatatypeRequest,
         SagaFailure,
@@ -52,12 +55,12 @@ READ_TIMEOUT = timedelta(seconds=10)
 
 @dataclass
 class _Compensation:
-    """A queued inverse action. In-workflow memory only; replay rebuilds it."""
+    """A queued restore intent. In-workflow memory only; replay rebuilds it."""
 
     label: str
-    command: FamilyCommand
     family: str
     datatypes: list[str] | None = None
+    desired_state: FamilyState | None = None
 
 
 @workflow.defn
@@ -79,55 +82,70 @@ class MoveDatatypeWorkflow:
             target: [*statuses[target].datatypes, request.datatype],
         }
 
+        # Every rollback payload comes from the authoritative pre-saga snapshot
+        # and is built before any mutation. A retry's return value is not safe
+        # rollback data: an earlier attempt may already have applied the change.
+        pause_restore = {
+            family: _Compensation(
+                f"resume:{family}",
+                family,
+                desired_state=statuses[family].state,
+            )
+            for family in request.families
+        }
+        config_restore = {
+            family: _Compensation(
+                f"revert:{family}",
+                family,
+                datatypes=list(statuses[family].datatypes),
+            )
+            for family in request.families
+        }
+        resume_restore = {
+            family: _Compensation(
+                f"pause:{family}",
+                family,
+                desired_state=FamilyState.SUSPENDED,
+            )
+            for family in request.families
+        }
+
         try:
             # -- Phase 1: pause ------------------------------------------
             for family in request.families:
-                result = await self._call(FamilyCommand.PAUSE, family, f"pause:{family}")
+                stack.append(pause_restore[family])
+                await self._call(FamilyCommand.PAUSE, family, f"pause:{family}")
                 done.append(f"pause:{family}")
-                if result.changed:
-                    # Only owed if this call actually suspended something.
-                    stack.append(
-                        _Compensation(f"resume:{family}", FamilyCommand.RESUME, family)
-                    )
 
             # -- Phase 2: patch config -----------------------------------
             for family in request.families:
-                result = await self._call(
+                stack.append(config_restore[family])
+                await self._call(
                     FamilyCommand.PATCH_CONFIG,
                     family,
                     f"patch:{family}",
                     datatypes=new_config[family],
                 )
                 done.append(f"patch:{family}")
-                stack.append(
-                    _Compensation(
-                        f"revert:{family}",
-                        FamilyCommand.PATCH_CONFIG,
-                        family,
-                        result.previous_datatypes or [],
-                    )
-                )
 
             # -- Phase 3: resume -----------------------------------------
             for family in request.families:
-                result = await self._call(FamilyCommand.RESUME, family, f"resume:{family}")
+                stack.append(resume_restore[family])
+                await self._call(FamilyCommand.RESUME, family, f"resume:{family}")
                 done.append(f"resume:{family}")
-                if result.changed:
-                    stack.append(
-                        _Compensation(f"pause:{family}", FamilyCommand.PAUSE, family)
-                    )
 
             return done
 
         except Exception as err:  # noqa: BLE001 - any failure triggers rollback
             failed_step = self._next_step(request, done)
-            compensated, errors = await self._compensate(stack)
+            compensated, noops, errors = await self._compensate(stack)
             raise ApplicationError(
                 f"move of {request.datatype} aborted at {failed_step}: {err}",
                 SagaFailure(
                     failed_step=failed_step,
                     reason=str(err),
                     compensated=compensated,
+                    compensation_noops=noops,
                     compensation_errors=errors,
                 ),
                 non_retryable=True,
@@ -200,7 +218,9 @@ class MoveDatatypeWorkflow:
             retry_policy=PROXY_RETRY,
         )
 
-    async def _compensate(self, stack: list[_Compensation]) -> tuple[list[str], list[str]]:
+    async def _compensate(
+        self, stack: list[_Compensation]
+    ) -> tuple[list[str], list[str], list[str]]:
         """Unwind LIFO, best effort.
 
         A failing compensation must not abort the unwind - stopping halfway would
@@ -208,26 +228,31 @@ class MoveDatatypeWorkflow:
         Errors are collected and reported instead.
         """
         compensated: list[str] = []
+        noops: list[str] = []
         errors: list[str] = []
         for index, item in enumerate(reversed(stack)):
             request = CommandRequest(
                 family=item.family,
-                command=item.command,
+                command=FamilyCommand.RESTORE,
                 update_id=self._update_id(f"comp:{index}:{item.label}"),
                 datatypes=item.datatypes,
+                desired_state=item.desired_state,
             )
             try:
-                await workflow.execute_activity(
+                result = await workflow.execute_activity(
                     PROXY_ACTIVITY,
                     request,
                     result_type=CommandResult,
                     start_to_close_timeout=PROXY_TIMEOUT,
                     retry_policy=PROXY_RETRY,
                 )
-                compensated.append(item.label)
+                if result.changed:
+                    compensated.append(item.label)
+                else:
+                    noops.append(item.label)
             except Exception as err:  # noqa: BLE001 - keep unwinding
                 errors.append(f"{item.label}: {err}")
-        return compensated, errors
+        return compensated, noops, errors
 
     @staticmethod
     def _update_id(step: str) -> str:

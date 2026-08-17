@@ -19,10 +19,12 @@ from pathlib import Path
 import pytest
 from temporalio.client import Client
 from temporalio.contrib.pydantic import pydantic_data_converter
+from temporalio.exceptions import ApplicationError
 from temporalio.testing import WorkflowEnvironment
 
 from poc.actor import actor_id
 from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.domain import SagaFailure
 from poc.saga import MoveDatatypeWorkflow
 from poc.scenarios import REQUEST, SEED, Scenario
 from poc.worker import build_worker
@@ -90,3 +92,13 @@ def ops(cluster: MockCluster, *, successful_only: bool = True) -> list[str]:
         f"{entry.op}({entry.family})"
         for entry in cluster.audit(successful_only=successful_only)
     ]
+
+
+def saga_failure(err: Exception) -> SagaFailure:
+    """Decode the structured failure detail through Temporal's exception wrapper."""
+    cause: BaseException | None = err
+    while cause is not None:
+        if isinstance(cause, ApplicationError) and cause.details:
+            return SagaFailure.model_validate(cause.details[0])
+        cause = cause.__cause__ or getattr(cause, "cause", None)
+    raise AssertionError(f"no SagaFailure detail found in {err!r}")

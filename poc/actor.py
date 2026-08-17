@@ -16,7 +16,8 @@ Temporal has no Virtual Object primitive. This models one as a long-lived
   "eliminating external database dependency for state resolution".
 
 The cached state is seeded once from the cluster and then maintained in memory.
-It is what the RFC's precondition checks ("verify state != SUSPENDED") read.
+It is what normal precondition checks ("verify state != SUSPENDED") read. The
+compensation-only restore handler refreshes it from the cluster under the lock.
 """
 
 from __future__ import annotations
@@ -145,7 +146,7 @@ class FlinkJobFamilyActor:
 
     @workflow.update
     async def patch_config(self, datatypes: list[str]) -> list[str]:
-        """Replace the routing config; returns the previous value for rollback."""
+        """Replace the routing config; returns the previous value for callers."""
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
             previous: list[str] = await workflow.execute_activity(
@@ -155,6 +156,65 @@ class FlinkJobFamilyActor:
                 retry_policy=CLUSTER_RETRY,
             )
             return previous
+
+    @workflow.update
+    async def restore(
+        self,
+        desired_state: FamilyState | None,
+        datatypes: list[str] | None,
+    ) -> bool:
+        """Reconcile a compensation intent against authoritative cluster state.
+
+        Normal commands deliberately trust the actor cache. Compensation is
+        different: a forward activity may have committed and then lost its
+        response, leaving that cache stale. The fresh read and any needed repair
+        therefore happen under the same lock as every other actor command.
+        """
+        await workflow.wait_condition(lambda: self._ready)
+        async with self._lock:
+            status = await workflow.execute_activity(
+                read_status,
+                self._family,
+                start_to_close_timeout=ACTIVITY_TIMEOUT,
+                retry_policy=CLUSTER_RETRY,
+            )
+            self._state = status.state
+            changed = False
+
+            if desired_state is not None and status.state != desired_state:
+                if desired_state == FamilyState.SUSPENDED:
+                    await workflow.execute_activity(
+                        trigger_savepoint,
+                        self._family,
+                        start_to_close_timeout=ACTIVITY_TIMEOUT,
+                        retry_policy=CLUSTER_RETRY,
+                    )
+                    await workflow.execute_activity(
+                        suspend_job,
+                        self._family,
+                        start_to_close_timeout=ACTIVITY_TIMEOUT,
+                        retry_policy=CLUSTER_RETRY,
+                    )
+                else:
+                    await workflow.execute_activity(
+                        resume_job,
+                        self._family,
+                        start_to_close_timeout=ACTIVITY_TIMEOUT,
+                        retry_policy=CLUSTER_RETRY,
+                    )
+                self._state = desired_state
+                changed = True
+
+            if datatypes is not None and status.datatypes != datatypes:
+                await workflow.execute_activity(
+                    patch_configmap,
+                    args=[self._family, datatypes],
+                    start_to_close_timeout=ACTIVITY_TIMEOUT,
+                    retry_policy=CLUSTER_RETRY,
+                )
+                changed = True
+
+            return changed
 
     # -- introspection and lifecycle ---------------------------------------
 
