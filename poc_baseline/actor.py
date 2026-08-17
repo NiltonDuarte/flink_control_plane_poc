@@ -22,6 +22,13 @@ def retryable(retries):
 
 
 class FamilyActor:
+    _instances = {}
+    def __new__(cls, name):
+        if not name in cls._instances:
+            print(f"Creating new class for {name}")
+            cls._instances[name] = super().__new__(cls)
+        return cls._instances[name]
+
     def __init__(self, name):
         self.name = name
         self.cluster = MockCluster.from_env()
