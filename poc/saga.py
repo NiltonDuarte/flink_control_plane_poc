@@ -26,7 +26,7 @@ from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
     from poc.activities import read_status
-    from poc.domain import (
+    from poc.common.domain import (
         CommandRequest,
         CommandResult,
         FamilyCommand,

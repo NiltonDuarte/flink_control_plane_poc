@@ -27,9 +27,9 @@ logging.getLogger("temporalio.activity").setLevel(logging.CRITICAL)
 from temporalio.client import Client
 
 from poc.actor import actor_id
-from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED
 from poc.saga import MoveDatatypeWorkflow
-from poc.scenarios import REQUEST, SCENARIOS, SEED
 from poc.worker import TASK_QUEUE, build_worker, connect
 
 DEFAULT_ROOT = Path(".cluster")

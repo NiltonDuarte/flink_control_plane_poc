@@ -5,13 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
-from poc_baseline.domain import (
+from poc.common.domain import (
         FamilyCommand,
         MoveDatatypeRequest,
         SagaFailure,
     )
 from poc_baseline.actor import FamilyActor, UpdateStatus
-from poc_baseline.domain import FamilyStatus
+from poc.common.domain import FamilyStatus
 
 
 @dataclass

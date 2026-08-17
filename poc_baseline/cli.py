@@ -19,9 +19,9 @@ import shutil
 import sys
 from pathlib import Path
 
-from poc_baseline.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED
 from poc_baseline.saga import MoveDatatypeWorkflow
-from poc_baseline.scenarios import REQUEST, SCENARIOS, SEED
 from poc_baseline.saga import MoveDatatypeWorkflow
 
 DEFAULT_ROOT = Path(".cluster")

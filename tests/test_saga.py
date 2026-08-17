@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from temporalio.client import Client
 
-from poc.cluster import MockCluster
-from poc.scenarios import SCENARIOS, SOURCE, TARGET
+from poc.common.cluster import MockCluster
+from poc.common.scenarios import SCENARIOS, SOURCE, TARGET
 from tests.conftest import ops, run_scenario, saga_failure
 
 FORWARD_PHASE_1 = [

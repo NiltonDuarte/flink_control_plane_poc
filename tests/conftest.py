@@ -23,10 +23,10 @@ from temporalio.exceptions import ApplicationError
 from temporalio.testing import WorkflowEnvironment
 
 from poc.actor import actor_id
-from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.domain import SagaFailure
+from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.domain import SagaFailure
+from poc.common.scenarios import REQUEST, SEED, Scenario
 from poc.saga import MoveDatatypeWorkflow
-from poc.scenarios import REQUEST, SEED, Scenario
 from poc.worker import build_worker
 
 

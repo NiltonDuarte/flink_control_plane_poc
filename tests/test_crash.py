@@ -34,9 +34,9 @@ import pytest
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 
-from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.scenarios import REQUEST, SEED, SOURCE, TARGET
 from poc.saga import MoveDatatypeWorkflow
-from poc.scenarios import REQUEST, SEED, SOURCE, TARGET
 
 pytestmark = pytest.mark.crash
 

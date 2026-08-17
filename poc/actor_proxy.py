@@ -31,7 +31,7 @@ from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
 
 from poc.actor import FlinkJobFamilyActor, actor_id
-from poc.domain import CommandRequest, CommandResult, FamilyCommand
+from poc.common.domain import CommandRequest, CommandResult, FamilyCommand
 
 
 class ActorProxy:

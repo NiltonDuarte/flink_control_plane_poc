@@ -1,7 +1,7 @@
 from enum import Enum
 
-from poc_baseline.cluster import MockCluster
-from poc_baseline.domain import FamilyState, FamilyStatus
+from poc.common.cluster import MockCluster
+from poc.common.domain import FamilyState, FamilyStatus
 
 class UpdateStatus(Enum):
     CHANGED = "CHANGED"
