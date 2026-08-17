@@ -7,6 +7,7 @@ from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET
 from poc.baseline.actor import FamilyActor
 from poc.baseline.saga import MoveDatatypeWorkflow
 
+
 def test_baseline_executes_happy_path_with_shared_models(
     tmp_path: Path, monkeypatch
 ) -> None:

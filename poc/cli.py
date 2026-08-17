@@ -19,18 +19,18 @@ import shutil
 import sys
 from pathlib import Path
 
-from temporalio.client import Client
 
-from poc.temporal.actor import actor_id
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.scenarios import SCENARIOS, SEED
 
 DEFAULT_ROOT = Path(".cluster")
 DEFAULT_ENGINE = "None"
 
+
 class WorkflowEngine(StrEnum):
     NONE = "None"
     TEMPORAL = "Temporal"
+
 
 def _print_scenarios() -> None:
     width = max(len(name) for name in SCENARIOS)
@@ -63,8 +63,10 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
         case WorkflowEngine.TEMPORAL:
             from poc.temporal.cli import _run_workflow
         case _:
-            raise AttributeError(f"Chosen engine [{engine}] is not supported. Choose on of {list(map(lambda x: x.value, WorkflowEngine))}")
-    
+            raise AttributeError(
+                f"Chosen engine [{engine}] is not supported. Choose on of {list(map(lambda x: x.value, WorkflowEngine))}"
+            )
+
     failed = await _run_workflow(scenario)
 
     print("audit log (every attempt, in order):")
@@ -78,7 +80,10 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
 
     if scenario.expect_failure != failed:
         expected = "failure" if scenario.expect_failure else "success"
-        print(f"\nWARNING: scenario expected {expected} but got the opposite", file=sys.stderr)
+        print(
+            f"\nWARNING: scenario expected {expected} but got the opposite",
+            file=sys.stderr,
+        )
         return 1
     return 0
 
@@ -89,8 +94,12 @@ def main() -> int:
     sub.add_parser("list", help="list available scenarios")
     run = sub.add_parser("run", help="run one scenario")
     run.add_argument("scenario")
-    run.add_argument("--root", type=Path, default=DEFAULT_ROOT, help="cluster directory")
-    run.add_argument("--engine", type=str, default=DEFAULT_ENGINE, help="Run engine {None, Temporal}")
+    run.add_argument(
+        "--root", type=Path, default=DEFAULT_ROOT, help="cluster directory"
+    )
+    run.add_argument(
+        "--engine", type=str, default=DEFAULT_ENGINE, help="Run engine {None, Temporal}"
+    )
 
     args = parser.parse_args()
     if args.command == "list":

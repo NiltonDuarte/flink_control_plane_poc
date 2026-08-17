@@ -93,4 +93,6 @@ class ActorProxy:
             )
             return CommandResult(changed=changed)
 
-        raise ApplicationError(f"unknown command: {request.command}", non_retryable=True)
+        raise ApplicationError(
+            f"unknown command: {request.command}", non_retryable=True
+        )

@@ -128,7 +128,9 @@ async def test_fail_in_resume_compensates_in_layers(
     assert cluster.snapshot() == before
 
 
-async def test_compensation_can_itself_fail(client: Client, cluster: MockCluster) -> None:
+async def test_compensation_can_itself_fail(
+    client: Client, cluster: MockCluster
+) -> None:
     """The limitation worth knowing about.
 
     When the broken action *is* the compensating action, a fail-fast saga cannot
@@ -155,7 +157,9 @@ async def test_compensation_can_itself_fail(client: Client, cluster: MockCluster
     assert cluster.read(TARGET).state.value == "SUSPENDED"
 
 
-async def test_transient_faults_are_retried(client: Client, cluster: MockCluster) -> None:
+async def test_transient_faults_are_retried(
+    client: Client, cluster: MockCluster
+) -> None:
     """Two transient failures are absorbed inside the actor; the saga never sees them."""
     _, err = await run_scenario(client, cluster, SCENARIOS["transient-retry"])
 

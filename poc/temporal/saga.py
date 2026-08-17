@@ -172,7 +172,9 @@ class MoveDatatypeWorkflow:
         Failing here costs no compensation, which is the cheapest place to fail.
         """
         if request.source_family == request.target_family:
-            raise ApplicationError("source and target family are the same", non_retryable=True)
+            raise ApplicationError(
+                "source and target family are the same", non_retryable=True
+            )
         if request.datatype not in statuses[request.source_family].datatypes:
             raise ApplicationError(
                 f"{request.datatype} is not owned by {request.source_family}",

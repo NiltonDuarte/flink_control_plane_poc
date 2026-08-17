@@ -1,15 +1,12 @@
-
-
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timedelta
 
 from poc.common.domain import (
-        FamilyCommand,
-        MoveDatatypeRequest,
-        SagaFailure,
-    )
+    FamilyCommand,
+    MoveDatatypeRequest,
+    SagaFailure,
+)
 from poc.baseline.actor import FamilyActor, UpdateStatus
 from poc.common.domain import FamilyStatus
 
@@ -23,16 +20,14 @@ class _Compensation:
     family: str
     datatypes: list[str] | None = None
 
+
 class MoveDatatypeWorkflow:
     def run(self, request: MoveDatatypeRequest) -> list[str]:
         """Move one datatype between two families. Returns the executed steps."""
         source, target = request.source_family, request.target_family
         done: list[str] = []
         stack: list[_Compensation] = []
-        actors = {
-            source: FamilyActor(source),
-            target: FamilyActor(target)
-        }
+        actors = {source: FamilyActor(source), target: FamilyActor(target)}
 
         statuses = self._read_all(request.families)
         self._validate(request, statuses)
@@ -98,7 +93,6 @@ class MoveDatatypeWorkflow:
         for family in families:
             statuses[family] = FamilyActor(family).read_status()
         return statuses
-
 
     def _validate(
         self, request: MoveDatatypeRequest, statuses: dict[str, FamilyStatus]

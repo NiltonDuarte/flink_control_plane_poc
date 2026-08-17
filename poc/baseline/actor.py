@@ -3,9 +3,11 @@ from enum import Enum
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyState, FamilyStatus
 
+
 class UpdateStatus(Enum):
     CHANGED = "CHANGED"
     UNCHANGED = "UNCHANGED"
+
 
 def retryable(retries):
     def decor(fn):
@@ -17,14 +19,17 @@ def retryable(retries):
                 except:
                     attempt += 1
             raise RuntimeError("Too much failure for {fn}")
+
         return wrapper
+
     return decor
 
 
 class FamilyActor:
     _instances = {}
+
     def __new__(cls, name):
-        if not name in cls._instances:
+        if name not in cls._instances:
             print(f"Creating new class for {name}")
             cls._instances[name] = super().__new__(cls)
         return cls._instances[name]

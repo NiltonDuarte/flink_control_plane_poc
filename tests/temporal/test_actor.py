@@ -71,13 +71,18 @@ async def test_actor_state_survives_across_commands(
         )
 
         await handle.execute_update(FlinkJobFamilyActor.pause, id="p1")
-        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.SUSPENDED
+        assert (
+            await handle.query(FlinkJobFamilyActor.current_state)
+            == FamilyState.SUSPENDED
+        )
 
         # A second pause is a no-op precisely because the actor remembers.
         assert await handle.execute_update(FlinkJobFamilyActor.pause, id="p2") is None
 
         assert await handle.execute_update(FlinkJobFamilyActor.resume, id="r1") is True
-        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        assert (
+            await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        )
 
         # Likewise a redundant resume.
         assert await handle.execute_update(FlinkJobFamilyActor.resume, id="r2") is False
@@ -108,7 +113,9 @@ async def test_restore_refreshes_stale_cache_after_lost_response(
         with pytest.raises(WorkflowUpdateFailedError):
             await handle.execute_update(FlinkJobFamilyActor.pause, id="lost-pause")
 
-        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        assert (
+            await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        )
         assert cluster.read(SOURCE).state == FamilyState.SUSPENDED
 
         changed = await handle.execute_update(
@@ -117,5 +124,7 @@ async def test_restore_refreshes_stale_cache_after_lost_response(
             id="restore-after-lost-pause",
         )
         assert changed is True
-        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        assert (
+            await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        )
         assert cluster.read(SOURCE).state == FamilyState.RUNNING

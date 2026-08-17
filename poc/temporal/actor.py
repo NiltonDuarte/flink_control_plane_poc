@@ -88,8 +88,10 @@ class FlinkJobFamilyActor:
         self._ready = True
 
         await workflow.wait_condition(
-            lambda: self._terminate
-            or workflow.info().get_current_history_length() > HISTORY_ROLLOVER
+            lambda: (
+                self._terminate
+                or workflow.info().get_current_history_length() > HISTORY_ROLLOVER
+            )
         )
         if self._terminate:
             return

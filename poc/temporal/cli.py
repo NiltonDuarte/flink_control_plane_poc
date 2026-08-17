@@ -22,8 +22,7 @@ logging.getLogger("temporalio.activity").setLevel(logging.CRITICAL)
 from temporalio.client import Client
 
 from poc.temporal.actor import actor_id
-from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.common.scenarios import REQUEST, SCENARIOS, SEED
+from poc.common.scenarios import REQUEST, SEED
 from poc.temporal.saga import MoveDatatypeWorkflow
 from poc.temporal.worker import TASK_QUEUE, build_worker, connect
 
@@ -46,6 +45,7 @@ async def _clear_actors(client: Client) -> None:
         except Exception:  # noqa: BLE001 - nothing to terminate is the normal case
             pass
 
+
 async def _run_workflow(scenario):
     client = await connect()
     await _clear_actors(client)
@@ -63,4 +63,3 @@ async def _run_workflow(scenario):
             failed = True
             print(f"RESULT   : failed - {err}\n")
     return failed
-

@@ -11,5 +11,3 @@ async def _run_workflow(scenario):
         failed = True
         print(f"RESULT   : failed - {err}\n")
     return failed
-
-

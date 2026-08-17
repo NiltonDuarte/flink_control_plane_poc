@@ -51,9 +51,18 @@ async def local_env() -> AsyncIterator[WorkflowEnvironment]:
     await env.shutdown()
 
 
-def _spawn_worker(address: str, task_queue: str, cluster_root: Path) -> subprocess.Popen[bytes]:
+def _spawn_worker(
+    address: str, task_queue: str, cluster_root: Path
+) -> subprocess.Popen[bytes]:
     return subprocess.Popen(
-        [sys.executable, "-m", "tests.worker_process", address, task_queue, str(cluster_root)],
+        [
+            sys.executable,
+            "-m",
+            "tests.worker_process",
+            address,
+            task_queue,
+            str(cluster_root),
+        ],
         cwd=REPO_ROOT,
         env={**os.environ, "PYTHONPATH": str(REPO_ROOT)},
         stdout=subprocess.DEVNULL,
@@ -61,7 +70,9 @@ def _spawn_worker(address: str, task_queue: str, cluster_root: Path) -> subproce
     )
 
 
-async def _wait_for_ops(cluster: MockCluster, count: int, timeout: float = 60.0) -> None:
+async def _wait_for_ops(
+    cluster: MockCluster, count: int, timeout: float = 60.0
+) -> None:
     """Block until the saga has made `count` successful cluster changes."""
     deadline = asyncio.get_running_loop().time() + timeout
     while asyncio.get_running_loop().time() < deadline:
@@ -73,7 +84,9 @@ async def _wait_for_ops(cluster: MockCluster, count: int, timeout: float = 60.0)
     )
 
 
-async def test_saga_survives_worker_kill(local_env: WorkflowEnvironment, tmp_path: Path) -> None:
+async def test_saga_survives_worker_kill(
+    local_env: WorkflowEnvironment, tmp_path: Path
+) -> None:
     cluster = MockCluster(tmp_path / "cluster")
     cluster.seed(SEED)
     cluster.set_chaos({})

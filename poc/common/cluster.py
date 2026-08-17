@@ -204,7 +204,9 @@ class MockCluster:
         status = self.read(family)
         previous = list(status.datatypes)
         status.datatypes = list(datatypes)
-        self._commit(status, "patch_configmap", {"from": previous, "to": list(datatypes)})
+        self._commit(
+            status, "patch_configmap", {"from": previous, "to": list(datatypes)}
+        )
         self._maybe_lose_response(family, "patch_configmap")
         return previous
 
@@ -221,7 +223,9 @@ class MockCluster:
         self._write(status)
         self._record(op, status.family, "ok", detail)
 
-    def _record(self, op: str, family: str, outcome: Outcome, detail: dict[str, Any]) -> None:
+    def _record(
+        self, op: str, family: str, outcome: Outcome, detail: dict[str, Any]
+    ) -> None:
         entry = AuditEntry(
             seq=self._next_seq(), op=op, family=family, outcome=outcome, detail=detail
         )
@@ -231,7 +235,9 @@ class MockCluster:
     def _next_seq(self) -> int:
         if not self.audit_path.exists():
             return 0
-        return sum(1 for line in self.audit_path.read_text().splitlines() if line.strip())
+        return sum(
+            1 for line in self.audit_path.read_text().splitlines() if line.strip()
+        )
 
     def _maybe_fail(self, family: str, op: str) -> None:
         """Raise faults configured to happen before a mutation is committed."""

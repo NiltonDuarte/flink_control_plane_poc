@@ -21,7 +21,9 @@ SEED: dict[str, list[str]] = {
     TARGET: ["views"],
 }
 
-REQUEST = MoveDatatypeRequest(datatype="clicks", source_family=SOURCE, target_family=TARGET)
+REQUEST = MoveDatatypeRequest(
+    datatype="clicks", source_family=SOURCE, target_family=TARGET
+)
 
 
 @dataclass(frozen=True)
