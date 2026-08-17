@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from poc_baseline.cluster import ChaosRule
-from poc_baseline.domain import MoveDatatypeRequest
+from poc.cluster import ChaosRule
+from poc.domain import MoveDatatypeRequest
 
 SOURCE = "family_a"
 TARGET = "family_b"
