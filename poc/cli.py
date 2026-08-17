@@ -16,6 +16,7 @@ import asyncio
 import os
 import shutil
 import sys
+import textwrap
 from enum import StrEnum
 from pathlib import Path
 
@@ -29,10 +30,6 @@ DEFAULT_ENGINE = "None"
 class WorkflowEngine(StrEnum):
     NONE = "None"
     TEMPORAL = "Temporal"
-
-
-import shutil
-import textwrap
 
 
 def _print_scenarios() -> None:
