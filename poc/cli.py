@@ -25,9 +25,11 @@ from pathlib import Path
 logging.getLogger("temporalio.activity").setLevel(logging.CRITICAL)
 
 from temporalio.client import Client
+from temporalio.exceptions import ApplicationError
 
 from poc.actor import actor_id
 from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.domain import SagaFailure
 from poc.saga import MoveDatatypeWorkflow
 from poc.scenarios import REQUEST, SCENARIOS, SEED
 from poc.worker import TASK_QUEUE, build_worker, connect
@@ -57,6 +59,40 @@ def _print_scenarios() -> None:
     for name, scenario in SCENARIOS.items():
         marker = "fails" if scenario.expect_failure else "ok   "
         print(f"  {name:<{width}}  [{marker}]  {scenario.description}")
+
+
+def _extract_saga_failure(
+    err: BaseException,
+) -> tuple[SagaFailure, ApplicationError] | None:
+    """Find and decode our structured verdict through Temporal's wrappers."""
+    cause: BaseException | None = err
+    while cause is not None:
+        if isinstance(cause, ApplicationError) and cause.details:
+            try:
+                return SagaFailure.model_validate(cause.details[0]), cause
+            except ValueError:
+                pass
+        cause = cause.__cause__ or getattr(cause, "cause", None)
+    return None
+
+
+def _print_failure(err: BaseException) -> None:
+    """Render a stable saga verdict, falling back for unrelated exceptions."""
+    extracted = _extract_saga_failure(err)
+    if extracted is None:
+        print(f"RESULT   : failed - {err}\n")
+        return
+
+    failure, application_error = extracted
+    print(f"RESULT   : failed - {failure.outcome.value} ({application_error.type})")
+    print(f"  step   : {failure.failed_step}")
+    print(f"  reason : {failure.reason}")
+    print(
+        "  rollback: "
+        f"applied={len(failure.compensated)} "
+        f"no-op={len(failure.compensation_noops)} "
+        f"failed={len(failure.compensation_errors)}\n"
+    )
 
 
 async def _run(name: str, root: Path) -> int:
@@ -91,7 +127,7 @@ async def _run(name: str, root: Path) -> int:
             print(f"RESULT   : completed - {', '.join(steps)}\n")
         except Exception as err:  # noqa: BLE001 - expected for failure scenarios
             failed = True
-            print(f"RESULT   : failed - {err}\n")
+            _print_failure(err)
 
     print("audit log (every attempt, in order):")
     for entry in cluster.audit():

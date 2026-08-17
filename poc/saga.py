@@ -34,6 +34,7 @@ with workflow.unsafe.imports_passed_through():
         FamilyStatus,
         MoveDatatypeRequest,
         SagaFailure,
+        SagaOutcome,
     )
 
 # Referenced by name so this module never imports the Temporal client that
@@ -51,6 +52,12 @@ PROXY_RETRY = RetryPolicy(
 
 PROXY_TIMEOUT = timedelta(seconds=30)
 READ_TIMEOUT = timedelta(seconds=10)
+
+ERROR_TYPES = {
+    SagaOutcome.REJECTED: "SagaRejectedError",
+    SagaOutcome.COMPENSATED: "SagaCompensatedError",
+    SagaOutcome.COMPENSATION_INCOMPLETE: "SagaCompensationIncompleteError",
+}
 
 
 @dataclass
@@ -73,7 +80,14 @@ class MoveDatatypeWorkflow:
         stack: list[_Compensation] = []
 
         statuses = await self._read_all(request.families)
-        self._validate(request, statuses)
+        validation_error = self._validation_error(request, statuses)
+        if validation_error is not None:
+            raise self._failure(
+                request,
+                outcome=SagaOutcome.REJECTED,
+                failed_step="validate",
+                reason=validation_error,
+            )
 
         # A move is two-sided: the datatype leaves the source and joins the
         # target, so both configs change and a partial apply breaks routing.
@@ -139,16 +153,19 @@ class MoveDatatypeWorkflow:
         except Exception as err:  # noqa: BLE001 - any failure triggers rollback
             failed_step = self._next_step(request, done)
             compensated, noops, errors = await self._compensate(stack)
-            raise ApplicationError(
-                f"move of {request.datatype} aborted at {failed_step}: {err}",
-                SagaFailure(
-                    failed_step=failed_step,
-                    reason=str(err),
-                    compensated=compensated,
-                    compensation_noops=noops,
-                    compensation_errors=errors,
-                ),
-                non_retryable=True,
+            outcome = (
+                SagaOutcome.COMPENSATION_INCOMPLETE
+                if errors
+                else SagaOutcome.COMPENSATED
+            )
+            raise self._failure(
+                request,
+                outcome=outcome,
+                failed_step=failed_step,
+                reason=str(err),
+                compensated=compensated,
+                compensation_noops=noops,
+                compensation_errors=errors,
             ) from err
 
     # -- helpers -----------------------------------------------------------
@@ -164,25 +181,60 @@ class MoveDatatypeWorkflow:
             )
         return statuses
 
-    def _validate(
+    def _validation_error(
         self, request: MoveDatatypeRequest, statuses: dict[str, FamilyStatus]
-    ) -> None:
+    ) -> str | None:
         """Reject impossible moves before anything has been mutated.
 
         Failing here costs no compensation, which is the cheapest place to fail.
         """
         if request.source_family == request.target_family:
-            raise ApplicationError("source and target family are the same", non_retryable=True)
+            return "source and target family are the same"
         if request.datatype not in statuses[request.source_family].datatypes:
-            raise ApplicationError(
-                f"{request.datatype} is not owned by {request.source_family}",
-                non_retryable=True,
-            )
+            return f"{request.datatype} is not owned by {request.source_family}"
         if request.datatype in statuses[request.target_family].datatypes:
-            raise ApplicationError(
-                f"{request.datatype} is already owned by {request.target_family}",
-                non_retryable=True,
+            return f"{request.datatype} is already owned by {request.target_family}"
+        return None
+
+    @staticmethod
+    def _failure(
+        request: MoveDatatypeRequest,
+        *,
+        outcome: SagaOutcome,
+        failed_step: str,
+        reason: str,
+        compensated: list[str] | None = None,
+        compensation_noops: list[str] | None = None,
+        compensation_errors: list[str] | None = None,
+    ) -> ApplicationError:
+        """Build the stable Temporal error type, message, and detail together."""
+        applied = compensated or []
+        noops = compensation_noops or []
+        errors = compensation_errors or []
+        if outcome == SagaOutcome.REJECTED:
+            message = (
+                f"{outcome.value}: move of {request.datatype} rejected "
+                f"at {failed_step}: {reason}"
             )
+        else:
+            message = (
+                f"{outcome.value}: move of {request.datatype} failed "
+                f"at {failed_step}: {reason}; rollback "
+                f"applied={len(applied)} no_op={len(noops)} failed={len(errors)}"
+            )
+        return ApplicationError(
+            message,
+            SagaFailure(
+                outcome=outcome,
+                failed_step=failed_step,
+                reason=reason,
+                compensated=applied,
+                compensation_noops=noops,
+                compensation_errors=errors,
+            ),
+            type=ERROR_TYPES[outcome],
+            non_retryable=True,
+        )
 
     async def _call(
         self,

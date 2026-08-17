@@ -12,7 +12,7 @@ mock cluster. No Flink, no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_S
 
 ```sh
 uv sync
-uv run pytest                          # 17 tests, ~45s
+uv run pytest                          # 30 tests
 uv run python -m poc.cli list          # the scenarios
 ```
 
@@ -40,6 +40,21 @@ Each is a seed cluster plus a set of fault-injection rules, defined once in
 | `lost-response-suspend` | Pause lands without a response; fresh-state rollback |
 | `lost-response-patch` | Config patch lands without a response; snapshot rollback |
 | `permanent-first-step` | Non-retryable failure, restore evaluates to a no-op |
+
+## Failed saga verdicts
+
+Every saga that does not complete exposes the same verdict in its Temporal error
+type, message prefix, structured `SagaFailure.outcome`, and CLI output:
+
+| Verdict | Temporal error type | Meaning | Operator action |
+|---|---|---|---|
+| `REJECTED` | `SagaRejectedError` | Validation rejected the request before any mutation. | Correct the request and submit a new saga. |
+| `COMPENSATED` | `SagaCompensatedError` | A forward step failed and every restore intent was satisfied. | Investigate the original failure; no rollback repair is required. |
+| `COMPENSATION_INCOMPLETE` | `SagaCompensationIncompleteError` | At least one restore intent failed, so cluster state may be partial. | Escalate immediately, inspect `compensation_errors`, and reconcile the affected families. |
+
+Rollback messages include applied, no-op, and failed compensation counts. A
+no-op means the snapshot state was already present, so it counts as a
+successfully satisfied restore intent.
 
 ## How it fits together
 
