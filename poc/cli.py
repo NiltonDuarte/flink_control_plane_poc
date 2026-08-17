@@ -13,44 +13,24 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import logging
+from enum import StrEnum
 import os
 import shutil
 import sys
 from pathlib import Path
 
-# Failure scenarios are *supposed* to fail, and Temporal logs every failed
-# activity attempt with a full traceback. That noise buries the audit log, which
-# is the actual output, so the worker's activity logger is silenced here.
-logging.getLogger("temporalio.activity").setLevel(logging.CRITICAL)
-
 from temporalio.client import Client
 
-from poc.actor import actor_id
+from poc.temporal.actor import actor_id
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.common.scenarios import REQUEST, SCENARIOS, SEED
-from poc.saga import MoveDatatypeWorkflow
-from poc.worker import TASK_QUEUE, build_worker, connect
+from poc.common.scenarios import SCENARIOS, SEED
 
 DEFAULT_ROOT = Path(".cluster")
+DEFAULT_ENGINE = "None"
 
-
-async def _clear_actors(client: Client) -> None:
-    """Terminate actors left over from a previous scenario run.
-
-    Actors are long-lived by design, so they survive the saga that started them.
-    Across CLI runs that is a problem: an actor still cached as SUSPENDED would
-    see a freshly seeded RUNNING cluster and skip the pause it was asked for.
-    Tests do not need this - each gets its own Temporal environment.
-    """
-    for family in SEED:
-        try:
-            await client.get_workflow_handle(actor_id(family)).terminate(
-                reason="new scenario run"
-            )
-        except Exception:  # noqa: BLE001 - nothing to terminate is the normal case
-            pass
-
+class WorkflowEngine(StrEnum):
+    NONE = "None"
+    TEMPORAL = "Temporal"
 
 def _print_scenarios() -> None:
     width = max(len(name) for name in SCENARIOS)
@@ -59,7 +39,7 @@ def _print_scenarios() -> None:
         print(f"  {name:<{width}}  [{marker}]  {scenario.description}")
 
 
-async def _run(name: str, root: Path) -> int:
+async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
     scenario = SCENARIOS.get(name)
     if scenario is None:
         print(f"unknown scenario: {name}\n", file=sys.stderr)
@@ -77,21 +57,15 @@ async def _run(name: str, root: Path) -> int:
     print(f"  {scenario.description}")
     print(f"cluster  : {root}/\n")
 
-    client = await connect()
-    await _clear_actors(client)
-    failed = False
-    async with build_worker(client):
-        try:
-            steps = await client.execute_workflow(
-                MoveDatatypeWorkflow.run,
-                REQUEST,
-                id=f"move-{scenario.name}",
-                task_queue=TASK_QUEUE,
-            )
-            print(f"RESULT   : completed - {', '.join(steps)}\n")
-        except Exception as err:  # noqa: BLE001 - expected for failure scenarios
-            failed = True
-            print(f"RESULT   : failed - {err}\n")
+    match engine:
+        case WorkflowEngine.NONE:
+            from poc.baseline.cli import _run_workflow
+        case WorkflowEngine.TEMPORAL:
+            from poc.temporal.cli import _run_workflow
+        case _:
+            raise AttributeError(f"Chosen engine [{engine}] is not supported. Choose on of {list(map(lambda x: x.value, WorkflowEngine))}")
+    
+    failed = await _run_workflow(scenario)
 
     print("audit log (every attempt, in order):")
     for entry in cluster.audit():
@@ -116,12 +90,13 @@ def main() -> int:
     run = sub.add_parser("run", help="run one scenario")
     run.add_argument("scenario")
     run.add_argument("--root", type=Path, default=DEFAULT_ROOT, help="cluster directory")
+    run.add_argument("--engine", type=str, default=DEFAULT_ENGINE, help="Run engine {None, Temporal}")
 
     args = parser.parse_args()
     if args.command == "list":
         _print_scenarios()
         return 0
-    return asyncio.run(_run(args.scenario, args.root))
+    return asyncio.run(_run(args.scenario, args.root, args.engine))
 
 
 if __name__ == "__main__":

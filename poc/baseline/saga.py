@@ -10,7 +10,7 @@ from poc.common.domain import (
         MoveDatatypeRequest,
         SagaFailure,
     )
-from poc_baseline.actor import FamilyActor, UpdateStatus
+from poc.baseline.actor import FamilyActor, UpdateStatus
 from poc.common.domain import FamilyStatus
 
 

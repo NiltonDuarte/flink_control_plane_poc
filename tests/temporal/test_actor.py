@@ -13,11 +13,11 @@ import uuid
 import pytest
 from temporalio.client import Client, WorkflowUpdateFailedError
 
-from poc.actor import FlinkJobFamilyActor, actor_id
+from poc.temporal.actor import FlinkJobFamilyActor, actor_id
 from poc.common.cluster import ChaosRule, MockCluster
 from poc.common.domain import FamilyState
 from poc.common.scenarios import SOURCE
-from poc.worker import build_worker
+from poc.temporal.worker import build_worker
 from tests.conftest import ops
 
 

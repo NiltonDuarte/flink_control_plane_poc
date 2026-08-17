@@ -30,7 +30,7 @@ from temporalio.client import Client, WorkflowUpdateFailedError
 from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
 
-from poc.actor import FlinkJobFamilyActor, actor_id
+from poc.temporal.actor import FlinkJobFamilyActor, actor_id
 from poc.common.domain import CommandRequest, CommandResult, FamilyCommand
 
 

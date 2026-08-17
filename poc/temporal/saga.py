@@ -25,7 +25,7 @@ from temporalio.common import RetryPolicy
 from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
-    from poc.activities import read_status
+    from poc.temporal.activities import read_status
     from poc.common.domain import (
         CommandRequest,
         CommandResult,

@@ -23,8 +23,8 @@ from temporalio.testing import WorkflowEnvironment
 
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.scenarios import REQUEST, SCENARIOS, SEED
-from poc.saga import MoveDatatypeWorkflow
-from poc.worker import build_worker
+from poc.temporal.saga import MoveDatatypeWorkflow
+from poc.temporal.worker import build_worker
 
 HISTORY_DIR = Path(__file__).parent / "histories"
 

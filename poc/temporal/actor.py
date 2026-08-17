@@ -29,7 +29,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from poc.activities import (
+    from poc.temporal.activities import (
         patch_configmap,
         read_status,
         resume_job,
