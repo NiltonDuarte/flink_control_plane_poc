@@ -99,11 +99,31 @@ SCENARIOS: dict[str, Scenario] = {
         chaos={f"{TARGET}:suspend_job": ChaosRule(mode="transient", times=99)},
         expect_failure=True,
     ),
+    "lost-response-suspend": Scenario(
+        name="lost-response-suspend",
+        description=(
+            "family_b's suspend lands on every attempt, but all four responses are "
+            "lost. Its actor cache remains stale; snapshot-based compensation "
+            "re-reads the cluster and restores both families to RUNNING."
+        ),
+        chaos={f"{TARGET}:suspend_job": ChaosRule(mode="lost_response", times=4)},
+        expect_failure=True,
+    ),
+    "lost-response-patch": Scenario(
+        name="lost-response-patch",
+        description=(
+            "family_a's config patch lands on every attempt, but all four responses "
+            "are lost. Rollback uses the pre-saga snapshot rather than a retry's "
+            "already-patched previous value."
+        ),
+        chaos={f"{SOURCE}:patch_configmap": ChaosRule(mode="lost_response", times=4)},
+        expect_failure=True,
+    ),
     "permanent-first-step": Scenario(
         name="permanent-first-step",
         description=(
-            "family_a's very first savepoint fails permanently. Nothing succeeded, "
-            "so there is nothing to compensate - the cheapest possible abort."
+            "family_a's very first savepoint fails permanently. The pre-registered "
+            "restore is a no-op, so the abort produces no compensating mutation."
         ),
         chaos={f"{SOURCE}:trigger_savepoint": ChaosRule(mode="permanent")},
         expect_failure=True,

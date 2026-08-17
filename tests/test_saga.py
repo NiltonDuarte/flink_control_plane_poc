@@ -19,7 +19,7 @@ from temporalio.client import Client
 
 from poc.cluster import MockCluster
 from poc.scenarios import SCENARIOS, SOURCE, TARGET
-from tests.conftest import ops, run_scenario
+from tests.conftest import ops, run_scenario, saga_failure
 
 FORWARD_PHASE_1 = [
     f"trigger_savepoint({SOURCE})",
@@ -102,6 +102,16 @@ async def test_fail_in_resume_compensates_in_layers(
     _, err = await run_scenario(client, cluster, SCENARIOS["fail-in-resume"])
 
     assert err is not None
+    failure = saga_failure(err)
+    assert failure.compensated == [
+        f"pause:{SOURCE}",
+        f"revert:{TARGET}",
+        f"revert:{SOURCE}",
+        f"resume:{TARGET}",
+        f"resume:{SOURCE}",
+    ]
+    assert failure.compensation_noops == [f"pause:{TARGET}"]
+    assert failure.compensation_errors == []
     assert ops(cluster) == [
         *FORWARD_PHASE_1,
         f"patch_configmap({SOURCE})",
@@ -128,6 +138,16 @@ async def test_compensation_can_itself_fail(client: Client, cluster: MockCluster
     _, err = await run_scenario(client, cluster, SCENARIOS["compensation-unreachable"])
 
     assert err is not None
+    failure = saga_failure(err)
+    assert failure.compensated == [
+        f"pause:{SOURCE}",
+        f"revert:{TARGET}",
+        f"revert:{SOURCE}",
+        f"resume:{SOURCE}",
+    ]
+    assert failure.compensation_noops == [f"pause:{TARGET}"]
+    assert len(failure.compensation_errors) == 1
+    assert failure.compensation_errors[0].startswith(f"resume:{TARGET}:")
     assert cluster.read(SOURCE).datatypes == ["clicks", "impressions"]
     assert cluster.read(TARGET).datatypes == ["views"]
     # Configs were restored, but the runtime state was not.
@@ -166,7 +186,7 @@ async def test_permanent_faults_are_not_retried(
     attempts = [entry for entry in cluster.audit() if entry.op == "trigger_savepoint"]
     assert len(attempts) == 1
     assert attempts[0].outcome == "permanent"
-    # Nothing succeeded, so there was nothing to compensate.
+    # The pre-registered restore is evaluated but produces no mutation.
     assert ops(cluster) == []
     assert cluster.snapshot() == before
 
@@ -186,4 +206,54 @@ async def test_exhausted_transient_becomes_a_failure(
         if entry.op == "suspend_job" and entry.family == TARGET
     ]
     assert len(attempts) == 4  # CLUSTER_RETRY.maximum_attempts
+    assert cluster.snapshot() == before
+
+
+async def test_lost_suspend_response_is_reconciled(
+    client: Client, cluster: MockCluster
+) -> None:
+    """A landed pause is restored even though its actor never cached the result."""
+    before = cluster.snapshot()
+
+    _, err = await run_scenario(client, cluster, SCENARIOS["lost-response-suspend"])
+
+    assert err is not None
+    failure = saga_failure(err)
+    assert failure.compensated == [f"resume:{TARGET}", f"resume:{SOURCE}"]
+    assert failure.compensation_noops == []
+    assert failure.compensation_errors == []
+    attempts = [
+        entry
+        for entry in cluster.audit()
+        if entry.op == "suspend_job" and entry.family == TARGET
+    ]
+    assert len(attempts) == 4
+    assert all(entry.outcome == "ok" for entry in attempts)
+    assert cluster.snapshot() == before
+
+
+async def test_lost_patch_response_restores_snapshot_config(
+    client: Client, cluster: MockCluster
+) -> None:
+    """Rollback never trusts a retry's already-patched previous value."""
+    before = cluster.snapshot()
+
+    _, err = await run_scenario(client, cluster, SCENARIOS["lost-response-patch"])
+
+    assert err is not None
+    failure = saga_failure(err)
+    assert failure.compensated == [
+        f"revert:{SOURCE}",
+        f"resume:{TARGET}",
+        f"resume:{SOURCE}",
+    ]
+    assert failure.compensation_noops == []
+    assert failure.compensation_errors == []
+    patches = [
+        entry
+        for entry in cluster.audit()
+        if entry.op == "patch_configmap" and entry.family == SOURCE
+    ]
+    assert len(patches) == 5  # four landed attempts, then one snapshot restore
+    assert patches[-1].detail["to"] == ["clicks", "impressions"]
     assert cluster.snapshot() == before

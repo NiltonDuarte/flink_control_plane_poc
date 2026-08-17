@@ -39,7 +39,7 @@ async def resume_job(family: str) -> None:
 
 @activity.defn
 async def patch_configmap(family: str, datatypes: list[str]) -> list[str]:
-    """Replace routing config; returns the previous value so the saga can roll back."""
+    """Replace routing config; the return value is informational only."""
     return MockCluster.from_env().patch_configmap(family, datatypes)
 
 

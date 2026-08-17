@@ -12,7 +12,7 @@ mock cluster. No Flink, no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_S
 
 ```sh
 uv sync
-uv run pytest                          # 14 tests, ~16s
+uv run pytest                          # 17 tests, ~45s
 uv run python -m poc.cli list          # the scenarios
 ```
 
@@ -37,7 +37,9 @@ Each is a seed cluster plus a set of fault-injection rules, defined once in
 | `compensation-unreachable` | Compensation that cannot succeed |
 | `transient-retry` | Retry with backoff, then success |
 | `transient-exhausted` | Retry budget spent, then compensation |
-| `permanent-first-step` | Non-retryable failure, nothing to compensate |
+| `lost-response-suspend` | Pause lands without a response; fresh-state rollback |
+| `lost-response-patch` | Config patch lands without a response; snapshot rollback |
+| `permanent-first-step` | Non-retryable failure, restore evaluates to a no-op |
 
 ## How it fits together
 
@@ -86,9 +88,13 @@ through, since a wrong-order rollback still lands in the right place.
 }
 ```
 
+`transient` and `permanent` fail before mutation. `lost_response` commits and
+audits a mutating operation, then raises a retryable error. It models the
+ambiguous outcome where the caller cannot tell whether the request landed.
+
 ## Findings
 
-Four things this POC established that are worth carrying into the RFC.
+Five things this POC established that are worth carrying into the RFC.
 
 ### 1. Temporal cannot call an actor handler from a workflow
 
@@ -143,18 +149,30 @@ finishing the remaining compensations.
 The RFC's fail-fast section is silent on this case. It needs an answer: alerting,
 a reconciliation loop that retries later, or an explicit operator escalation.
 
+### 5. Compensation must reconcile intent, not invert a response
+
+A mutating call can commit and lose its response. The actor then has stale
+cached state, and a retried config patch can report the already-patched value as
+its "previous" value. Rollback data therefore comes only from the authoritative
+pre-saga snapshot, and each compensation is registered before its forward call.
+
+During unwind, a dedicated restore update takes the actor lock, re-reads the
+cluster, synchronizes the runtime-state cache, and applies only the missing
+runtime or config change. Successful no-ops create no mutation audit entries.
+`SagaFailure` reports applied compensations, no-ops, and errors separately.
+
 ## Tests
 
 ```sh
 uv run pytest                  # everything
 uv run pytest -m "not crash"   # fast subset, ~3s
-uv run pytest -m crash         # worker-kill durability, ~16s, real server
+uv run pytest -m crash         # worker-kill durability, ~35s, real server
 ```
 
 | File | Covers |
 |---|---|
-| `tests/test_saga.py` | All four RFC compensation scenarios, retry taxonomy |
-| `tests/test_actor.py` | Single-writer serialization, actor-held state |
+| `tests/test_saga.py` | RFC compensation, retry taxonomy, lost responses |
+| `tests/test_actor.py` | Single-writer serialization, cached and reconciled state |
 | `tests/test_replay.py` | Replay determinism against committed history fixtures |
 | `tests/test_crash.py` | SIGKILL mid-saga, restart, resume from last step |
 

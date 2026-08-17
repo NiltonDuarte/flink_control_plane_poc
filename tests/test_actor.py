@@ -10,10 +10,11 @@ from __future__ import annotations
 import asyncio
 import uuid
 
-from temporalio.client import Client
+import pytest
+from temporalio.client import Client, WorkflowUpdateFailedError
 
 from poc.actor import FlinkJobFamilyActor, actor_id
-from poc.cluster import MockCluster
+from poc.cluster import ChaosRule, MockCluster
 from poc.domain import FamilyState
 from poc.scenarios import SOURCE
 from poc.worker import build_worker
@@ -86,3 +87,35 @@ async def test_actor_state_survives_across_commands(
         f"suspend_job({SOURCE})",
         f"resume_job({SOURCE})",
     ]
+
+
+async def test_restore_refreshes_stale_cache_after_lost_response(
+    client: Client, cluster: MockCluster
+) -> None:
+    """Compensation reads the cluster when a landed pause never returned."""
+    cluster.set_chaos(
+        {f"{SOURCE}:suspend_job": ChaosRule(mode="lost_response", times=4)}
+    )
+    task_queue = f"tq-{uuid.uuid4()}"
+    async with build_worker(client, task_queue):
+        handle = await client.start_workflow(
+            FlinkJobFamilyActor.run,
+            args=[SOURCE],
+            id=actor_id(SOURCE),
+            task_queue=task_queue,
+        )
+
+        with pytest.raises(WorkflowUpdateFailedError):
+            await handle.execute_update(FlinkJobFamilyActor.pause, id="lost-pause")
+
+        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        assert cluster.read(SOURCE).state == FamilyState.SUSPENDED
+
+        changed = await handle.execute_update(
+            FlinkJobFamilyActor.restore,
+            args=[FamilyState.RUNNING, None],
+            id="restore-after-lost-pause",
+        )
+        assert changed is True
+        assert await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
+        assert cluster.read(SOURCE).state == FamilyState.RUNNING

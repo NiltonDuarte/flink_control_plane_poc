@@ -28,6 +28,8 @@ production means replacing one module, not rewriting the saga.
 3. **Replay determinism** — saved event histories replayed against current code (named explicitly in the ticket).
 4. **Worker crash durability** — SIGKILL mid-saga, restart, resume from last completed step with no duplicated side effects.
 5. **Actor pattern** — strict single-writer-per-`job_family`; concurrent commands queue rather than interleave.
+6. **Ambiguous outcomes** — rollback restores the pre-saga runtime and config
+   snapshot even when a mutating operation lands without returning a response.
 
 ## The mock cluster
 
@@ -43,7 +45,8 @@ one fault-injection file.
   chaos.json                 fault injection rules
 ```
 
-Every activity: read JSON → mutate → write JSON → append to `audit.jsonl` → return. No delays.
+Every mutating activity: read JSON → mutate → write JSON → append to
+`audit.jsonl` → return. No delays.
 
 **`audit.jsonl` is the primary assertion surface.** Compensation correctness is
 "the sequence of side effects was exactly this", which is far stronger than checking
@@ -61,23 +64,29 @@ final state — a saga that rolls back in the wrong order still ends in the righ
 
 `transient` → retryable error, `times` occurrences then success.
 `permanent` → non-retryable `ApplicationError`.
+`lost_response` → commit and audit the mutation, then raise a retryable error,
+`times` occurrences before a response succeeds.
 
 ## Components
 
 **Activities** — thin, idempotent, the only code that touches the mock:
-`trigger_savepoint`, `suspend_job`, `resume_job`, `patch_configmap` (returns previous
-config, for rollback).
+`trigger_savepoint`, `suspend_job`, `resume_job`, `patch_configmap`, and
+`read_status`. Rollback never derives its payload from a mutating call's return
+value.
 
 **`FlinkJobFamilyActor`** — long-lived entity workflow, `workflow_id = "family:<name>"`.
-Handlers `pause` / `resume` / `patch_config` exposed as Temporal **updates**
+Handlers `pause` / `resume` / `patch_config` / `restore` exposed as Temporal **updates**
 (request/response, unlike signals), each serialized behind an in-workflow lock. That
 lock is what reproduces the Virtual Object single-writer guarantee Temporal lacks
 natively — and makes the comparison against Restate/DBOS concrete. State lives in the
-workflow; no external database.
+workflow; no external database. Normal commands use cached runtime state. The
+compensation-only `restore` update re-reads cluster state under the actor lock so
+it can repair a mutation whose response was lost.
 
 **`MoveDatatypeWorkflow`** — the saga. Phase 1 pause all → Phase 2 patch config all →
-Phase 3 resume all. Each successful step pushes its inverse onto a compensation stack;
-any failure unwinds the stack LIFO and aborts.
+Phase 3 resume all. Before every forward call, the workflow pushes a restore
+intent built from the complete pre-saga snapshot. Any failure unwinds the stack
+LIFO, reconciling each intent against fresh cluster state, and aborts.
 
 > The LIFO stack reproduces the RFC's scenario-4 compensation exactly (modulo ordering
 > *within* a phase, which is arbitrary). Worth noting because it means the layered
@@ -93,12 +102,15 @@ any failure unwinds the stack LIFO and aborts.
 | Fail in resume | Compensation scenario 4 (layered) | time-skipping |
 | Transient × 2 then ok | Retry + backoff | time-skipping |
 | Permanent fault | No retry, immediate compensation | time-skipping |
+| Lost suspend response | Stale actor cache is refreshed and both families restored | time-skipping |
+| Lost config-patch response | Original snapshot config wins over retry results | time-skipping |
 | Concurrent commands, one family | Actor serialization | time-skipping |
 | History fixture replay | Determinism | `Replayer`, no server |
 | SIGKILL mid-saga | Crash durability, no duplicate side effects | real dev server |
 
-Every failure test asserts against `audit.jsonl`, and asserts the cluster files end
-byte-identical to their pre-saga state.
+Every failure test asserts against `audit.jsonl`, and asserts observable runtime
+state and datatype routing equal their pre-saga snapshot. Generation counters and
+savepoint artifacts are intentionally irreversible.
 
 ## Layout
 
