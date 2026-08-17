@@ -25,7 +25,6 @@ from temporalio.common import RetryPolicy
 from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
-    from poc.temporal.activities import read_status
     from poc.common.domain import (
         CommandRequest,
         CommandResult,
@@ -35,6 +34,7 @@ with workflow.unsafe.imports_passed_through():
         MoveDatatypeRequest,
         SagaFailure,
     )
+    from poc.temporal.activities import read_status
 
 # Referenced by name so this module never imports the Temporal client that
 # poc/actor_proxy.py needs - workflow code stays sandbox-friendly.

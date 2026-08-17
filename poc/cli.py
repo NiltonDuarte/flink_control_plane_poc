@@ -13,12 +13,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from enum import StrEnum
 import os
 import shutil
 import sys
+from enum import StrEnum
 from pathlib import Path
-
 
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.scenarios import SCENARIOS, SEED

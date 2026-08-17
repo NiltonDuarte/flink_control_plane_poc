@@ -14,17 +14,18 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from temporalio.client import Client
+
+from poc.common.scenarios import REQUEST, SEED
+from poc.temporal.actor import actor_id
+from poc.temporal.saga import MoveDatatypeWorkflow
+from poc.temporal.worker import TASK_QUEUE, build_worker, connect
+
 # Failure scenarios are *supposed* to fail, and Temporal logs every failed
 # activity attempt with a full traceback. That noise buries the audit log, which
 # is the actual output, so the worker's activity logger is silenced here.
 logging.getLogger("temporalio.activity").setLevel(logging.CRITICAL)
 
-from temporalio.client import Client
-
-from poc.temporal.actor import actor_id
-from poc.common.scenarios import REQUEST, SEED
-from poc.temporal.saga import MoveDatatypeWorkflow
-from poc.temporal.worker import TASK_QUEUE, build_worker, connect
 
 DEFAULT_ROOT = Path(".cluster")
 
@@ -42,7 +43,7 @@ async def _clear_actors(client: Client) -> None:
             await client.get_workflow_handle(actor_id(family)).terminate(
                 reason="new scenario run"
             )
-        except Exception:  # noqa: BLE001 - nothing to terminate is the normal case
+        except Exception:  # noqa: BLE001, S110
             pass
 
 

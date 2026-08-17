@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from poc.baseline.actor import FamilyActor, UpdateStatus
 from poc.common.domain import (
     FamilyCommand,
+    FamilyStatus,
     MoveDatatypeRequest,
     SagaFailure,
 )
-from poc.baseline.actor import FamilyActor, UpdateStatus
-from poc.common.domain import FamilyStatus
 
 
 @dataclass

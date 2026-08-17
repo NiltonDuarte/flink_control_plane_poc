@@ -29,6 +29,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
+    from poc.common.domain import FamilyState
     from poc.temporal.activities import (
         patch_configmap,
         read_status,
@@ -36,7 +37,6 @@ with workflow.unsafe.imports_passed_through():
         suspend_job,
         trigger_savepoint,
     )
-    from poc.common.domain import FamilyState
 
 # Permanent faults must not be retried: retrying cannot help, and every wasted
 # attempt delays the compensation that does need to happen. Temporal matches

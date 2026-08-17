@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 COMMON_ROOT = Path(__file__).parents[1] / "poc" / "common"
 
 

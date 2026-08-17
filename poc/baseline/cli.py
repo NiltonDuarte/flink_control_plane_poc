@@ -1,5 +1,5 @@
-from poc.common.scenarios import REQUEST
 from poc.baseline.saga import MoveDatatypeWorkflow
+from poc.common.scenarios import REQUEST
 
 
 async def _run_workflow(scenario):
