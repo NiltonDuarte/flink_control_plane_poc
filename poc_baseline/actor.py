@@ -1,7 +1,7 @@
 from enum import Enum
 
 from poc_baseline.cluster import MockCluster
-from poc_baseline.domain import FamilyState
+from poc_baseline.domain import FamilyState, FamilyStatus
 
 class UpdateStatus(Enum):
     CHANGED = "CHANGED"
@@ -33,7 +33,7 @@ class FamilyActor:
         self.name = name
         self.cluster = MockCluster.from_env()
 
-    def read_status(self):
+    def read_status(self) -> FamilyStatus:
         return self.cluster.read(self.name)
 
     def _trigger_savepoint(self):
@@ -51,13 +51,13 @@ class FamilyActor:
         return UpdateStatus.CHANGED
 
     @retryable(4)
-    def patch_config(self, config):
+    def patch_config(self, config) -> list[str]:
         previous_datatypes = self.read_status().datatypes
         self.cluster.patch_configmap(self.name, config)
         return previous_datatypes
 
     @retryable(4)
-    def resume(self):
+    def resume(self) -> UpdateStatus:
         if self.read_status().state == FamilyState.RUNNING:
             return UpdateStatus.UNCHANGED
         self.cluster.resume_job(self.name)

@@ -104,35 +104,6 @@ class MoveDatatypeRequest(BaseModel):
         return [self.source_family, self.target_family]
 
 
-class CommandRequest(BaseModel):
-    """What the saga asks an actor to do, via the proxy activity.
-
-    `update_id` is the important field. It is derived deterministically from the
-    workflow and step, so a retried proxy activity dedupes onto the same Temporal
-    update instead of executing the command a second time. Without it, an
-    activity timeout during a pause would pause twice.
-    """
-
-    family: str
-    command: FamilyCommand
-    update_id: str
-    datatypes: list[str] | None = None
-
-
-class CommandResult(BaseModel):
-    """What an actor handler returns, flattened into one shape.
-
-    `changed` is the field the saga actually cares about: a pause of an
-    already-suspended family changed nothing, so no compensating resume is owed.
-    Recording compensations for no-op commands is how rollbacks end up resuming
-    families that were never running to begin with.
-    """
-
-    changed: bool = True
-    savepoint_uri: str | None = None
-    previous_datatypes: list[str] | None = None
-
-
 class SagaFailure(BaseModel):
     """Reported back when a saga aborts, after compensation has run."""
 
