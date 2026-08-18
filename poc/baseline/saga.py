@@ -1,27 +1,26 @@
-
-
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timedelta
 
-from poc_baseline.domain import (
-        FamilyCommand,
-        MoveDatatypeRequest,
-        SagaFailure,
-    )
-from poc_baseline.actor import FamilyActor, UpdateStatus
-from poc_baseline.domain import FamilyStatus
+from poc.baseline.actor import FamilyActor, UpdateStatus
+from poc.common.domain import (
+    FamilyCommand,
+    FamilyState,
+    FamilyStatus,
+    MoveDatatypeRequest,
+    SagaFailure,
+)
 
 
 @dataclass
 class _Compensation:
-    """A queued inverse action. In-workflow memory only; replay rebuilds it."""
+    """A queued restore intent. In-workflow memory only; replay rebuilds it."""
 
     label: str
-    command: FamilyCommand
     family: str
     datatypes: list[str] | None = None
+    desired_state: FamilyState | None = None
+
 
 class MoveDatatypeWorkflow:
     def run(self, request: MoveDatatypeRequest) -> list[str]:
@@ -29,10 +28,7 @@ class MoveDatatypeWorkflow:
         source, target = request.source_family, request.target_family
         done: list[str] = []
         stack: list[_Compensation] = []
-        actors = {
-            source: FamilyActor(source),
-            target: FamilyActor(target)
-        }
+        actors = {source: FamilyActor(source), target: FamilyActor(target)}
 
         statuses = self._read_all(request.families)
         self._validate(request, statuses)
@@ -44,50 +40,64 @@ class MoveDatatypeWorkflow:
             target: [*statuses[target].datatypes, request.datatype],
         }
 
+        # Every rollback payload comes from the authoritative pre-saga snapshot
+        # and is built before any mutation. A retry's return value is not safe
+        # rollback data: an earlier attempt may already have applied the change.
+        pause_restore = {
+            family: _Compensation(
+                f"resume:{family}",
+                family,
+                desired_state=statuses[family].state,
+            )
+            for family in request.families
+        }
+        config_restore = {
+            family: _Compensation(
+                f"revert:{family}",
+                family,
+                datatypes=list(statuses[family].datatypes),
+            )
+            for family in request.families
+        }
+        resume_restore = {
+            family: _Compensation(
+                f"pause:{family}",
+                family,
+                desired_state=FamilyState.SUSPENDED,
+            )
+            for family in request.families
+        }
+
         try:
             # -- Phase 1: pause ------------------------------------------
             for family in request.families:
-                result = actors[family].pause()
+                stack.append(pause_restore[family])
+                actors[family].pause()
                 done.append(f"pause:{family}")
-                if result == UpdateStatus.CHANGED:
-                    # Only owed if this call actually suspended something.
-                    stack.append(
-                        _Compensation(f"resume:{family}", FamilyCommand.RESUME, family)
-                    )
-
             # -- Phase 2: patch config -----------------------------------
             for family in request.families:
-                previous_datatypes = actors[family].patch_config(new_config[family])
+                stack.append(config_restore[family])
+                actors[family].patch_config(new_config[family])
                 done.append(f"patch:{family}")
-                stack.append(
-                    _Compensation(
-                        f"revert:{family}",
-                        FamilyCommand.PATCH_CONFIG,
-                        family,
-                        previous_datatypes or [],
-                    )
-                )
 
             # -- Phase 3: resume -----------------------------------------
             for family in request.families:
-                result = actors[family].resume()
+                stack.append(resume_restore[family])
+                actors[family].resume()
                 done.append(f"resume:{family}")
-                if result == UpdateStatus.CHANGED:
-                    stack.append(
-                        _Compensation(f"pause:{family}", FamilyCommand.PAUSE, family)
-                    )
 
             return done
 
-        except Exception as err:  # noqa: BLE001 - any failure triggers rollback
+        except Exception as err:  # noqa: BLE001, RUF100
             failed_step = self._next_step(request, done)
-            compensated, errors = self._compensate(stack)
+            compensated, noops, errors = self._compensate(stack)
             raise RuntimeError(
                 f"move of {request.datatype} aborted at {failed_step}: {err}",
                 SagaFailure(
                     failed_step=failed_step,
                     reason=str(err),
                     compensated=compensated,
+                    compensation_noops=noops,
                     compensation_errors=errors,
                 ),
             ) from err
@@ -98,7 +108,6 @@ class MoveDatatypeWorkflow:
         for family in families:
             statuses[family] = FamilyActor(family).read_status()
         return statuses
-
 
     def _validate(
         self, request: MoveDatatypeRequest, statuses: dict[str, FamilyStatus]
@@ -118,7 +127,9 @@ class MoveDatatypeWorkflow:
                 f"{request.datatype} is already owned by {request.target_family}",
             )
 
-    def _compensate(self, stack: list[_Compensation]) -> tuple[list[str], list[str]]:
+    def _compensate(
+        self, stack: list[_Compensation]
+    ) -> tuple[list[str], list[str], list[str]]:
         """Unwind LIFO, best effort.
 
         A failing compensation must not abort the unwind - stopping halfway would
@@ -126,21 +137,20 @@ class MoveDatatypeWorkflow:
         Errors are collected and reported instead.
         """
         compensated: list[str] = []
+        noops: list[str] = []
         errors: list[str] = []
-        for index, item in enumerate(reversed(stack)):
-            actor = FamilyActor(item.family)
+        for item in reversed(stack):
             try:
-                match item.command:
-                    case FamilyCommand.PAUSE:
-                        actor.pause()
-                    case FamilyCommand.RESUME:
-                        actor.resume()
-                    case FamilyCommand.PATCH_CONFIG:
-                        actor.patch_config(item.datatypes)
-                compensated.append(item.label)
+                changed = FamilyActor(item.family).restore(
+                    item.desired_state, item.datatypes
+                )
+                if changed:
+                    compensated.append(item.label)
+                else:
+                    noops.append(item.label)
             except Exception as err:  # noqa: BLE001 - keep unwinding
                 errors.append(f"{item.label}: {err}")
-        return compensated, errors
+        return compensated, noops, errors
 
     @staticmethod
     def _next_step(request: MoveDatatypeRequest, done: list[str]) -> str:

@@ -29,14 +29,14 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from poc.activities import (
+    from poc.common.domain import FamilyState
+    from poc.temporal.activities import (
         patch_configmap,
         read_status,
         resume_job,
         suspend_job,
         trigger_savepoint,
     )
-    from poc.domain import FamilyState
 
 # Permanent faults must not be retried: retrying cannot help, and every wasted
 # attempt delays the compensation that does need to happen. Temporal matches
@@ -88,8 +88,10 @@ class FlinkJobFamilyActor:
         self._ready = True
 
         await workflow.wait_condition(
-            lambda: self._terminate
-            or workflow.info().get_current_history_length() > HISTORY_ROLLOVER
+            lambda: (
+                self._terminate
+                or workflow.info().get_current_history_length() > HISTORY_ROLLOVER
+            )
         )
         if self._terminate:
             return

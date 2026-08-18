@@ -25,8 +25,7 @@ from temporalio.common import RetryPolicy
 from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
-    from poc.activities import read_status
-    from poc.domain import (
+    from poc.common.domain import (
         CommandRequest,
         CommandResult,
         FamilyCommand,
@@ -36,6 +35,7 @@ with workflow.unsafe.imports_passed_through():
         SagaFailure,
         SagaOutcome,
     )
+    from poc.temporal.activities import read_status
 
 # Referenced by name so this module never imports the Temporal client that
 # poc/actor_proxy.py needs - workflow code stays sandbox-friendly.
@@ -189,7 +189,9 @@ class MoveDatatypeWorkflow:
         Failing here costs no compensation, which is the cheapest place to fail.
         """
         if request.source_family == request.target_family:
-            return "source and target family are the same"
+            raise ApplicationError(
+                "source and target family are the same", non_retryable=True
+            )
         if request.datatype not in statuses[request.source_family].datatypes:
             return f"{request.datatype} is not owned by {request.source_family}"
         if request.datatype in statuses[request.target_family].datatypes:

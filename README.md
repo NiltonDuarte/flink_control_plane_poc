@@ -12,21 +12,24 @@ mock cluster. No Flink, no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_S
 
 ```sh
 uv sync
-uv run pytest                          # 30 tests
-uv run python -m poc.cli list          # the scenarios
+uv run pytest                          # 21 tests, ~45s
+uv run python -m poc.cli list          # List scenarios
+uv run python -m poc.cli run happy --engine None # Run Happy scenario with no engine
 ```
 
 To watch a scenario run against a real Temporal server:
 
 ```sh
+brew install temporal
 temporal server start-dev              # separate terminal
-uv run python -m poc.cli run fail-in-resume
+uv run python -m poc.cli run fail-in-resume --engine Temporal
 ```
 
 ## Scenarios
 
 Each is a seed cluster plus a set of fault-injection rules, defined once in
-[`poc/scenarios.py`](poc/scenarios.py) and shared by the CLI and the tests.
+[`poc/common/scenarios.py`](poc/common/scenarios.py) and shared by both
+implementations, their CLIs, and the tests.
 
 | Scenario | What it exercises |
 |---|---|
@@ -70,7 +73,9 @@ FlinkJobFamilyActor   (entity workflow, one per job family, lock-serialized)
 MockCluster           (a directory of JSON files)
 ```
 
-`poc/cluster.py` is the only module that touches infrastructure. Swapping the
+`poc/common/cluster.py` is the only module that touches infrastructure. It sits
+alongside the shared domain models and scenario matrix in the engine-neutral
+`poc.common` package, which both `poc` and `poc_baseline` import. Swapping the
 mock for real Flink Kubernetes Operator calls means reimplementing that file and
 nothing else - it imports no Temporal and no workflow code.
 

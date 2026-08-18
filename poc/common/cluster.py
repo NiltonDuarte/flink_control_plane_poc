@@ -1,7 +1,7 @@
 """The mock cluster: a directory that stands in for Flink + Kubernetes.
 
 This is the module you delete when going to production. Everything else in the
-POC talks to it through the four operations below, so replacing it with real
+POC talks to it through the five operations below, so replacing it with real
 Flink Kubernetes Operator calls means reimplementing this file and nothing else.
 It therefore imports no Temporal and no POC workflow code.
 
@@ -32,7 +32,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-from poc_baseline.domain import (
+from poc.common.domain import (
     FamilyState,
     FamilyStatus,
     PermanentClusterError,
@@ -65,11 +65,13 @@ class AuditEntry(BaseModel):
 class ChaosRule(BaseModel):
     """A fault-injection rule, keyed by ``"<family>:<op>"`` in chaos.json.
 
-    ``transient`` fails the first ``times`` attempts and then succeeds, which is
-    how the retry-then-succeed scenario is expressed. ``permanent`` always fails.
+    ``transient`` fails before mutation for the first ``times`` attempts and
+    then succeeds. ``lost_response`` commits the mutation but raises a transient
+    error before returning for the first ``times`` attempts. ``permanent``
+    always fails before mutation.
     """
 
-    mode: Literal["transient", "permanent"]
+    mode: Literal["transient", "permanent", "lost_response"]
     times: int = 1
 
 
@@ -177,6 +179,7 @@ class MockCluster:
         )
         status.savepoint_uri = uri
         self._commit(status, "trigger_savepoint", {"uri": uri})
+        self._maybe_lose_response(family, "trigger_savepoint")
         return uri
 
     def suspend_job(self, family: str) -> None:
@@ -185,6 +188,7 @@ class MockCluster:
         status = self.read(family)
         status.state = FamilyState.SUSPENDED
         self._commit(status, "suspend_job", {})
+        self._maybe_lose_response(family, "suspend_job")
 
     def resume_job(self, family: str) -> None:
         """Patch the FKO resource state to RUNNING."""
@@ -192,14 +196,18 @@ class MockCluster:
         status = self.read(family)
         status.state = FamilyState.RUNNING
         self._commit(status, "resume_job", {})
+        self._maybe_lose_response(family, "resume_job")
 
     def patch_configmap(self, family: str, datatypes: list[str]) -> list[str]:
-        """Replace the routing config; return the previous value for rollback."""
+        """Replace routing config; return the previous value for observability."""
         self._maybe_fail(family, "patch_configmap")
         status = self.read(family)
         previous = list(status.datatypes)
         status.datatypes = list(datatypes)
-        self._commit(status, "patch_configmap", {"from": previous, "to": list(datatypes)})
+        self._commit(
+            status, "patch_configmap", {"from": previous, "to": list(datatypes)}
+        )
+        self._maybe_lose_response(family, "patch_configmap")
         return previous
 
     # -- internals ---------------------------------------------------------
@@ -215,7 +223,9 @@ class MockCluster:
         self._write(status)
         self._record(op, status.family, "ok", detail)
 
-    def _record(self, op: str, family: str, outcome: Outcome, detail: dict[str, Any]) -> None:
+    def _record(
+        self, op: str, family: str, outcome: Outcome, detail: dict[str, Any]
+    ) -> None:
         entry = AuditEntry(
             seq=self._next_seq(), op=op, family=family, outcome=outcome, detail=detail
         )
@@ -225,13 +235,15 @@ class MockCluster:
     def _next_seq(self) -> int:
         if not self.audit_path.exists():
             return 0
-        return sum(1 for line in self.audit_path.read_text().splitlines() if line.strip())
+        return sum(
+            1 for line in self.audit_path.read_text().splitlines() if line.strip()
+        )
 
     def _maybe_fail(self, family: str, op: str) -> None:
-        """Consult chaos.json and raise if this attempt is configured to fail."""
+        """Raise faults configured to happen before a mutation is committed."""
         rules = self._chaos_rules()
         rule = rules.get(f"{family}:{op}")
-        if rule is None:
+        if rule is None or rule.mode == "lost_response":
             return
 
         if rule.mode == "permanent":
@@ -247,6 +259,23 @@ class MockCluster:
             self._record(op, family, "transient", {"attempt": seen + 1})
             raise TransientClusterError(
                 f"{op} on {family} failed transiently (attempt {seen + 1}/{rule.times})"
+            )
+
+    def _maybe_lose_response(self, family: str, op: str) -> None:
+        """Raise after a committed mutation to model an ambiguous response loss."""
+        rule = self._chaos_rules().get(f"{family}:{op}")
+        if rule is None or rule.mode != "lost_response":
+            return
+
+        hits = self._hits()
+        key = f"{family}:{op}"
+        seen = hits.get(key, 0)
+        if seen < rule.times:
+            hits[key] = seen + 1
+            self.hits_path.write_text(json.dumps(hits, indent=2))
+            raise TransientClusterError(
+                f"response from {op} on {family} was lost "
+                f"after commit (attempt {seen + 1}/{rule.times})"
             )
 
     def _chaos_rules(self) -> dict[str, ChaosRule]:

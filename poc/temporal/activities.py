@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from temporalio import activity
 
-from poc.cluster import MockCluster
-from poc.domain import FamilyStatus
+from poc.common.cluster import MockCluster
+from poc.common.domain import FamilyStatus
 
 
 @activity.defn

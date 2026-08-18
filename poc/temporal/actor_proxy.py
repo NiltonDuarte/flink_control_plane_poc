@@ -30,8 +30,8 @@ from temporalio.client import Client, WorkflowUpdateFailedError
 from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
 
-from poc.actor import FlinkJobFamilyActor, actor_id
-from poc.domain import CommandRequest, CommandResult, FamilyCommand
+from poc.common.domain import CommandRequest, CommandResult, FamilyCommand
+from poc.temporal.actor import FlinkJobFamilyActor, actor_id
 
 
 class ActorProxy:
@@ -93,4 +93,6 @@ class ActorProxy:
             )
             return CommandResult(changed=changed)
 
-        raise ApplicationError(f"unknown command: {request.command}", non_retryable=True)
+        raise ApplicationError(
+            f"unknown command: {request.command}", non_retryable=True
+        )

@@ -13,8 +13,8 @@ import logging
 import os
 import sys
 
-from poc.cluster import ENV_CLUSTER_ROOT
-from poc.worker import build_worker, connect
+from poc.common.cluster import ENV_CLUSTER_ROOT
+from poc.temporal.worker import build_worker, connect
 
 logging.getLogger("temporalio").setLevel(logging.CRITICAL)
 

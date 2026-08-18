@@ -11,7 +11,6 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-
 # --------------------------------------------------------------------------
 # Errors
 # --------------------------------------------------------------------------
@@ -75,11 +74,20 @@ class FamilyStatus(BaseModel):
 
 
 class FamilyCommand(str, Enum):
-    """The actor handlers, as named by the RFC's Virtual Actor Handlers section."""
+    """Normal RFC actor handlers plus the compensation-only restore handler."""
 
     PAUSE = "pause"
     RESUME = "resume"
     PATCH_CONFIG = "patch_config"
+    RESTORE = "restore"
+
+
+class SagaOutcome(str, Enum):
+    """Stable operational verdict for a saga that did not complete."""
+
+    REJECTED = "REJECTED"
+    COMPENSATED = "COMPENSATED"
+    COMPENSATION_INCOMPLETE = "COMPENSATION_INCOMPLETE"
 
 
 class MoveDatatypeRequest(BaseModel):
@@ -104,10 +112,40 @@ class MoveDatatypeRequest(BaseModel):
         return [self.source_family, self.target_family]
 
 
-class SagaFailure(BaseModel):
-    """Reported back when a saga aborts, after compensation has run."""
+class CommandRequest(BaseModel):
+    """What the saga asks an actor to do, via the proxy activity.
 
+    `update_id` is the important field. It is derived deterministically from the
+    workflow and step, so a retried proxy activity dedupes onto the same Temporal
+    update instead of executing the command a second time. Without it, an
+    activity timeout during a pause would pause twice.
+    """
+
+    family: str
+    command: FamilyCommand
+    update_id: str
+    datatypes: list[str] | None = None
+    desired_state: FamilyState | None = None
+
+
+class CommandResult(BaseModel):
+    """What an actor handler returns, flattened into one shape.
+
+    During compensation, `changed` distinguishes a restore that mutated the
+    cluster from one that found the snapshot state already present. The saga
+    reports those outcomes separately.
+    """
+
+    changed: bool = True
+    savepoint_uri: str | None = None
+
+
+class SagaFailure(BaseModel):
+    """Structured verdict reported whenever a saga does not complete."""
+
+    outcome: SagaOutcome
     failed_step: str
     reason: str
     compensated: list[str]
+    compensation_noops: list[str] = Field(default_factory=list)
     compensation_errors: list[str] = Field(default_factory=list)

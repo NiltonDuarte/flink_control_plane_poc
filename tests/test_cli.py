@@ -3,7 +3,7 @@
 from temporalio.exceptions import ApplicationError
 
 from poc.cli import _print_failure
-from poc.domain import SagaFailure, SagaOutcome
+from poc.common.domain import SagaFailure, SagaOutcome
 
 
 def test_cli_prints_structured_saga_verdict(capsys) -> None:
@@ -35,6 +35,4 @@ def test_cli_prints_structured_saga_verdict(capsys) -> None:
 def test_cli_falls_back_to_raw_unrelated_exception(capsys) -> None:
     _print_failure(RuntimeError("transport disappeared"))
 
-    assert capsys.readouterr().out == (
-        "RESULT   : failed - transport disappeared\n\n"
-    )
+    assert capsys.readouterr().out == ("RESULT   : failed - transport disappeared\n\n")

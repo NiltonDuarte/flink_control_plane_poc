@@ -21,10 +21,10 @@ from pathlib import Path
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 
-from poc.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.saga import MoveDatatypeWorkflow
-from poc.scenarios import REQUEST, SCENARIOS, SEED
-from poc.worker import build_worker
+from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED
+from poc.temporal.saga import MoveDatatypeWorkflow
+from poc.temporal.worker import build_worker
 
 HISTORY_DIR = Path(__file__).parent / "histories"
 

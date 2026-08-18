@@ -41,8 +41,8 @@ from temporalio.client import WorkflowHistory
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.worker import Replayer
 
-from poc.actor import FlinkJobFamilyActor
-from poc.saga import MoveDatatypeWorkflow
+from poc.temporal.actor import FlinkJobFamilyActor
+from poc.temporal.saga import MoveDatatypeWorkflow
 
 HISTORY_DIR = Path(__file__).parent / "histories"
 HISTORIES = sorted(HISTORY_DIR.glob("*.json"))

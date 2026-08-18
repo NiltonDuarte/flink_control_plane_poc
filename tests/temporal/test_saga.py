@@ -18,9 +18,9 @@ from __future__ import annotations
 import pytest
 from temporalio.client import Client
 
-from poc.cluster import MockCluster
-from poc.domain import MoveDatatypeRequest, SagaOutcome
-from poc.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET
+from poc.common.cluster import MockCluster
+from poc.common.domain import MoveDatatypeRequest, SagaOutcome
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET
 from tests.conftest import (
     ops,
     run_move,
@@ -231,7 +231,9 @@ async def test_fail_in_resume_compensates_in_layers(
     assert cluster.snapshot() == before
 
 
-async def test_compensation_can_itself_fail(client: Client, cluster: MockCluster) -> None:
+async def test_compensation_can_itself_fail(
+    client: Client, cluster: MockCluster
+) -> None:
     """The limitation worth knowing about.
 
     When the broken action *is* the compensating action, a fail-fast saga cannot
@@ -258,7 +260,9 @@ async def test_compensation_can_itself_fail(client: Client, cluster: MockCluster
     assert cluster.read(TARGET).state.value == "SUSPENDED"
 
 
-async def test_transient_faults_are_retried(client: Client, cluster: MockCluster) -> None:
+async def test_transient_faults_are_retried(
+    client: Client, cluster: MockCluster
+) -> None:
     """Two transient failures are absorbed inside the actor; the saga never sees them."""
     _, err = await run_scenario(client, cluster, SCENARIOS["transient-retry"])
 
