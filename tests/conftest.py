@@ -23,7 +23,7 @@ from temporalio.exceptions import ApplicationError
 from temporalio.testing import WorkflowEnvironment
 
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.common.domain import SagaFailure
+from poc.common.domain import MoveDatatypeRequest, SagaFailure
 from poc.common.scenarios import REQUEST, SEED, Scenario
 from poc.temporal.actor import actor_id
 from poc.temporal.saga import MoveDatatypeWorkflow
@@ -72,13 +72,23 @@ async def run_scenario(
 ) -> tuple[list[str] | None, Exception | None]:
     """Run a scenario end to end. Returns (steps, error) - exactly one is set."""
     cluster.set_chaos(scenario.chaos)
+    return await run_move(client, request=REQUEST, workflow_name=scenario.name)
+
+
+async def run_move(
+    client: Client,
+    *,
+    request: MoveDatatypeRequest,
+    workflow_name: str,
+) -> tuple[list[str] | None, Exception | None]:
+    """Run one move request end to end and capture its expected domain failure."""
     task_queue = f"tq-{uuid.uuid4()}"
     async with build_worker(client, task_queue):
         try:
             steps: list[str] = await client.execute_workflow(
                 MoveDatatypeWorkflow.run,
-                REQUEST,
-                id=f"move-{scenario.name}-{uuid.uuid4()}",
+                request,
+                id=f"move-{workflow_name}-{uuid.uuid4()}",
                 task_queue=task_queue,
             )
             return steps, None
@@ -94,11 +104,21 @@ def ops(cluster: MockCluster, *, successful_only: bool = True) -> list[str]:
     ]
 
 
-def saga_failure(err: Exception) -> SagaFailure:
-    """Decode the structured failure detail through Temporal's exception wrapper."""
+def saga_application_error(err: Exception) -> ApplicationError:
+    """Find the saga's ApplicationError through Temporal's exception wrappers."""
     cause: BaseException | None = err
     while cause is not None:
         if isinstance(cause, ApplicationError) and cause.details:
-            return SagaFailure.model_validate(cause.details[0])
+            try:
+                SagaFailure.model_validate(cause.details[0])
+            except ValueError:
+                pass
+            else:
+                return cause
         cause = cause.__cause__ or getattr(cause, "cause", None)
     raise AssertionError(f"no SagaFailure detail found in {err!r}")
+
+
+def saga_failure(err: Exception) -> SagaFailure:
+    """Decode the structured failure detail through Temporal's exception wrapper."""
+    return SagaFailure.model_validate(saga_application_error(err).details[0])

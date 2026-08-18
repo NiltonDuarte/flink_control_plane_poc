@@ -15,11 +15,19 @@ on `MockCluster.snapshot`. Rollback restores state and routing, not history.
 
 from __future__ import annotations
 
+import pytest
 from temporalio.client import Client
 
 from poc.common.cluster import MockCluster
-from poc.common.scenarios import SCENARIOS, SOURCE, TARGET
-from tests.conftest import ops, run_scenario, saga_failure
+from poc.common.domain import MoveDatatypeRequest, SagaOutcome
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET
+from tests.conftest import (
+    ops,
+    run_move,
+    run_scenario,
+    saga_application_error,
+    saga_failure,
+)
 
 FORWARD_PHASE_1 = [
     f"trigger_savepoint({SOURCE})",
@@ -27,6 +35,101 @@ FORWARD_PHASE_1 = [
     f"trigger_savepoint({TARGET})",
     f"suspend_job({TARGET})",
 ]
+
+FAILING_SCENARIOS = [
+    name for name, scenario in SCENARIOS.items() if scenario.expect_failure
+]
+
+
+@pytest.mark.parametrize("scenario_name", FAILING_SCENARIOS)
+async def test_failure_scenarios_expose_typed_verdicts(
+    client: Client, cluster: MockCluster, scenario_name: str
+) -> None:
+    """Every operational failure has the same searchable four-part contract."""
+    _, err = await run_scenario(client, cluster, SCENARIOS[scenario_name])
+
+    assert err is not None
+    failure = saga_failure(err)
+    application_error = saga_application_error(err)
+    expected_outcome = (
+        SagaOutcome.COMPENSATION_INCOMPLETE
+        if scenario_name == "compensation-unreachable"
+        else SagaOutcome.COMPENSATED
+    )
+    expected_type = (
+        "SagaCompensationIncompleteError"
+        if expected_outcome == SagaOutcome.COMPENSATION_INCOMPLETE
+        else "SagaCompensatedError"
+    )
+
+    assert failure.outcome == expected_outcome
+    assert application_error.type == expected_type
+    assert application_error.non_retryable is True
+    assert application_error.message.startswith(f"{expected_outcome.value}:")
+    assert f"applied={len(failure.compensated)}" in application_error.message
+    assert f"no_op={len(failure.compensation_noops)}" in application_error.message
+    assert f"failed={len(failure.compensation_errors)}" in application_error.message
+
+
+VALIDATION_CASES = [
+    pytest.param(
+        MoveDatatypeRequest(
+            datatype=REQUEST.datatype,
+            source_family=SOURCE,
+            target_family=SOURCE,
+        ),
+        None,
+        "source and target family are the same",
+        id="same-family",
+    ),
+    pytest.param(
+        MoveDatatypeRequest(
+            datatype="missing",
+            source_family=SOURCE,
+            target_family=TARGET,
+        ),
+        None,
+        f"missing is not owned by {SOURCE}",
+        id="missing-source-ownership",
+    ),
+    pytest.param(
+        REQUEST,
+        {SOURCE: SEED[SOURCE], TARGET: [*SEED[TARGET], REQUEST.datatype]},
+        f"{REQUEST.datatype} is already owned by {TARGET}",
+        id="datatype-already-at-target",
+    ),
+]
+
+
+@pytest.mark.parametrize("move_request, seed, reason", VALIDATION_CASES)
+async def test_validation_rejections_are_typed_and_do_not_mutate(
+    client: Client,
+    cluster: MockCluster,
+    move_request: MoveDatatypeRequest,
+    seed: dict[str, list[str]] | None,
+    reason: str,
+) -> None:
+    if seed is not None:
+        cluster.seed(seed)
+    cluster.set_chaos({})
+    before = cluster.snapshot()
+
+    _, err = await run_move(client, request=move_request, workflow_name="validation")
+
+    assert err is not None
+    failure = saga_failure(err)
+    application_error = saga_application_error(err)
+    assert failure.outcome == SagaOutcome.REJECTED
+    assert failure.failed_step == "validate"
+    assert failure.reason == reason
+    assert failure.compensated == []
+    assert failure.compensation_noops == []
+    assert failure.compensation_errors == []
+    assert application_error.type == "SagaRejectedError"
+    assert application_error.non_retryable is True
+    assert application_error.message.startswith("REJECTED:")
+    assert cluster.snapshot() == before
+    assert ops(cluster, successful_only=False) == []
 
 
 async def test_happy_path(client: Client, cluster: MockCluster) -> None:

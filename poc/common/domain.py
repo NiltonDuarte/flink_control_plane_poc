@@ -82,6 +82,14 @@ class FamilyCommand(str, Enum):
     RESTORE = "restore"
 
 
+class SagaOutcome(str, Enum):
+    """Stable operational verdict for a saga that did not complete."""
+
+    REJECTED = "REJECTED"
+    COMPENSATED = "COMPENSATED"
+    COMPENSATION_INCOMPLETE = "COMPENSATION_INCOMPLETE"
+
+
 class MoveDatatypeRequest(BaseModel):
     """Input contract for the saga.
 
@@ -133,8 +141,9 @@ class CommandResult(BaseModel):
 
 
 class SagaFailure(BaseModel):
-    """Reported back when a saga aborts, after compensation has run."""
+    """Structured verdict reported whenever a saga does not complete."""
 
+    outcome: SagaOutcome
     failed_step: str
     reason: str
     compensated: list[str]

@@ -44,6 +44,21 @@ implementations, their CLIs, and the tests.
 | `lost-response-patch` | Config patch lands without a response; snapshot rollback |
 | `permanent-first-step` | Non-retryable failure, restore evaluates to a no-op |
 
+## Failed saga verdicts
+
+Every saga that does not complete exposes the same verdict in its Temporal error
+type, message prefix, structured `SagaFailure.outcome`, and CLI output:
+
+| Verdict | Temporal error type | Meaning | Operator action |
+|---|---|---|---|
+| `REJECTED` | `SagaRejectedError` | Validation rejected the request before any mutation. | Correct the request and submit a new saga. |
+| `COMPENSATED` | `SagaCompensatedError` | A forward step failed and every restore intent was satisfied. | Investigate the original failure; no rollback repair is required. |
+| `COMPENSATION_INCOMPLETE` | `SagaCompensationIncompleteError` | At least one restore intent failed, so cluster state may be partial. | Escalate immediately, inspect `compensation_errors`, and reconcile the affected families. |
+
+Rollback messages include applied, no-op, and failed compensation counts. A
+no-op means the snapshot state was already present, so it counts as a
+successfully satisfied restore intent.
+
 ## How it fits together
 
 ```
