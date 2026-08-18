@@ -21,9 +21,7 @@ def test_common_package_has_no_engine_specific_imports() -> None:
                 modules.append(node.module)
 
             for module in modules:
-                engine_specific = module.startswith("temporalio") or module.startswith(
-                    "poc_baseline"
-                )
+                engine_specific = module.startswith(("temporalio", "poc_baseline"))
                 non_common_poc = module.startswith("poc.") and not module.startswith(
                     "poc.common"
                 )

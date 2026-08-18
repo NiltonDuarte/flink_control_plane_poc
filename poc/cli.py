@@ -23,7 +23,7 @@ from pathlib import Path
 from temporalio.exceptions import ApplicationError
 
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
-from poc.common.domain import SagaFailure
+from poc.common.domain import SagaError, SagaFailure
 from poc.common.scenarios import SCENARIOS, SEED
 
 DEFAULT_ROOT = Path(".cluster")
@@ -69,13 +69,15 @@ def _print_engines() -> None:
 
 def _extract_saga_failure(
     err: BaseException,
-) -> tuple[SagaFailure, ApplicationError] | None:
-    """Find and decode our structured verdict through Temporal's wrappers."""
+) -> tuple[SagaFailure, str] | None:
+    """Find a structured verdict through either engine's error wrappers."""
     cause: BaseException | None = err
     while cause is not None:
+        if isinstance(cause, SagaError):
+            return cause.failure, cause.type
         if isinstance(cause, ApplicationError) and cause.details:
             try:
-                return SagaFailure.model_validate(cause.details[0]), cause
+                return SagaFailure.model_validate(cause.details[0]), cause.type
             except ValueError:
                 pass
         cause = cause.__cause__ or getattr(cause, "cause", None)
@@ -89,8 +91,8 @@ def _print_failure(err: BaseException) -> None:
         print(f"RESULT   : failed - {err}\n")
         return
 
-    failure, application_error = extracted
-    print(f"RESULT   : failed - {failure.outcome.value} ({application_error.type})")
+    failure, error_type = extracted
+    print(f"RESULT   : failed - {failure.outcome.value} ({error_type})")
     print(f"  step   : {failure.failed_step}")
     print(f"  reason : {failure.reason}")
     print(
@@ -127,7 +129,13 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
         case _:
             raise RuntimeError("Invalid Engine")
 
-    failed = await _run_workflow(scenario)
+    steps, error = await _run_workflow(scenario)
+    if error is None:
+        assert steps is not None
+        print(f"RESULT   : completed - {', '.join(steps)}\n")
+    else:
+        _print_failure(error)
+    failed = error is not None
 
     print("audit log (every attempt, in order):")
     for entry in cluster.audit():

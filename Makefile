@@ -32,7 +32,7 @@ list:
 	uv run python -m poc.cli list
 
 histories:
-	uv run python -m tests.record_histories
+	uv run python -m tests.temporal.record_histories
 
 clean:
 	rm -rf .cluster

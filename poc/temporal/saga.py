@@ -26,6 +26,7 @@ from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
     from poc.common.domain import (
+        SAGA_ERROR_TYPES,
         CommandRequest,
         CommandResult,
         FamilyCommand,
@@ -38,7 +39,7 @@ with workflow.unsafe.imports_passed_through():
     from poc.temporal.activities import read_status
 
 # Referenced by name so this module never imports the Temporal client that
-# poc/actor_proxy.py needs - workflow code stays sandbox-friendly.
+# poc/temporal/actor_proxy.py needs - workflow code stays sandbox-friendly.
 PROXY_ACTIVITY = "execute_family_command"
 
 # The proxy is retried only for infrastructure blips. A command that genuinely
@@ -52,12 +53,6 @@ PROXY_RETRY = RetryPolicy(
 
 PROXY_TIMEOUT = timedelta(seconds=30)
 READ_TIMEOUT = timedelta(seconds=10)
-
-ERROR_TYPES = {
-    SagaOutcome.REJECTED: "SagaRejectedError",
-    SagaOutcome.COMPENSATED: "SagaCompensatedError",
-    SagaOutcome.COMPENSATION_INCOMPLETE: "SagaCompensationIncompleteError",
-}
 
 
 @dataclass
@@ -150,7 +145,7 @@ class MoveDatatypeWorkflow:
 
             return done
 
-        except Exception as err:  # noqa: BLE001 - any failure triggers rollback
+        except Exception as err:
             failed_step = self._next_step(request, done)
             compensated, noops, errors = await self._compensate(stack)
             outcome = (
@@ -189,9 +184,7 @@ class MoveDatatypeWorkflow:
         Failing here costs no compensation, which is the cheapest place to fail.
         """
         if request.source_family == request.target_family:
-            raise ApplicationError(
-                "source and target family are the same", non_retryable=True
-            )
+            return "source and target family are the same"
         if request.datatype not in statuses[request.source_family].datatypes:
             return f"{request.datatype} is not owned by {request.source_family}"
         if request.datatype in statuses[request.target_family].datatypes:
@@ -234,7 +227,7 @@ class MoveDatatypeWorkflow:
                 compensation_noops=noops,
                 compensation_errors=errors,
             ),
-            type=ERROR_TYPES[outcome],
+            type=SAGA_ERROR_TYPES[outcome],
             non_retryable=True,
         )
 

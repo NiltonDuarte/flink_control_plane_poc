@@ -5,16 +5,17 @@ Source docs: `RFC_Sink_Layer_Control_Plane_Architecture.md`, `TICKET-Create_a_te
 
 ## Purpose
 
-Prove the durable-execution patterns the RFC depends on, on Temporal, locally, with
-zero Flink and zero Kubernetes. The POC is a **lean experiment** — but the boundary
-between workflow logic and cluster interaction is kept clean, so that going to
-production means replacing one module, not rewriting the saga.
+Prove the durable-execution patterns the RFC depends on, on Temporal, locally,
+with zero Flink and zero Kubernetes, while retaining a bare-Python reference
+implementation for behavioral comparison. The POC is a **lean experiment** —
+but the boundary between workflow logic and cluster interaction is kept clean,
+so that going to production means replacing one module, not rewriting the saga.
 
 ## Decisions
 
 | Question | Decision |
 |---|---|
-| Engine | Temporal, local (`temporal server start-dev`) |
+| Engine | Bare-Python baseline plus Temporal, local (`temporal server start-dev`) |
 | Saga | **Move Datatype Between Jobs** only — it is the superset of Batch Pause / Batch Resume |
 | Infra | Fully mocked. Files in / files out. **Instant state transitions**, no polling, no operator simulation |
 | Actor | **Kept.** `FlinkJobFamilyActor` as a real entity workflow — it is one of the things being proven |
@@ -116,15 +117,25 @@ savepoint artifacts are intentionally irreversible.
 
 ```
 poc/
-  domain.py       models, states, error taxonomy
-  cluster.py      file-backed mock: audit + chaos
-  activities.py
-  actor.py        FlinkJobFamilyActor
-  saga.py         MoveDatatypeWorkflow + compensation stack
-  worker.py
-  cli.py          trigger any scenario by name
+  cli.py                     shared scenario runner and verdict formatter
+  common/
+    domain.py                models, states, error taxonomy, saga verdicts
+    cluster.py               file-backed mock: audit + chaos
+    scenarios.py             shared scenario matrix
+  baseline/
+    actor.py                 synchronous FamilyActor
+    saga.py                  bare-Python MoveDatatypeWorkflow
+  temporal/
+    activities.py
+    actor.py                 FlinkJobFamilyActor
+    actor_proxy.py
+    saga.py                  durable MoveDatatypeWorkflow
+    worker.py
 tests/
-  histories/      replay fixtures
+  baseline/                  baseline parity tests
+  temporal/
+    histories/               replay fixtures
+    worker_process.py        crash-test worker entrypoint
 README.md         how to run each success/failure mode
 Makefile
 pyproject.toml    uv, Python 3.12, temporalio + pydantic + pytest

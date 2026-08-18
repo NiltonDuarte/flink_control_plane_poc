@@ -5,16 +5,17 @@ A working baseline workflow for evaluating durable execution engines, per
 and the architecture in
 [`RFC_Sink_Layer_Control_Plane_Architecture.md`](RFC_Sink_Layer_Control_Plane_Architecture.md).
 
-This implements the **Move Datatype Between Jobs** saga on Temporal, against a
-mock cluster. No Flink, no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_SCOPE.md).
+This implements the **Move Datatype Between Jobs** saga twice against the same
+mock cluster: a bare-Python baseline and a durable Temporal version. No Flink,
+no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_SCOPE.md).
 
 ## Quick start
 
 ```sh
 uv sync
-uv run pytest                          # 21 tests, ~45s
+uv run pytest                          # Full suite
 uv run python -m poc.cli list          # List scenarios
-uv run python -m poc.cli run happy --engine None # Run Happy scenario with no engine
+uv run python -m poc.cli run happy --engine None # Run with bare Python
 ```
 
 To watch a scenario run against a real Temporal server:
@@ -46,10 +47,10 @@ implementations, their CLIs, and the tests.
 
 ## Failed saga verdicts
 
-Every saga that does not complete exposes the same verdict in its Temporal error
+Every saga that does not complete exposes the same verdict in its engine error
 type, message prefix, structured `SagaFailure.outcome`, and CLI output:
 
-| Verdict | Temporal error type | Meaning | Operator action |
+| Verdict | Error type | Meaning | Operator action |
 |---|---|---|---|
 | `REJECTED` | `SagaRejectedError` | Validation rejected the request before any mutation. | Correct the request and submit a new saga. |
 | `COMPENSATED` | `SagaCompensatedError` | A forward step failed and every restore intent was satisfied. | Investigate the original failure; no rollback repair is required. |
@@ -60,6 +61,9 @@ no-op means the snapshot state was already present, so it counts as a
 successfully satisfied restore intent.
 
 ## How it fits together
+
+The Temporal path adds the durable workflow and actor layers shown below; the
+bare-Python path runs the same saga contract directly against the mock cluster.
 
 ```
 MoveDatatypeWorkflow  (saga: pause -> patch -> resume, LIFO compensation stack)
@@ -73,11 +77,12 @@ FlinkJobFamilyActor   (entity workflow, one per job family, lock-serialized)
 MockCluster           (a directory of JSON files)
 ```
 
-`poc/common/cluster.py` is the only module that touches infrastructure. It sits
+[`poc/common/cluster.py`](poc/common/cluster.py) is the only module that touches
+infrastructure. It sits
 alongside the shared domain models and scenario matrix in the engine-neutral
-`poc.common` package, which both `poc` and `poc_baseline` import. Swapping the
-mock for real Flink Kubernetes Operator calls means reimplementing that file and
-nothing else - it imports no Temporal and no workflow code.
+`poc.common` package, which both `poc.baseline` and `poc.temporal` import.
+Swapping the mock for real Flink Kubernetes Operator calls means reimplementing
+that file and nothing else - it imports no Temporal and no workflow code.
 
 ### The mock cluster
 
@@ -122,7 +127,8 @@ Five things this POC established that are worth carrying into the RFC.
 `update`. A workflow cannot make a request/response call into another running
 workflow. Restate and DBOS invoke a Virtual Object handler directly and get a
 return value; on Temporal the saga needs an activity that holds a client and
-calls the actor from outside the workflow sandbox ([`poc/actor_proxy.py`](poc/actor_proxy.py)).
+calls the actor from outside the workflow sandbox
+([`poc/temporal/actor_proxy.py`](poc/temporal/actor_proxy.py)).
 
 That hop is the single biggest structural difference to expect when the same
 baseline is built on the other two engines.
@@ -185,16 +191,18 @@ runtime or config change. Successful no-ops create no mutation audit entries.
 
 ```sh
 uv run pytest                  # everything
-uv run pytest -m "not crash"   # fast subset, ~3s
-uv run pytest -m crash         # worker-kill durability, ~35s, real server
+uv run pytest -m "not crash"   # fast subset
+uv run pytest -m crash         # worker-kill durability, real server
 ```
 
 | File | Covers |
 |---|---|
-| `tests/test_saga.py` | RFC compensation, retry taxonomy, lost responses |
-| `tests/test_actor.py` | Single-writer serialization, cached and reconciled state |
-| `tests/test_replay.py` | Replay determinism against committed history fixtures |
-| `tests/test_crash.py` | SIGKILL mid-saga, restart, resume from last step |
+| `tests/baseline/test_saga.py` | Baseline verdict, compensation, retry, and final-state parity |
+| `tests/temporal/test_saga.py` | Temporal RFC compensation, retry taxonomy, and lost responses |
+| `tests/temporal/test_actor.py` | Single-writer serialization, cached and reconciled state |
+| `tests/temporal/test_replay.py` | Replay determinism against committed history fixtures |
+| `tests/temporal/test_crash.py` | SIGKILL mid-saga, restart, resume from last step |
+| `tests/test_cli.py` | Shared success/failure rendering for both engines |
 
 Everything except the crash test runs on Temporal's **time-skipping** test
 server, which fast-forwards a virtual clock whenever no work is in flight. That
@@ -202,11 +210,11 @@ makes retry backoff free. The crash test needs a real server and real elapsed
 time, because the point is that an in-flight activity times out and gets
 redelivered to a new worker.
 
-Replay fixtures live in `tests/histories/`. Regenerate them when the saga's shape
-changes on purpose, and review the diff as part of the change:
+Replay fixtures live in `tests/temporal/histories/`. Regenerate them when the
+saga's shape changes on purpose, and review the diff as part of the change:
 
 ```sh
-uv run python -m tests.record_histories
+uv run python -m tests.temporal.record_histories
 ```
 
 ## Known limitations

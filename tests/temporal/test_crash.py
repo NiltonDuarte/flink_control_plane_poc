@@ -5,9 +5,9 @@ durable execution actually sells: kill the process running a half-finished saga,
 start a new one, and the saga carries on from where it stopped rather than
 restarting or stalling.
 
-Marked `crash` and deselected by default - it needs a real server, a real
-subprocess, and real seconds (the in-flight activity has to time out before the
-server hands it to the new worker).
+Marked `crash` so it can be selected alone or excluded from the fast subset. It
+needs a real server, a real subprocess, and real seconds (the in-flight activity
+has to time out before the server hands it to the new worker).
 
     uv run pytest -m crash
 
@@ -40,7 +40,7 @@ from poc.temporal.saga import MoveDatatypeWorkflow
 
 pytestmark = pytest.mark.crash
 
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture
@@ -58,7 +58,7 @@ def _spawn_worker(
         [
             sys.executable,
             "-m",
-            "tests.worker_process",
+            "tests.temporal.worker_process",
             address,
             task_queue,
             str(cluster_root),
@@ -66,16 +66,26 @@ def _spawn_worker(
         cwd=REPO_ROOT,
         env={**os.environ, "PYTHONPATH": str(REPO_ROOT)},
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
     )
 
 
 async def _wait_for_ops(
-    cluster: MockCluster, count: int, timeout: float = 60.0
+    cluster: MockCluster,
+    count: int,
+    worker: subprocess.Popen[bytes],
+    timeout: float = 60.0,
 ) -> None:
     """Block until the saga has made `count` successful cluster changes."""
     deadline = asyncio.get_running_loop().time() + timeout
     while asyncio.get_running_loop().time() < deadline:
+        return_code = worker.poll()
+        if return_code is not None:
+            _, stderr = worker.communicate()
+            detail = stderr.decode(errors="replace").strip()
+            raise AssertionError(
+                f"worker exited early with code {return_code}: {detail or '<no stderr>'}"
+            )
         if len(cluster.audit(successful_only=True)) >= count:
             return
         await asyncio.sleep(0.1)
@@ -105,11 +115,12 @@ async def test_saga_survives_worker_kill(
 
         # Let the saga get properly underway - past the first pause, into the
         # second - so the kill lands mid-transaction rather than before it began.
-        await _wait_for_ops(cluster, 3)
+        await _wait_for_ops(cluster, 3, worker)
         ops_before_kill = len(cluster.audit(successful_only=True))
 
         worker.send_signal(signal.SIGKILL)
         worker.wait(timeout=10)
+        worker.communicate()
 
         # Nothing can progress with no worker: the saga is parked in the server,
         # not lost, and not spinning.
@@ -119,8 +130,10 @@ async def test_saga_survives_worker_kill(
         worker = _spawn_worker(address, task_queue, cluster.root)
         steps = await asyncio.wait_for(handle.result(), timeout=120)
     finally:
-        worker.send_signal(signal.SIGKILL)
-        worker.wait(timeout=10)
+        if worker.poll() is None:
+            worker.send_signal(signal.SIGKILL)
+            worker.wait(timeout=10)
+        worker.communicate()
 
     # It finished, and it finished correctly.
     assert steps == [

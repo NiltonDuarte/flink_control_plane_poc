@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 # POC. It is enforced by configuration rather than by try/except plumbing:
 # Temporal's RetryPolicy matches on the exception *type name*, so listing
 # "PermanentClusterError" in non_retryable_error_types is enough to make
-# permanent failures abort on the first attempt. See poc/saga.py.
+# permanent failures abort on the first attempt. See poc/temporal/actor.py.
 
 
 class ClusterError(Exception):
@@ -90,6 +90,13 @@ class SagaOutcome(str, Enum):
     COMPENSATION_INCOMPLETE = "COMPENSATION_INCOMPLETE"
 
 
+SAGA_ERROR_TYPES = {
+    SagaOutcome.REJECTED: "SagaRejectedError",
+    SagaOutcome.COMPENSATED: "SagaCompensatedError",
+    SagaOutcome.COMPENSATION_INCOMPLETE: "SagaCompensationIncompleteError",
+}
+
+
 class MoveDatatypeRequest(BaseModel):
     """Input contract for the saga.
 
@@ -149,3 +156,12 @@ class SagaFailure(BaseModel):
     compensated: list[str]
     compensation_noops: list[str] = Field(default_factory=list)
     compensation_errors: list[str] = Field(default_factory=list)
+
+
+class SagaError(Exception):
+    """Engine-neutral exception carrying a structured failed-saga verdict."""
+
+    def __init__(self, message: str, failure: SagaFailure) -> None:
+        super().__init__(message)
+        self.failure = failure
+        self.type = SAGA_ERROR_TYPES[failure.outcome]
