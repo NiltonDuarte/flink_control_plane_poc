@@ -20,8 +20,9 @@ uv run python -m poc.cli run happy --engine None # Run Happy scenario with no en
 To watch a scenario run against a real Temporal server:
 
 ```sh
+brew install temporal
 temporal server start-dev              # separate terminal
-uv run python -m poc.cli run fail-in-resume
+uv run python -m poc.cli run fail-in-resume --engine Temporal
 ```
 
 ## Scenarios
