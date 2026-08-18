@@ -3,8 +3,11 @@ name = "flink-control-plane-poc"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
+    "httpx>=0.28,<0.29",
+    "hypercorn>=0.17,<0.18",
     "pydantic>=2.13.4",
     "temporalio>=1.30,<2",
+    "restate-sdk[serde]==1.0.3",
 ]
 
 [dependency-groups]
@@ -13,6 +16,7 @@ dev = [
     "pytest-asyncio>=1.4.0",
     "pre-commit",
     "ruff>=0.15.2",
+    "restate-sdk[harness]==1.0.3",
 ]
 
 [tool.ruff]
@@ -27,4 +31,5 @@ testpaths = ["tests"]
 # the time-skipping test server. The marker supports focused or fast-subset runs.
 markers = [
     "crash: worker-crash durability test (real dev server, slow)",
+    "restate_crash: Restate ASGI-process crash durability test",
 ]

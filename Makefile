@@ -1,4 +1,6 @@
-.PHONY: help sync check lint format-check test test-fast test-crash server list histories clean
+.PHONY: help sync check lint format-check test test-fast test-crash server list histories clean \
+	restate-server restate-service restate-register restate-test \
+	restate-test-crash restate-scenario
 
 help:
 	@echo "make sync         install dependencies"
@@ -11,6 +13,12 @@ help:
 	@echo "make server       start a local Temporal dev server"
 	@echo "make list         list the runnable scenarios"
 	@echo "make histories    re-record the replay fixtures"
+	@echo "make restate-server       start a local Restate server"
+	@echo "make restate-service      serve the Restate SDK endpoint on :9080"
+	@echo "make restate-register     register the local SDK endpoint"
+	@echo "make restate-test         run Restate tests except crash recovery"
+	@echo "make restate-test-crash   run Restate service-crash recovery"
+	@echo "make restate-scenario SCENARIO=happy  run one Restate scenario"
 	@echo "make clean        remove the local cluster directory"
 	@echo ""
 	@echo "run one scenario (needs 'make server' in another terminal):"
@@ -44,6 +52,27 @@ list:
 
 histories:
 	uv run python -m tests.temporal.record_histories
+
+restate-server:
+	restate-server
+
+restate-service:
+	uv run python -m poc.restate.run_service
+
+restate-register:
+	curl -sS -X POST http://localhost:9070/deployments \
+		-H 'content-type: application/json' \
+		-d '{"uri":"http://localhost:9080"}'
+
+restate-test:
+	uv run pytest tests/restate -m "not crash"
+
+restate-test-crash:
+	uv run pytest tests/restate/test_crash.py
+
+restate-scenario:
+	@test -n "$(SCENARIO)" || (echo "usage: make restate-scenario SCENARIO=happy"; exit 2)
+	uv run python -m poc.cli run "$(SCENARIO)" --engine Restate
 
 clean:
 	rm -rf .cluster

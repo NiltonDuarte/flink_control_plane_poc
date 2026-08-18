@@ -1,13 +1,14 @@
-# POC Scope — Temporal Baseline Workflow (Sink Layer Control Plane)
+# POC Scope — Baseline, Temporal, and Restate Workflow Comparison
 
 Status: agreed 2026-08-12
 Source docs: `RFC_Sink_Layer_Control_Plane_Architecture.md`, `TICKET-Create_a_testable_workflow_baseline.txt`
 
 ## Purpose
 
-Prove the durable-execution patterns the RFC depends on, on Temporal, locally,
-with zero Flink and zero Kubernetes, while retaining a bare-Python reference
-implementation for behavioral comparison. The POC is a **lean experiment** —
+Prove the durable-execution patterns the RFC depends on, on Temporal and
+Restate locally, with zero Flink and zero Kubernetes, while retaining a
+bare-Python reference implementation for behavioral comparison. The POC is a
+**lean experiment** —
 but the boundary between workflow logic and cluster interaction is kept clean,
 so that going to production means replacing one module, not rewriting the saga.
 
@@ -15,12 +16,12 @@ so that going to production means replacing one module, not rewriting the saga.
 
 | Question | Decision |
 |---|---|
-| Engine | Bare-Python baseline plus Temporal, local (`temporal server start-dev`) |
+| Engine | Bare-Python baseline, Temporal, and Restate |
 | Saga | **Move Datatype Between Jobs** only — it is the superset of Batch Pause / Batch Resume |
 | Infra | Fully mocked. Files in / files out. **Instant state transitions**, no polling, no operator simulation |
 | Actor | **Kept.** `FlinkJobFamilyActor` as a real entity workflow — it is one of the things being proven |
 | Rigor | Lean runtime scope with typed Pydantic models, Python 3.13, Ruff linting and formatting, and one non-mutating `make check` quality gate. Strict mypy enforcement is deferred to Phase 2. |
-| Out of scope | Ingestion Config Portal, reconciliation loop, Operational Web API, Restate/DBOS implementations |
+| Out of scope | Ingestion Config Portal, reconciliation loop, Operational Web API, DBOS implementation |
 
 ## What must be proven
 
@@ -93,6 +94,13 @@ LIFO, reconciling each intent against fresh cluster state, and aborts.
 > *within* a phase, which is arbitrary). Worth noting because it means the layered
 > rollback needs no special-casing — it falls out of the structure.
 
+**Restate implementation** — `poc/restate/` owns a separate Workflow and
+Virtual Object implementation. Exclusive object handlers supply the native
+single-writer guarantee; K/V state stores the runtime cache; every cluster call
+is a typed durable step with the same four-attempt retry budget. The Workflow
+calls object handlers directly and does not import the Temporal saga, proxy,
+activities, or update-id scheme.
+
 ## Test plan
 
 | Test | Proves | Environment |
@@ -108,6 +116,8 @@ LIFO, reconciling each intent against fresh cluster state, and aborts.
 | Concurrent commands, one family | Actor serialization | time-skipping |
 | History fixture replay | Determinism | `Replayer`, no server |
 | SIGKILL mid-saga | Crash durability, no duplicate side effects | real dev server |
+| Restate matrix | All verdicts, audit attempts/order, snapshots | pinned Docker harness, forced replay |
+| Restate ASGI SIGKILL | Server journal survives service restart | pinned Docker server + Hypercorn |
 
 Every failure test asserts against `audit.jsonl`, and asserts observable runtime
 state and datatype routing equal their pre-saga snapshot. Generation counters and
@@ -131,11 +141,19 @@ poc/
     actor_proxy.py
     saga.py                  durable MoveDatatypeWorkflow
     worker.py
+  restate/
+    actor.py                 Virtual Object + K/V cache
+    saga.py                  independent Workflow + compensation
+    cluster_steps.py         typed durable-step callables
+    errors.py                terminal-error transport envelope
+    app.py                   ASGI deployment
+    client.py                ingress client
 tests/
   baseline/                  baseline parity tests
   temporal/
     histories/               replay fixtures
     worker_process.py        crash-test worker entrypoint
+  restate/                   parity, actor, CLI, and crash tests
 README.md         how to run each success/failure mode
 Makefile
 pyproject.toml    uv, Python 3.13, runtime and development dependencies, tool configuration

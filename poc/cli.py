@@ -33,6 +33,7 @@ DEFAULT_ENGINE = "None"
 class WorkflowEngine(StrEnum):
     NONE = "None"
     TEMPORAL = "Temporal"
+    RESTATE = "Restate"
 
 
 def _print_scenarios() -> None:
@@ -65,6 +66,7 @@ def _print_engines() -> None:
     print(f"WorkflowEngines: {', '.join([x.value for x in WorkflowEngine])}")
     print("None:      Runs with bare python, no engined backed")
     print("Temporal:  Run the workflow backed by temporal engine")
+    print("Restate:   Run the workflow backed by Restate")
 
 
 def _extract_saga_failure(
@@ -80,6 +82,16 @@ def _extract_saga_failure(
                 return SagaFailure.model_validate(cause.details[0]), cause.type
             except ValueError:
                 pass
+        try:
+            from restate import HttpError
+            from poc.restate.errors import decode_saga_failure
+
+            if isinstance(cause, HttpError):
+                decoded = decode_saga_failure(cause.body or str(cause))
+                if decoded is not None:
+                    return decoded
+        except ImportError:
+            pass
         cause = cause.__cause__ or getattr(cause, "cause", None)
     return None
 
@@ -126,6 +138,8 @@ async def _run(name: str, root: Path, engine: WorkflowEngine) -> int:
             from poc.baseline.cli import _run_workflow
         case WorkflowEngine.TEMPORAL:
             from poc.temporal.cli import _run_workflow
+        case WorkflowEngine.RESTATE:
+            from poc.restate.cli import _run_workflow
         case _:
             raise RuntimeError("Invalid Engine")
 

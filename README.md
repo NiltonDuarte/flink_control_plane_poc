@@ -1,13 +1,14 @@
-# Flink Sink Layer Control Plane - Temporal POC
+# Flink Sink Layer Control Plane - Durable Execution POC
 
 A working baseline workflow for evaluating durable execution engines, per
 [`TICKET-Create_a_testable_workflow_baseline.txt`](TICKET-Create_a_testable_workflow_baseline.txt)
 and the architecture in
 [`RFC_Sink_Layer_Control_Plane_Architecture.md`](RFC_Sink_Layer_Control_Plane_Architecture.md).
 
-This implements the **Move Datatype Between Jobs** saga twice against the same
-mock cluster: a bare-Python baseline and a durable Temporal version. No Flink,
-no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_SCOPE.md).
+This implements the **Move Datatype Between Jobs** saga three times against the
+same mock cluster: a bare-Python baseline, Temporal, and Restate. No Flink, no
+Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_SCOPE.md), and measured
+Restate findings are in [`RESTATE_ASSESSMENT.md`](RESTATE_ASSESSMENT.md).
 
 ## Quick start
 
@@ -29,10 +30,25 @@ temporal server start-dev              # separate terminal
 uv run python -m poc.cli run fail-in-resume --engine Temporal
 ```
 
+To run the same scenario on Restate, start these in separate terminals:
+
+```sh
+restate-server                         # ingress :8080, admin/UI :9070
+make restate-service                   # SDK endpoint :9080
+make restate-register
+make restate-scenario SCENARIO=fail-in-resume
+```
+
+The ingress client reads `RESTATE_INGRESS_URL` and defaults to
+`http://localhost:8080`. The Restate harness tests need Docker and pin the
+server to 1.7.2; the SDK is pinned to 1.0.3. Restate Virtual Object state
+survives CLI runs, so use a fresh local server when intentionally reseeding the
+fixed demo keys after an incomplete compensation.
+
 ## Scenarios
 
 Each is a seed cluster plus a set of fault-injection rules, defined once in
-[`poc/common/scenarios.py`](poc/common/scenarios.py) and shared by both
+[`poc/common/scenarios.py`](poc/common/scenarios.py) and shared by all three
 implementations, their CLIs, and the tests.
 
 | Scenario | What it exercises |
@@ -65,25 +81,26 @@ successfully satisfied restore intent.
 
 ## How it fits together
 
-The Temporal path adds the durable workflow and actor layers shown below; the
-bare-Python path runs the same saga contract directly against the mock cluster.
+Temporal and Restate each own their orchestration code. They share only domain
+models, mock infrastructure, scenario definitions, and observable behavior.
 
 ```
-MoveDatatypeWorkflow  (saga: pause -> patch -> resume, LIFO compensation stack)
-        |
-        |  execute_family_command       <- activity proxy, see "Findings"
+MoveDatatypeWorkflow  (pause -> patch -> resume, LIFO compensation)
+        |\
+        | \ Restate: direct journaled object_call
+        |  Temporal: proxy activity + deterministic update id
         v
-FlinkJobFamilyActor   (entity workflow, one per job family, lock-serialized)
+FlinkJobFamilyActor   (Temporal entity workflow / Restate Virtual Object)
         |
-        |  trigger_savepoint / suspend_job / resume_job / patch_configmap
+        |  Temporal activities / Restate run_typed durable steps
         v
-MockCluster           (a directory of JSON files)
+MockCluster           (shared directory of JSON files)
 ```
 
 [`poc/common/cluster.py`](poc/common/cluster.py) is the only module that touches
 infrastructure. It sits
 alongside the shared domain models and scenario matrix in the engine-neutral
-`poc.common` package, which both `poc.baseline` and `poc.temporal` import.
+`poc.common` package, which all three implementations import.
 Swapping the mock for real Flink Kubernetes Operator calls means reimplementing
 that file and nothing else - it imports no Temporal and no workflow code.
 
@@ -197,6 +214,8 @@ make check                     # non-mutating quality gate used by CI
 uv run pytest                  # everything
 uv run pytest -m "not crash"   # fast subset
 uv run pytest -m crash         # worker-kill durability, real server
+make restate-test              # pinned harness, forced integration replay
+make restate-test-crash        # Restate ASGI-process recovery
 ```
 
 | File | Covers |
@@ -206,13 +225,14 @@ uv run pytest -m crash         # worker-kill durability, real server
 | `tests/temporal/test_actor.py` | Single-writer serialization, cached and reconciled state |
 | `tests/temporal/test_replay.py` | Replay determinism against committed history fixtures |
 | `tests/temporal/test_crash.py` | SIGKILL mid-saga, restart, resume from last step |
-| `tests/test_cli.py` | Shared success/failure rendering for both engines |
+| `tests/restate/test_saga.py` | Full matrix parity, retries, snapshots, verdict transport, CLI |
+| `tests/restate/test_actor.py` | Native serialization and persisted K/V state |
+| `tests/restate/test_crash.py` | Restate retained while Hypercorn is killed and restarted |
+| `tests/test_cli.py` | Shared success/failure rendering for all engines |
 
-Everything except the crash test runs on Temporal's **time-skipping** test
-server, which fast-forwards a virtual clock whenever no work is in flight. That
-makes retry backoff free. The crash test needs a real server and real elapsed
-time, because the point is that an in-flight activity times out and gets
-redelivered to a new worker.
+Temporal tests use its **time-skipping** server. Restate integration tests use
+the pinned 1.7.2 container and replay every request; its crash test keeps that
+server alive while replacing the Hypercorn service process.
 
 Replay fixtures live in `tests/temporal/histories/`. Regenerate them when the
 saga's shape changes on purpose, and review the diff as part of the change:
