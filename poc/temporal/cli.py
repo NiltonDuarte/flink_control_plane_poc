@@ -47,10 +47,9 @@ async def _clear_actors(client: Client) -> None:
             pass
 
 
-async def _run_workflow(scenario):
+async def _run_workflow(scenario) -> tuple[list[str] | None, Exception | None]:
     client = await connect()
     await _clear_actors(client)
-    failed = False
     async with build_worker(client):
         try:
             steps = await client.execute_workflow(
@@ -59,8 +58,6 @@ async def _run_workflow(scenario):
                 id=f"move-{scenario.name}",
                 task_queue=TASK_QUEUE,
             )
-            print(f"RESULT   : completed - {', '.join(steps)}\n")
+            return steps, None
         except Exception as err:  # noqa: BLE001 - expected for failure scenarios
-            failed = True
-            print(f"RESULT   : failed - {err}\n")
-    return failed
+            return None, err

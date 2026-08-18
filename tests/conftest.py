@@ -61,7 +61,7 @@ async def client(env: WorkflowEnvironment) -> AsyncIterator[Client]:
     for family in SEED:
         try:
             await env.client.get_workflow_handle(actor_id(family)).terminate()
-        except Exception:  # noqa: BLE001 - not started is the normal case
+        except Exception:  # noqa: BLE001, S110 - not started is the normal case
             pass
 
 

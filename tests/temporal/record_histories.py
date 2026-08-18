@@ -1,6 +1,6 @@
 """Record workflow histories as replay fixtures.
 
-    uv run python -m tests.record_histories
+    uv run python -m tests.temporal.record_histories
 
 Run this whenever the saga's *intended* shape changes, and commit the result.
 The recorded histories are the input to `test_replay.py`, which is the guard
@@ -56,7 +56,7 @@ async def record() -> None:
                             id=workflow_id,
                             task_queue=f"tq-record-{name}",
                         )
-                    except Exception:  # noqa: BLE001 - failure scenarios are the point
+                    except Exception:  # noqa: BLE001, S110 - expected failure
                         pass
 
                     history = await env.client.get_workflow_handle(
@@ -73,7 +73,7 @@ async def record() -> None:
                         await env.client.get_workflow_handle(
                             f"family:{family}"
                         ).terminate()
-                    except Exception:  # noqa: BLE001
+                    except Exception:  # noqa: BLE001, S110 - actor may not exist
                         pass
     finally:
         await env.shutdown()

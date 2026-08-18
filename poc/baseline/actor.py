@@ -1,24 +1,22 @@
-from enum import Enum
+from __future__ import annotations
+
+from functools import wraps
+from typing import ClassVar
 
 from poc.common.cluster import MockCluster
-from poc.common.domain import FamilyState, FamilyStatus
+from poc.common.domain import FamilyState, FamilyStatus, TransientClusterError
 
 
-class UpdateStatus(Enum):
-    CHANGED = "CHANGED"
-    UNCHANGED = "UNCHANGED"
-
-
-def retryable(retries):
+def retryable(attempts):
     def decor(fn):
+        @wraps(fn)
         def wrapper(*args, **kwargs):
-            attempt = 0
-            while attempt < retries:
+            for attempt in range(attempts):
                 try:
                     return fn(*args, **kwargs)
-                except:
-                    attempt += 1
-            raise RuntimeError("Too much failure for {fn}")
+                except TransientClusterError:
+                    if attempt == attempts - 1:
+                        raise
 
         return wrapper
 
@@ -26,7 +24,7 @@ def retryable(retries):
 
 
 class FamilyActor:
-    _instances = {}
+    _instances: ClassVar[dict[str, FamilyActor]] = {}
 
     def __new__(cls, name):
         if name not in cls._instances:

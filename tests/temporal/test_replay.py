@@ -21,15 +21,17 @@ against this suite:
   actor command travels through the same `execute_family_command` activity, so
   the command *sequence* is identical and only the payload differs.
 
-That blind spot is a direct cost of the proxy design (see poc/actor_proxy.py):
+That blind spot is a direct cost of the proxy design
+(see poc/temporal/actor_proxy.py):
 funnelling every command through one activity type is what makes the saga
 readable, and it is also what hides command-level changes from replay. The audit
--log assertions in test_saga.py are what actually cover ordering. Replay covers
+-log assertions in tests/temporal/test_saga.py are what actually cover ordering. Replay covers
 structure. Neither is sufficient alone, which is worth knowing before leaning on
 replay as the primary regression gate for an engine comparison.
 
-Regenerate the fixtures with `uv run python -m tests.record_histories` when the
-saga's shape changes on purpose, and review the diff as part of the change.
+Regenerate the fixtures with
+`uv run python -m tests.temporal.record_histories` when the saga's shape changes
+on purpose, and review the diff as part of the change.
 """
 
 from __future__ import annotations
@@ -50,7 +52,9 @@ HISTORIES = sorted(HISTORY_DIR.glob("*.json"))
 
 def test_fixtures_exist() -> None:
     """Guard against the suite silently passing with nothing to replay."""
-    assert HISTORIES, f"no replay fixtures in {HISTORY_DIR}; run tests.record_histories"
+    assert HISTORIES, (
+        f"no replay fixtures in {HISTORY_DIR}; run tests.temporal.record_histories"
+    )
 
 
 @pytest.mark.parametrize("history_file", HISTORIES, ids=lambda p: p.stem)

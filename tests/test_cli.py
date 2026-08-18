@@ -1,8 +1,10 @@
 """CLI rendering for typed saga verdicts and unrelated failures."""
 
+from pathlib import Path
+
 from temporalio.exceptions import ApplicationError
 
-from poc.cli import _print_failure
+from poc.cli import WorkflowEngine, _print_failure, _run
 from poc.common.domain import SagaFailure, SagaOutcome
 
 
@@ -36,3 +38,17 @@ def test_cli_falls_back_to_raw_unrelated_exception(capsys) -> None:
     _print_failure(RuntimeError("transport disappeared"))
 
     assert capsys.readouterr().out == ("RESULT   : failed - transport disappeared\n\n")
+
+
+async def test_baseline_failure_reaches_shared_structured_formatter(
+    tmp_path: Path, capsys
+) -> None:
+    result = await _run(
+        "permanent-first-step", tmp_path / "cluster", WorkflowEngine.NONE
+    )
+
+    assert result == 0
+    output = capsys.readouterr().out
+    assert "RESULT   : failed - COMPENSATED (SagaCompensatedError)" in output
+    assert "step   : pause:family_a" in output
+    assert "rollback: applied=0 no-op=1 failed=0" in output
