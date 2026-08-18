@@ -6,7 +6,6 @@ import os
 import uuid
 
 import restate
-
 from poc.common.scenarios import REQUEST, Scenario
 from poc.restate.saga import run
 

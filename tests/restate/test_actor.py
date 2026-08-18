@@ -69,11 +69,7 @@ async def test_restore_refreshes_stale_state_after_lost_response(
     restate_env: HarnessEnvironment, restate_case: RestateCase
 ) -> None:
     restate_case.cluster.set_chaos(
-        {
-            f"{restate_case.source}:suspend_job": ChaosRule(
-                mode="lost_response", times=4
-            )
-        }
+        {f"{restate_case.source}:suspend_job": ChaosRule(mode="lost_response", times=4)}
     )
     with pytest.raises(restate.HttpError):
         await restate_env.client.object_call(pause, restate_case.source, Empty())

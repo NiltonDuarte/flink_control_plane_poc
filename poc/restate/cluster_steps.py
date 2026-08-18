@@ -7,10 +7,9 @@ import time
 from collections.abc import Callable
 from typing import TypeVar
 
-from restate import TerminalError
-
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyStatus, PermanentClusterError
+from restate import TerminalError
 
 T = TypeVar("T")
 ENV_STEP_DELAY = "RESTATE_STEP_DELAY"

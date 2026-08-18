@@ -21,8 +21,8 @@ from poc.common.domain import (
     SagaOutcome,
 )
 from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET, Scenario
-from poc.restate.errors import SAGA_HTTP_STATUS, decode_saga_failure
 from poc.restate.client import ENV_RESTATE_INGRESS_URL
+from poc.restate.errors import SAGA_HTTP_STATUS, decode_saga_failure
 from poc.restate.saga import run
 from tests.restate.conftest import RestateCase
 
@@ -39,7 +39,9 @@ def _audit(cluster: MockCluster, case: RestateCase) -> list[tuple[str, str, str]
 def _snapshot(
     cluster: MockCluster, case: RestateCase
 ) -> dict[str, tuple[FamilyState, tuple[str, ...]]]:
-    return {case.normalize(family): value for family, value in cluster.snapshot().items()}
+    return {
+        case.normalize(family): value for family, value in cluster.snapshot().items()
+    }
 
 
 def _labels(labels: list[str], case: RestateCase) -> list[str]:
@@ -124,9 +126,7 @@ async def test_complete_shared_scenario_matrix_matches_baseline(
     assert _labels(failure.compensation_noops, restate_case) == _labels(
         baseline_failure.compensation_noops, restate_case
     )
-    assert len(failure.compensation_errors) == len(
-        baseline_failure.compensation_errors
-    )
+    assert len(failure.compensation_errors) == len(baseline_failure.compensation_errors)
 
 
 @pytest.mark.parametrize(
@@ -174,9 +174,7 @@ class _no_error:
     ("request_factory", "reason"),
     [
         (
-            lambda case: case.request.model_copy(
-                update={"target_family": case.source}
-            ),
+            lambda case: case.request.model_copy(update={"target_family": case.source}),
             "source and target family are the same",
         ),
         (

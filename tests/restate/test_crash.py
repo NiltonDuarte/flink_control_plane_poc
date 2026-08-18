@@ -146,7 +146,9 @@ async def test_saga_survives_asgi_service_kill(tmp_path: Path) -> None:
     assert cluster.read(SOURCE).datatypes == ["impressions"]
     assert cluster.read(TARGET).datatypes == ["views", "clicks"]
 
-    successful = [(entry.op, entry.family) for entry in cluster.audit(successful_only=True)]
+    successful = [
+        (entry.op, entry.family) for entry in cluster.audit(successful_only=True)
+    ]
     # The first family's completed pause is journaled and is never replayed.
     assert successful.count(("trigger_savepoint", SOURCE)) == 1
     assert successful.count(("suspend_job", SOURCE)) == 1

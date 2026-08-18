@@ -5,9 +5,8 @@ from __future__ import annotations
 import base64
 import re
 
-from restate import TerminalError
-
 from poc.common.domain import SAGA_ERROR_TYPES, SagaFailure, SagaOutcome
+from restate import TerminalError
 
 ENVELOPE_VERSION = "RESTATE_SAGA_V1"
 _ENVELOPE = re.compile(

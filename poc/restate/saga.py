@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import restate
-from restate import TerminalError
-
 from poc.common.domain import (
     CommandResult,
     FamilyCommand,
@@ -26,6 +24,7 @@ from poc.restate.actor import (
 from poc.restate.cluster_steps import read_status
 from poc.restate.errors import saga_terminal_error
 from poc.restate.models import Empty, PatchConfigRequest, RestoreRequest
+from restate import TerminalError
 
 move_datatype = restate.Workflow(
     "MoveDatatypeWorkflow",
@@ -42,9 +41,7 @@ class _Compensation:
 
 
 @move_datatype.main()
-async def run(
-    ctx: restate.WorkflowContext, request: MoveDatatypeRequest
-) -> list[str]:
+async def run(ctx: restate.WorkflowContext, request: MoveDatatypeRequest) -> list[str]:
     """Execute the shared three-phase contract as one Restate Workflow."""
     source, target = request.source_family, request.target_family
     done: list[str] = []
@@ -105,9 +102,7 @@ async def run(
     except TerminalError as err:
         compensated, noops, errors = await _compensate(ctx, stack)
         outcome = (
-            SagaOutcome.COMPENSATION_INCOMPLETE
-            if errors
-            else SagaOutcome.COMPENSATED
+            SagaOutcome.COMPENSATION_INCOMPLETE if errors else SagaOutcome.COMPENSATED
         )
         raise _failure(
             outcome=outcome,

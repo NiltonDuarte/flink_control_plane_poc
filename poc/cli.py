@@ -84,6 +84,7 @@ def _extract_saga_failure(
                 pass
         try:
             from restate import HttpError
+
             from poc.restate.errors import decode_saga_failure
 
             if isinstance(cause, HttpError):

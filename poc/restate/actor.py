@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import timedelta
 
 import restate
-
 from poc.common.domain import CommandResult, FamilyState
 from poc.restate.cluster_steps import (
     patch_configmap,
@@ -56,9 +55,7 @@ async def pause(ctx: restate.ObjectContext, _request: Empty) -> CommandResult:
     uri = await ctx.run_typed(
         "trigger savepoint", trigger_savepoint, CLUSTER_RUN_OPTIONS, ctx.key()
     )
-    await ctx.run_typed(
-        "suspend job", suspend_job, CLUSTER_RUN_OPTIONS, ctx.key()
-    )
+    await ctx.run_typed("suspend job", suspend_job, CLUSTER_RUN_OPTIONS, ctx.key())
     ctx.set(STATE_KEY, FamilyState.SUSPENDED.value)
     return CommandResult(changed=True, savepoint_uri=uri)
 
@@ -89,9 +86,7 @@ async def patch_config(
 
 
 @flink_job_family.handler()
-async def restore(
-    ctx: restate.ObjectContext, request: RestoreRequest
-) -> CommandResult:
+async def restore(ctx: restate.ObjectContext, request: RestoreRequest) -> CommandResult:
     """Reconcile a pre-saga intent against fresh authoritative cluster state."""
     status = await ctx.run_typed(
         "refresh cluster state", read_status, CLUSTER_RUN_OPTIONS, ctx.key()
