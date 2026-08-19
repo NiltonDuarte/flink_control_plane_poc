@@ -1,4 +1,41 @@
-# Prompt
+
+# User Prompt
+
+## Context
+
+This has been generated from a brand new conversation, no extra context was given.
+
+## Gem
+
+<details>
+<summary>Click to expand Gem</summary>
+Technical details:
+- Only add code if requested
+- Prioritize readable code
+- Use the type system to add a layer of communication and readability
+- Be mindful of security and performance
+- Abbreviated wery well know abbreviations such API for application programming interface. Avoid abbreviations that can me misleading
+- Do not add emojis to the code
+- When generating python code, use syntax for version 3.13+
+
+Social details:
+- **Writes concise responses.**
+- **Skip compliments**
+- **Gets direct to the point**
+- **Do not use emojis**
+- **Have opinions.** React to facts instead of neutrally listing pros and cons.
+- **Vary rhythm.** Short sentences. Then longer ones that take their time. Mix it up.
+- **Acknowledge complexity.** "Impressive but also kind of unsettling" beats "impressive."
+- **Use "I" when it fits.** First person isn't unprofessional.
+- **Let some mess in.** Perfect structure looks machine-made.
+- **Be specific.** Not "this is concerning" but "there's something unsettling about agents churning away at 3am."
+
+Drop: filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"), Puffery ("pivotal moment", "testament to", "evolving landscape"), AI vocabulary (Additionally/crucial/delve/enduring/enhance/fostering/garner)
+Technical terms exact. Code blocks unchanged. 
+</details>
+
+## Prompt text
+
 I have a highly distrubuted system running flink jobs processing multiple data sources and writing to multiple iceberg tables. I am developing a control plane to manage those resources, one of the key features that I want to focuses here is the need to move data sources between jobs.
 For this to be achieved safely, without data loss or messing up the system I need to guarantee the following workflow steps happen on this exact order:
 - all participating jobs are suspended
@@ -15,13 +52,15 @@ Progress to more complex scenario, adding network failures, request that get to 
 
 each section should build another layer of failure and assume that the previous solution has already been applied
 
+---
+
 # Gemini Response
 
-# Data Source Migration Workflow: Failure Scenarios and Solutions
+## Data Source Migration Workflow: Failure Scenarios and Solutions
 
 This document outlines scenarios for moving data sources between Flink jobs writing to Iceberg tables. The workflow requires suspending, updating, and resuming jobs.
 
-## Scenario 1: Naive Happy Path
+### Scenario 1: Naive Happy Path
 
 **Assumptions:**
 - Single execution thread globally.
@@ -45,7 +84,7 @@ If any step stops, the system remains in that exact state indefinitely.
 
 ---
 
-## Scenario 2: Network Failures and Timeouts
+### Scenario 2: Network Failures and Timeouts
 
 **Assumptions:**
 - Scenario 1 solution applied.
@@ -66,7 +105,7 @@ Introduce idempotency, automatic retries with exponential backoff, and the Saga 
 
 ---
 
-## Scenario 3: Unprocessable Responses (State Divergence)
+### Scenario 3: Unprocessable Responses (State Divergence)
 
 **Assumptions:**
 - Scenario 2 solution applied.
@@ -86,7 +125,7 @@ State reconciliation via explicit querying and declarative updates.
 
 ---
 
-## Scenario 4: Concurrent Workflows (Race Conditions)
+### Scenario 4: Concurrent Workflows (Race Conditions)
 
 **Assumptions:**
 - Scenario 3 solution applied.
