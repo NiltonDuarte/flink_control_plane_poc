@@ -57,7 +57,7 @@ restate-server:
 	restate-server
 
 restate-service:
-	uv run python -m poc.restate.run_service
+	POC_CLUSTER_ROOT=.cluster uv run python -m poc.restate.run_service
 
 restate-register:
 	curl -sS -X POST http://localhost:9070/deployments \

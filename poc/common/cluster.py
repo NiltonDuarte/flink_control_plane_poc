@@ -198,7 +198,7 @@ class MockCluster:
         self._commit(status, "resume_job", {})
         self._maybe_lose_response(family, "resume_job")
 
-    def patch_configmap(self, family: str, datatypes: list[str]) -> list[str]:
+    def patch_configmap(self, family: str, datatypes: list[str]) -> None:
         """Replace routing config; return the previous value for observability."""
         self._maybe_fail(family, "patch_configmap")
         status = self.read(family)
@@ -208,7 +208,6 @@ class MockCluster:
             status, "patch_configmap", {"from": previous, "to": list(datatypes)}
         )
         self._maybe_lose_response(family, "patch_configmap")
-        return previous
 
     # -- internals ---------------------------------------------------------
 

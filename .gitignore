@@ -1,5 +1,6 @@
 .idea
 .vscode/*
+restate-data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -221,5 +222,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 # POC additions
-.idea/
 .cluster/

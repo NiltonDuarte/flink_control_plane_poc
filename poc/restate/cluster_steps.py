@@ -12,7 +12,7 @@ from poc.common.domain import FamilyStatus, PermanentClusterError
 from restate import TerminalError
 
 T = TypeVar("T")
-ENV_STEP_DELAY = "RESTATE_STEP_DELAY"
+ENV_STEP_DELAY = "RESTATE_STEP_DELAY"  # TODO: This is not documented anywhere
 
 
 def _call(operation: Callable[[], T]) -> T:
@@ -42,5 +42,5 @@ def resume_job(family: str) -> None:
     return _call(lambda: MockCluster.from_env().resume_job(family))
 
 
-def patch_configmap(family: str, datatypes: list[str]) -> list[str]:
+def patch_configmap(family: str, datatypes: list[str]) -> None:
     return _call(lambda: MockCluster.from_env().patch_configmap(family, datatypes))
