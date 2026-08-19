@@ -36,6 +36,7 @@ from temporalio.testing import WorkflowEnvironment
 
 from poc.common.cluster import MockCluster
 from poc.common.scenarios import REQUEST, SEED, SOURCE, TARGET
+from poc.temporal.application import app
 from poc.temporal.saga import MoveDatatypeWorkflow
 
 pytestmark = pytest.mark.crash
@@ -51,16 +52,13 @@ async def local_env() -> AsyncIterator[WorkflowEnvironment]:
     await env.shutdown()
 
 
-def _spawn_worker(
-    address: str, task_queue: str, cluster_root: Path
-) -> subprocess.Popen[bytes]:
+def _spawn_worker(address: str, cluster_root: Path) -> subprocess.Popen[bytes]:
     return subprocess.Popen(
         [
             sys.executable,
             "-m",
             "tests.temporal.worker_process",
             address,
-            task_queue,
             str(cluster_root),
         ],
         cwd=REPO_ROOT,
@@ -102,15 +100,14 @@ async def test_saga_survives_worker_kill(
     cluster.set_chaos({})
 
     address = local_env.client.service_client.config.target_host
-    task_queue = f"crash-{uuid.uuid4()}"
-    worker = _spawn_worker(address, task_queue, cluster.root)
+    client = local_env.client
+    worker = _spawn_worker(address, cluster.root)
 
     try:
-        handle = await local_env.client.start_workflow(
+        handle = await app.client(client).start_workflow(
             MoveDatatypeWorkflow.run,
             REQUEST,
             id=f"crash-{uuid.uuid4()}",
-            task_queue=task_queue,
         )
 
         # Let the saga get properly underway - past the first pause, into the
@@ -127,7 +124,7 @@ async def test_saga_survives_worker_kill(
         await asyncio.sleep(2)
         assert len(cluster.audit(successful_only=True)) == ops_before_kill
 
-        worker = _spawn_worker(address, task_queue, cluster.root)
+        worker = _spawn_worker(address, cluster.root)
         steps = await asyncio.wait_for(handle.result(), timeout=120)
     finally:
         if worker.poll() is None:

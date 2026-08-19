@@ -12,12 +12,10 @@ from temporalio.client import Client
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.worker import Worker
 
-from poc.temporal.activities import ALL_ACTIVITIES
-from poc.temporal.actor import FlinkJobFamilyActor
+from poc.temporal.actor import FlinkJobFamilyActor  # noqa: F401
 from poc.temporal.actor_proxy import ActorProxy
-from poc.temporal.saga import MoveDatatypeWorkflow
-
-TASK_QUEUE = "flink-control-plane"
+from poc.temporal.application import TASK_QUEUE, app
+from poc.temporal.saga import MoveDatatypeWorkflow  # noqa: F401
 
 
 async def connect(target: str = "localhost:7233") -> Client:
@@ -29,14 +27,12 @@ async def connect(target: str = "localhost:7233") -> Client:
     return await Client.connect(target, data_converter=pydantic_data_converter)
 
 
-def build_worker(client: Client, task_queue: str = TASK_QUEUE) -> Worker:
-    proxy = ActorProxy(client, task_queue)
-    return Worker(
+def build_worker(client: Client) -> Worker:
+    workers = app.create_workers(
         client,
-        task_queue=task_queue,
-        workflows=[MoveDatatypeWorkflow, FlinkJobFamilyActor],
-        activities=[*ALL_ACTIVITIES, proxy.execute_family_command],
+        activity_instances=[ActorProxy(client)],
     )
+    return workers[TASK_QUEUE]
 
 
 async def main() -> None:

@@ -26,6 +26,7 @@ from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.domain import MoveDatatypeRequest, SagaFailure
 from poc.common.scenarios import REQUEST, SEED, Scenario
 from poc.temporal.actor import actor_id
+from poc.temporal.application import app
 from poc.temporal.saga import MoveDatatypeWorkflow
 from poc.temporal.worker import build_worker
 
@@ -82,14 +83,12 @@ async def run_move(
     workflow_name: str,
 ) -> tuple[list[str] | None, Exception | None]:
     """Run one move request end to end and capture its expected domain failure."""
-    task_queue = f"tq-{uuid.uuid4()}"
-    async with build_worker(client, task_queue):
+    async with build_worker(client):
         try:
-            steps: list[str] = await client.execute_workflow(
+            steps: list[str] = await app.client(client).execute_workflow(
                 MoveDatatypeWorkflow.run,
                 request,
                 id=f"move-{workflow_name}-{uuid.uuid4()}",
-                task_queue=task_queue,
             )
             return steps, None
         except Exception as err:  # noqa: BLE001 - failure scenarios expect this

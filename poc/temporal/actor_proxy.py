@@ -25,31 +25,29 @@ from __future__ import annotations
 
 from typing import Any
 
-from temporalio import activity
-from temporalio.client import Client, WorkflowUpdateFailedError
+from temporalio.client import Client, WorkflowHandle, WorkflowUpdateFailedError
 from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
 
 from poc.common.domain import CommandRequest, CommandResult, FamilyCommand
 from poc.temporal.actor import FlinkJobFamilyActor, actor_id
+from poc.temporal.application import TASK_QUEUE, app
 
 
 class ActorProxy:
     """Activity implementation bound to a Temporal client and task queue."""
 
-    def __init__(self, client: Client, task_queue: str) -> None:
+    def __init__(self, client: Client) -> None:
         self._client = client
-        self._task_queue = task_queue
 
-    @activity.defn(name="execute_family_command")
+    @app.activity(task_queue=TASK_QUEUE, name="execute_family_command")
     async def execute_family_command(self, request: CommandRequest) -> CommandResult:
         # USE_EXISTING makes this get-or-create: the first command for a family
         # starts its actor, every later one attaches to the running instance.
-        handle = await self._client.start_workflow(
+        handle = await app.client(self._client).start_workflow(
             FlinkJobFamilyActor.run,
-            args=[request.family],
+            request.family,
             id=actor_id(request.family),
-            task_queue=self._task_queue,
             id_conflict_policy=WorkflowIDConflictPolicy.USE_EXISTING,
         )
 
@@ -64,7 +62,9 @@ class ActorProxy:
                 non_retryable=True,
             ) from err
 
-    async def _dispatch(self, handle: Any, request: CommandRequest) -> CommandResult:
+    async def _dispatch(
+        self, handle: WorkflowHandle[Any, Any], request: CommandRequest
+    ) -> CommandResult:
         if request.command is FamilyCommand.PAUSE:
             uri: str | None = await handle.execute_update(
                 FlinkJobFamilyActor.pause, id=request.update_id

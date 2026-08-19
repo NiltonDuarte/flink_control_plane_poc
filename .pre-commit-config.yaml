@@ -11,5 +11,7 @@ repos:
       # Run the linter.
       - id: ruff-check
         args: [ --select, I, --fix ]
+        exclude: ^temporal_app\.py$
       # Run the formatter.
       - id: ruff-format
+        exclude: ^temporal_app\.py$

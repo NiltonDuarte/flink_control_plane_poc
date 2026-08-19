@@ -18,8 +18,9 @@ from temporalio.client import Client
 
 from poc.common.scenarios import REQUEST, SEED
 from poc.temporal.actor import actor_id
+from poc.temporal.application import app
 from poc.temporal.saga import MoveDatatypeWorkflow
-from poc.temporal.worker import TASK_QUEUE, build_worker, connect
+from poc.temporal.worker import build_worker, connect
 
 # Failure scenarios are *supposed* to fail, and Temporal logs every failed
 # activity attempt with a full traceback. That noise buries the audit log, which
@@ -52,11 +53,10 @@ async def _run_workflow(scenario) -> tuple[list[str] | None, Exception | None]:
     await _clear_actors(client)
     async with build_worker(client):
         try:
-            steps = await client.execute_workflow(
+            steps = await app.client(client).execute_workflow(
                 MoveDatatypeWorkflow.run,
                 REQUEST,
                 id=f"move-{scenario.name}",
-                task_queue=TASK_QUEUE,
             )
             return steps, None
         except Exception as err:  # noqa: BLE001 - expected for failure scenarios
