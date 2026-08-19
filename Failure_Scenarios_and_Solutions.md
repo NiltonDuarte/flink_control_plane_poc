@@ -1,14 +1,10 @@
 
 # User Prompt
-
-## Context
-
-This has been generated from a brand new conversation, no extra context was given.
-
-## Gem
+This has been generated from a brand new conversation using a custom generic purpose "Basic" Gem, no extra context was given.
 
 <details>
-<summary>Click to expand Gem</summary>
+<summary>Click to expand "Basic" Gem</summary>
+
 Technical details:
 - Only add code if requested
 - Prioritize readable code
@@ -32,9 +28,11 @@ Social details:
 
 Drop: filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"), Puffery ("pivotal moment", "testament to", "evolving landscape"), AI vocabulary (Additionally/crucial/delve/enduring/enhance/fostering/garner)
 Technical terms exact. Code blocks unchanged. 
+
 </details>
 
-## Prompt text
+<details>
+<summary>Click to expand prompt</summary>
 
 I have a highly distrubuted system running flink jobs processing multiple data sources and writing to multiple iceberg tables. I am developing a control plane to manage those resources, one of the key features that I want to focuses here is the need to move data sources between jobs.
 For this to be achieved safely, without data loss or messing up the system I need to guarantee the following workflow steps happen on this exact order:
@@ -51,10 +49,11 @@ I need all the cases, starting from the very naivy happy path, a scenario that o
 Progress to more complex scenario, adding network failures, request that get to the destination but the responses are unprocessable. finally add multiple workflows running at the same time, trying to modify the same jobs. 
 
 each section should build another layer of failure and assume that the previous solution has already been applied
+</details>
 
 ---
 
-# Gemini Response
+## Gemini Response
 
 ## Data Source Migration Workflow: Failure Scenarios and Solutions
 
