@@ -40,105 +40,67 @@ For this to be achieved safely, without data loss or messing up the system I nee
 - all participating jobs are updated
 - all participating jobs are resumed
 
-if any of those operations fails I need to retry and I cant left the system inconsistent and need to restore it to a previous state. Many workflows can run at the same time targeting the same jobs, which can be a problem as many steps should be executed and mixing them can cause problems
+Many workflows can be running at the same time.
 
-What are the problems that I need to be aware of and how do I tackle them? 
+What are the problems that I need to be aware of and how do I solve them? Tell me the patterns that solves the problems
 
-I need a comprehensive markdown file with a list of scenarios with their assumptions, example problem and solution. Use the move data source for the example
-I need all the cases, starting from the very naivy happy path, a scenario that only a single process will be ever running at a time and nothing can possibly fail.
-Progress to more complex scenario, adding network failures, request that get to the destination but the responses are unprocessable. finally add multiple workflows running at the same time, trying to modify the same jobs. 
+I need a comprehensive markdown file with a list of scenarios with their assumptions, example problem and solution. Use the move data source for the example.
+I need all the cases, starting from the very naive happy path, a scenario that only a single process will be ever running at a time and nothing can possibly fail. In this happy scenario there is no problem and no solution is needed.
+Progress to more complex scenario, with real world problems and solutions
 
-each section should build another layer of failure and assume that the previous solution has already been applied
+Each section should add another possible failure and assume that the previous solution has already been applied. Add as many failures as needed, everything may fail, consistency may be lost. Do not skip any possibility, add humans in the loop if needed to resolve situation that cant be handled automatic.
+
+Do not add any code block
+
 </details>
 
 ---
 
-## Gemini Response
+# Gemini Response
 
-## Data Source Migration Workflow: Failure Scenarios and Solutions
+# Safely Moving Data Sources Between Flink Jobs
 
-This document outlines scenarios for moving data sources between Flink jobs writing to Iceberg tables. The workflow requires suspending, updating, and resuming jobs.
+Coordinating state across distributed Flink jobs and Iceberg commits is a nightmare. A control plane makes it look clean on a dashboard, but underneath, it is a mess of race conditions and partial failures.
 
-### Scenario 1: Naive Happy Path
+Moving a data source means orchestrating a multi-step dance: suspend job A, suspend job B, update both, resume both. Getting this wrong means duplicated data, dropped events, or corrupted checkpoints.
 
-**Assumptions:**
-- Single execution thread globally.
-- Network is 100% reliable.
-- Control plane and Flink APIs process requests instantaneously and never fail.
-- No system crashes.
+Here is the progression of failures you will hit, and the patterns to survive them.
 
-**Example Problem:**
-Move data source `S1` from `JobA` to `JobB`.
+## Scenario 1: The Naive Happy Path
+**Assumptions:** A single control plane process runs. Flink never crashes. The network never drops packets. Only one workflow executes at any given time.
+**Example Problem:** None.
+**Solution:** A basic sequential script.
+1. Suspend Job A and Job B.
+2. Update source configurations for Job A and Job B.
+3. Resume Job A and Job B.
 
-**Solution:**
-Sequential, blocking API calls.
-1. Suspend `JobA`.
-2. Suspend `JobB`.
-3. Update `JobA` config (remove `S1`).
-4. Update `JobB` config (add `S1`).
-5. Resume `JobA`.
-6. Resume `JobB`.
+## Scenario 2: Control Plane Crash (Partial Execution)
+**Assumptions:** Only one workflow runs at a time. The control plane node can crash or restart midway through a workflow.
+**Example Problem:** The control plane suspends Job A. The machine loses power. Job B continues running. Job A is down. The control plane reboots but has no memory of the in-flight operation.
+**Solution:** **Saga Pattern / Persistent State Machine.**
+You need durable state. Before taking action, the control plane writes its intent to a database. Each step (suspend A, suspend B) is recorded. When the control plane reboots, a recovery thread reads pending workflows from the database and resumes exactly where it left off. This requires every operation sent to Flink to be idempotent. Suspending an already suspended job must return success, not an error.
 
-If any step stops, the system remains in that exact state indefinitely.
+## Scenario 3: Concurrent Workflow Collisions
+**Assumptions:** The control plane persists state and recovers from crashes. Multiple operators or automated systems trigger workflows simultaneously.
+**Example Problem:** Workflow 1 moves Topic X from Job A to Job B. At the exact same time, Workflow 2 moves Topic Y from Job B to Job C.
+Workflow 1 suspends Job B. Workflow 2 sees Job B is already suspended and skips to the update phase. Workflow 1 finishes and resumes Job B. Workflow 2 tries to update Job B, but it is now running. The API rejects the update. Workflow 2 crashes.
+**Solution:** **Distributed Resource Locks (Pessimistic Concurrency).**
+Before a workflow starts, it must acquire a lock on every job it plans to touch. Workflow 1 locks Job A and Job B. Workflow 2 attempts to lock Job B and Job C. Workflow 2 fails to acquire Job B and blocks. Workflow 1 completes its suspend-update-resume cycle and releases the locks. Workflow 2 unblocks and proceeds safely.
 
----
+## Scenario 4: The Unresponsive External System (Timeouts)
+**Assumptions:** Workflows lock resources and survive control plane crashes. Flink APIs and network calls can hang or fail entirely.
+**Example Problem:** Workflow 1 locks Jobs A and B. It successfully suspends Job A. It calls the Flink API to suspend Job B. The Flink JobManager is dead. The API call hangs until a 60-second timeout. Job A is now offline, blocking processing. The lock on Jobs A and B is held indefinitely, blocking other workflows.
+**Solution:** **Compensating Transactions with Timeouts.**
+Workflows cannot wait forever. If suspending Job B fails, the workflow must abort. Because distributed systems lack atomic rollbacks, you have to execute a compensating action: resume Job A. Once Job A is restored to its original state, the workflow fails cleanly, releases the locks, and alerts an operator.
 
-### Scenario 2: Network Failures and Timeouts
+## Scenario 5: The Failed Rollback (Inconsistent State)
+**Assumptions:** Workflows lock, persist state, and attempt compensating transactions on failure. Compensating transactions can also fail.
+**Example Problem:** Workflow 1 suspends Job A. Job B fails to suspend. The workflow aborts and attempts to resume Job A. The network partitions. The resume command to Job A fails. The control plane retries with exponential backoff, but the network route is permanently broken. Job A is stuck suspended. Job B is running. The system is in an inconsistent state that software cannot resolve.
+**Solution:** **Human-in-the-Loop Reconciliation.**
+Automated recovery has limits. When a rollback exhausts its retries, the workflow enters a `Requires Manual Intervention` state. The control plane fires a high-priority alert. It stops touching the jobs but keeps the locks held to prevent other workflows from making things worse. A human operator SSHs into the cluster, manually fixes the networking, restarts Job A, and clicks a "Resolve" button in the control plane dashboard to clear the locks.
 
-**Assumptions:**
-- Scenario 1 solution applied.
-- Network packets drop.
-- APIs return HTTP 5xx errors or timeout.
-- Single execution thread.
-
-**Example Problem:**
-Workflow suspends `JobA`. The network request to suspend `JobB` times out. The workflow aborts. `JobA` remains suspended. Data source `S1` is unassigned or partially assigned. System state is inconsistent.
-
-**Solution:**
-Introduce idempotency, automatic retries with exponential backoff, and the Saga pattern for rollbacks.
-
-1. **Idempotency:** All API endpoints must accept an `Idempotency-Key` header. Repeated calls with the same key yield the same outcome without duplicate side effects.
-2. **Retries:** Wrap network calls in retry logic.
-3. **Rollback (Saga):** Maintain a log of applied operations. If the update phase fails exhaustively, execute compensating transactions in reverse order (e.g., revert job configs, resume jobs).
-
-
----
-
-### Scenario 3: Unprocessable Responses (State Divergence)
-
-**Assumptions:**
-- Scenario 2 solution applied.
-- Network fails after the server processes the request but before the client receives the response.
-- Client receives corrupted data.
-
-**Example Problem:**
-Client issues `POST /jobs/JobB/suspend`. `JobB` suspends. Response drops. Client retries. The server rejects the retry because `JobB` is already suspended, but returns a generic 400 error. The workflow interprets this as a hard failure and triggers a rollback, reverting `JobA` and leaving the system thrashing.
-
-**Solution:**
-State reconciliation via explicit querying and declarative updates.
-
-1. **Query Before Retry:** Before applying a mutating action, poll the target resource state (`GET /jobs/JobB`).
-2. **Conditional Execution:** If the desired state is already met (e.g., `JobB.status == SUSPENDED`), treat the step as successful and proceed.
-3. **ETags / Versioning:** Use HTTP ETags or resource versioning for updates to ensure the client mutates the exact state it expects.
-
-
----
-
-### Scenario 4: Concurrent Workflows (Race Conditions)
-
-**Assumptions:**
-- Scenario 3 solution applied.
-- Multiple control plane instances run simultaneously.
-- Concurrent workflows target overlapping resources.
-
-**Example Problem:**
-Workflow W1 moves `S1` from `JobA` to `JobB`.
-Workflow W2 moves `S2` from `JobA` to `JobC`.
-W1 and W2 both verify `JobA` is running, then both issue suspend commands. Both read `JobA` config. W1 removes `S1`, W2 removes `S2`. W2 writes its config. W1 writes its config, overwriting W2's change. `S2` is lost. W1 resumes `JobA` before W2 finishes updating `JobC`.
-
-**Solution:**
-Distributed locking and Optimistic Concurrency Control (OCC).
-
-1. **Distributed Locks:** Acquire locks on all participating resources (`JobA`, `JobB`) via Redis, ZooKeeper, or etcd before initiating the workflow.
-2. **Deadlock Prevention:** Sort resource IDs lexically before acquiring locks to prevent deadlocks (e.g., always lock `JobA` before `JobB`).
-3. **OCC:** Use resource versions fetched during lock acquisition. If the underlying resource version increments via external intervention during the workflow, the API rejects the update (409 Conflict). The workflow releases locks and restarts.
+## Scenario 6: Zombie Control Planes (Split-Brain)
+**Assumptions:** The system handles crashes, concurrency, timeouts, and manual overrides. For high availability, multiple control plane instances run simultaneously.
+**Example Problem:** Control Plane Instance 1 starts a workflow and locks Job A. A network glitch isolates Instance 1. Instance 2 assumes Instance 1 is dead, takes over the lock, and starts rolling back Job A. Instance 1's network reconnects. It wakes up and sends a "resume" command to Job A. Instance 2 simultaneously sends a "suspend" command. Flink executes both. The system tears itself apart. Impressive but also kind of unsettling.
+**Solution:** **Fencing Tokens (Epochs).**
+Locks are not enough if a zombie process thinks it still holds them. Every time a lock is granted, it comes with a monotonically increasing integer (a fencing token). The control plane must pass this token with every Flink API request. Flink (or a proxy layer in front of it) must track the highest token it has seen. When Instance 2 takes the lock, it gets token 5. Instance 1 wakes up and sends a command with token 4. Flink rejects token 4. The zombie is fenced out.
