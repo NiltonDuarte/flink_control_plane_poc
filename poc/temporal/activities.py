@@ -10,43 +10,33 @@ at import time, so a test can point each case at its own tmpdir.
 
 from __future__ import annotations
 
-from temporalio import activity
-
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyStatus
+from poc.temporal.application import TASK_QUEUE, app
 
 
-@activity.defn
+@app.activity(task_queue=TASK_QUEUE)
 async def read_status(family: str) -> FamilyStatus:
     """Read a family's current state - used once per actor to seed its cache."""
     return MockCluster.from_env().read(family)
 
 
-@activity.defn
+@app.activity(task_queue=TASK_QUEUE)
 async def trigger_savepoint(family: str) -> str:
     return MockCluster.from_env().trigger_savepoint(family)
 
 
-@activity.defn
+@app.activity(task_queue=TASK_QUEUE)
 async def suspend_job(family: str) -> None:
     MockCluster.from_env().suspend_job(family)
 
 
-@activity.defn
+@app.activity(task_queue=TASK_QUEUE)
 async def resume_job(family: str) -> None:
     MockCluster.from_env().resume_job(family)
 
 
-@activity.defn
+@app.activity(task_queue=TASK_QUEUE)
 async def patch_configmap(family: str, datatypes: list[str]) -> list[str]:
     """Replace routing config; the return value is informational only."""
     return MockCluster.from_env().patch_configmap(family, datatypes)
-
-
-ALL_ACTIVITIES = [
-    read_status,
-    trigger_savepoint,
-    suspend_job,
-    resume_job,
-    patch_configmap,
-]

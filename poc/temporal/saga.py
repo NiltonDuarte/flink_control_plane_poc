@@ -37,10 +37,8 @@ with workflow.unsafe.imports_passed_through():
         SagaOutcome,
     )
     from poc.temporal.activities import read_status
-
-# Referenced by name so this module never imports the Temporal client that
-# poc/temporal/actor_proxy.py needs - workflow code stays sandbox-friendly.
-PROXY_ACTIVITY = "execute_family_command"
+    from poc.temporal.actor_proxy import ActorProxy
+    from poc.temporal.application import TASK_QUEUE, app
 
 # The proxy is retried only for infrastructure blips. A command that genuinely
 # failed inside the actor comes back as a non_retryable ApplicationError, so it
@@ -65,7 +63,7 @@ class _Compensation:
     desired_state: FamilyState | None = None
 
 
-@workflow.defn
+@app.workflow(task_queue=TASK_QUEUE)
 class MoveDatatypeWorkflow:
     @workflow.run
     async def run(self, request: MoveDatatypeRequest) -> list[str]:
@@ -169,7 +167,7 @@ class MoveDatatypeWorkflow:
         """Read sequentially, so the audit log has a deterministic order."""
         statuses: dict[str, FamilyStatus] = {}
         for family in families:
-            statuses[family] = await workflow.execute_activity(
+            statuses[family] = await app.execute_activity(
                 read_status,
                 family,
                 start_to_close_timeout=READ_TIMEOUT,
@@ -257,8 +255,8 @@ class MoveDatatypeWorkflow:
             update_id=self._update_id(step),
             datatypes=datatypes,
         )
-        return await workflow.execute_activity(
-            PROXY_ACTIVITY,
+        return await app.execute_activity(
+            ActorProxy.execute_family_command,
             request,
             result_type=CommandResult,
             start_to_close_timeout=PROXY_TIMEOUT,
@@ -286,8 +284,8 @@ class MoveDatatypeWorkflow:
                 desired_state=item.desired_state,
             )
             try:
-                result = await workflow.execute_activity(
-                    PROXY_ACTIVITY,
+                result = await app.execute_activity(
+                    ActorProxy.execute_family_command,
                     request,
                     result_type=CommandResult,
                     start_to_close_timeout=PROXY_TIMEOUT,

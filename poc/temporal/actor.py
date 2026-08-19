@@ -37,6 +37,7 @@ with workflow.unsafe.imports_passed_through():
         suspend_job,
         trigger_savepoint,
     )
+    from poc.temporal.application import TASK_QUEUE, app
 
 # Permanent faults must not be retried: retrying cannot help, and every wasted
 # attempt delays the compensation that does need to happen. Temporal matches
@@ -60,7 +61,7 @@ def actor_id(family: str) -> str:
     return f"family:{family}"
 
 
-@workflow.defn
+@app.workflow(task_queue=TASK_QUEUE)
 class FlinkJobFamilyActor:
     def __init__(self) -> None:
         self._family: str = ""
@@ -75,7 +76,7 @@ class FlinkJobFamilyActor:
         self._family = family
         if state is None:
             # First incarnation: adopt whatever the cluster currently says.
-            status = await workflow.execute_activity(
+            status = await app.execute_activity(
                 read_status,
                 family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -115,13 +116,13 @@ class FlinkJobFamilyActor:
         async with self._lock:
             if self._state == FamilyState.SUSPENDED:
                 return None
-            uri: str = await workflow.execute_activity(
+            uri: str = await app.execute_activity(
                 trigger_savepoint,
                 self._family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
-            await workflow.execute_activity(
+            await app.execute_activity(
                 suspend_job,
                 self._family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -137,7 +138,7 @@ class FlinkJobFamilyActor:
         async with self._lock:
             if self._state == FamilyState.RUNNING:
                 return False
-            await workflow.execute_activity(
+            await app.execute_activity(
                 resume_job,
                 self._family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -151,9 +152,10 @@ class FlinkJobFamilyActor:
         """Replace the routing config; returns the previous value for callers."""
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
-            previous: list[str] = await workflow.execute_activity(
+            previous: list[str] = await app.execute_activity(
                 patch_configmap,
-                args=[self._family, datatypes],
+                self._family,
+                datatypes,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
@@ -174,7 +176,7 @@ class FlinkJobFamilyActor:
         """
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
-            status = await workflow.execute_activity(
+            status = await app.execute_activity(
                 read_status,
                 self._family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -185,20 +187,20 @@ class FlinkJobFamilyActor:
 
             if desired_state is not None and status.state != desired_state:
                 if desired_state == FamilyState.SUSPENDED:
-                    await workflow.execute_activity(
+                    await app.execute_activity(
                         trigger_savepoint,
                         self._family,
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
                         retry_policy=CLUSTER_RETRY,
                     )
-                    await workflow.execute_activity(
+                    await app.execute_activity(
                         suspend_job,
                         self._family,
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
                         retry_policy=CLUSTER_RETRY,
                     )
                 else:
-                    await workflow.execute_activity(
+                    await app.execute_activity(
                         resume_job,
                         self._family,
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -208,9 +210,10 @@ class FlinkJobFamilyActor:
                 changed = True
 
             if datatypes is not None and status.datatypes != datatypes:
-                await workflow.execute_activity(
+                await app.execute_activity(
                     patch_configmap,
-                    args=[self._family, datatypes],
+                    self._family,
+                    datatypes,
                     start_to_close_timeout=ACTIVITY_TIMEOUT,
                     retry_policy=CLUSTER_RETRY,
                 )

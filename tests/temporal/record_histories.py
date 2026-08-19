@@ -23,6 +23,7 @@ from temporalio.testing import WorkflowEnvironment
 
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.scenarios import REQUEST, SCENARIOS, SEED
+from poc.temporal.application import app
 from poc.temporal.saga import MoveDatatypeWorkflow
 from poc.temporal.worker import build_worker
 
@@ -38,6 +39,7 @@ async def record() -> None:
     env = await WorkflowEnvironment.start_time_skipping(
         data_converter=pydantic_data_converter
     )
+    client = env.client
     try:
         for name in RECORD:
             scenario = SCENARIOS[name]
@@ -48,20 +50,18 @@ async def record() -> None:
                 os.environ[ENV_CLUSTER_ROOT] = str(cluster.root)
 
                 workflow_id = f"record-{name}"
-                async with build_worker(env.client, f"tq-record-{name}"):
+                async with build_worker(client):
                     try:
-                        await env.client.execute_workflow(
+                        await app.client(client).execute_workflow(
                             MoveDatatypeWorkflow.run,
                             REQUEST,
                             id=workflow_id,
-                            task_queue=f"tq-record-{name}",
                         )
                     except Exception:  # noqa: BLE001, S110 - expected failure
                         pass
 
-                    history = await env.client.get_workflow_handle(
-                        workflow_id
-                    ).fetch_history()
+                    handle = client.get_workflow_handle(workflow_id)
+                    history = await handle.fetch_history()
 
                 target = HISTORY_DIR / f"{name}.json"
                 target.write_text(json.dumps(json.loads(history.to_json()), indent=2))
@@ -70,9 +70,7 @@ async def record() -> None:
                 # Actors outlive the saga; clear them before the next recording.
                 for family in SEED:
                     try:
-                        await env.client.get_workflow_handle(
-                            f"family:{family}"
-                        ).terminate()
+                        await client.get_workflow_handle(f"family:{family}").terminate()
                     except Exception:  # noqa: BLE001, S110 - actor may not exist
                         pass
     finally:

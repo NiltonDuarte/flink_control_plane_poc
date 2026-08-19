@@ -3,7 +3,7 @@
 Needs to be its own process so the test can SIGKILL it - killing a worker task
 inside the test process would only prove that asyncio cancellation works.
 
-    python -m tests.temporal.worker_process <server-address> <task-queue> <cluster-root>
+    python -m tests.temporal.worker_process <server-address> <cluster-root>
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ logging.getLogger("temporalio").setLevel(logging.CRITICAL)
 
 
 async def main() -> None:
-    address, task_queue, cluster_root = sys.argv[1], sys.argv[2], sys.argv[3]
+    address, cluster_root = sys.argv[1], sys.argv[2]
     os.environ[ENV_CLUSTER_ROOT] = cluster_root
     client = await connect(address)
-    async with build_worker(client, task_queue):
+    async with build_worker(client):
         await asyncio.Future()  # run until killed
 
 

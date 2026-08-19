@@ -8,7 +8,6 @@ the test that the second piece is load-bearing.
 from __future__ import annotations
 
 import asyncio
-import uuid
 
 import pytest
 from temporalio.client import Client, WorkflowUpdateFailedError
@@ -17,6 +16,7 @@ from poc.common.cluster import ChaosRule, MockCluster
 from poc.common.domain import FamilyState
 from poc.common.scenarios import SOURCE
 from poc.temporal.actor import FlinkJobFamilyActor, actor_id
+from poc.temporal.application import app
 from poc.temporal.worker import build_worker
 from tests.conftest import ops
 
@@ -32,13 +32,11 @@ async def test_concurrent_pauses_are_serialized(
     lost-update race. With it, the first wins and the rest observe SUSPENDED and
     no-op, which is what "queues concurrent commands implicitly" means in the RFC.
     """
-    task_queue = f"tq-{uuid.uuid4()}"
-    async with build_worker(client, task_queue):
-        handle = await client.start_workflow(
+    async with build_worker(client):
+        handle = await app.client(client).start_workflow(
             FlinkJobFamilyActor.run,
-            args=[SOURCE],
+            SOURCE,
             id=actor_id(SOURCE),
-            task_queue=task_queue,
         )
         results = await asyncio.gather(
             *(
@@ -61,13 +59,11 @@ async def test_actor_state_survives_across_commands(
     client: Client, cluster: MockCluster
 ) -> None:
     """The actor holds its own state - no external store is consulted between commands."""
-    task_queue = f"tq-{uuid.uuid4()}"
-    async with build_worker(client, task_queue):
-        handle = await client.start_workflow(
+    async with build_worker(client):
+        handle = await app.client(client).start_workflow(
             FlinkJobFamilyActor.run,
-            args=[SOURCE],
+            SOURCE,
             id=actor_id(SOURCE),
-            task_queue=task_queue,
         )
 
         await handle.execute_update(FlinkJobFamilyActor.pause, id="p1")
@@ -101,13 +97,11 @@ async def test_restore_refreshes_stale_cache_after_lost_response(
     cluster.set_chaos(
         {f"{SOURCE}:suspend_job": ChaosRule(mode="lost_response", times=4)}
     )
-    task_queue = f"tq-{uuid.uuid4()}"
-    async with build_worker(client, task_queue):
-        handle = await client.start_workflow(
+    async with build_worker(client):
+        handle = await app.client(client).start_workflow(
             FlinkJobFamilyActor.run,
-            args=[SOURCE],
+            SOURCE,
             id=actor_id(SOURCE),
-            task_queue=task_queue,
         )
 
         with pytest.raises(WorkflowUpdateFailedError):
