@@ -76,31 +76,41 @@ Here is the progression of failures you will hit, and the patterns to survive th
 
 ## Scenario 2: Control Plane Crash (Partial Execution)
 **Assumptions:** Only one workflow runs at a time. The control plane node can crash or restart midway through a workflow.
+
 **Example Problem:** The control plane suspends Job A. The machine loses power. Job B continues running. Job A is down. The control plane reboots but has no memory of the in-flight operation.
+
 **Solution:** **Saga Pattern / Persistent State Machine.**
 You need durable state. Before taking action, the control plane writes its intent to a database. Each step (suspend A, suspend B) is recorded. When the control plane reboots, a recovery thread reads pending workflows from the database and resumes exactly where it left off. This requires every operation sent to Flink to be idempotent. Suspending an already suspended job must return success, not an error.
 
 ## Scenario 3: Concurrent Workflow Collisions
 **Assumptions:** The control plane persists state and recovers from crashes. Multiple operators or automated systems trigger workflows simultaneously.
+
 **Example Problem:** Workflow 1 moves Topic X from Job A to Job B. At the exact same time, Workflow 2 moves Topic Y from Job B to Job C.
 Workflow 1 suspends Job B. Workflow 2 sees Job B is already suspended and skips to the update phase. Workflow 1 finishes and resumes Job B. Workflow 2 tries to update Job B, but it is now running. The API rejects the update. Workflow 2 crashes.
+
 **Solution:** **Distributed Resource Locks (Pessimistic Concurrency).**
 Before a workflow starts, it must acquire a lock on every job it plans to touch. Workflow 1 locks Job A and Job B. Workflow 2 attempts to lock Job B and Job C. Workflow 2 fails to acquire Job B and blocks. Workflow 1 completes its suspend-update-resume cycle and releases the locks. Workflow 2 unblocks and proceeds safely.
 
 ## Scenario 4: The Unresponsive External System (Timeouts)
 **Assumptions:** Workflows lock resources and survive control plane crashes. Flink APIs and network calls can hang or fail entirely.
+
 **Example Problem:** Workflow 1 locks Jobs A and B. It successfully suspends Job A. It calls the Flink API to suspend Job B. The Flink JobManager is dead. The API call hangs until a 60-second timeout. Job A is now offline, blocking processing. The lock on Jobs A and B is held indefinitely, blocking other workflows.
+
 **Solution:** **Compensating Transactions with Timeouts.**
 Workflows cannot wait forever. If suspending Job B fails, the workflow must abort. Because distributed systems lack atomic rollbacks, you have to execute a compensating action: resume Job A. Once Job A is restored to its original state, the workflow fails cleanly, releases the locks, and alerts an operator.
 
 ## Scenario 5: The Failed Rollback (Inconsistent State)
 **Assumptions:** Workflows lock, persist state, and attempt compensating transactions on failure. Compensating transactions can also fail.
+
 **Example Problem:** Workflow 1 suspends Job A. Job B fails to suspend. The workflow aborts and attempts to resume Job A. The network partitions. The resume command to Job A fails. The control plane retries with exponential backoff, but the network route is permanently broken. Job A is stuck suspended. Job B is running. The system is in an inconsistent state that software cannot resolve.
+
 **Solution:** **Human-in-the-Loop Reconciliation.**
 Automated recovery has limits. When a rollback exhausts its retries, the workflow enters a `Requires Manual Intervention` state. The control plane fires a high-priority alert. It stops touching the jobs but keeps the locks held to prevent other workflows from making things worse. A human operator SSHs into the cluster, manually fixes the networking, restarts Job A, and clicks a "Resolve" button in the control plane dashboard to clear the locks.
 
 ## Scenario 6: Zombie Control Planes (Split-Brain)
 **Assumptions:** The system handles crashes, concurrency, timeouts, and manual overrides. For high availability, multiple control plane instances run simultaneously.
+
 **Example Problem:** Control Plane Instance 1 starts a workflow and locks Job A. A network glitch isolates Instance 1. Instance 2 assumes Instance 1 is dead, takes over the lock, and starts rolling back Job A. Instance 1's network reconnects. It wakes up and sends a "resume" command to Job A. Instance 2 simultaneously sends a "suspend" command. Flink executes both. The system tears itself apart. Impressive but also kind of unsettling.
+
 **Solution:** **Fencing Tokens (Epochs).**
 Locks are not enough if a zombie process thinks it still holds them. Every time a lock is granted, it comes with a monotonically increasing integer (a fencing token). The control plane must pass this token with every Flink API request. Flink (or a proxy layer in front of it) must track the highest token it has seen. When Instance 2 takes the lock, it gets token 5. Instance 1 wakes up and sends a command with token 4. Flink rejects token 4. The zombie is fenced out.
