@@ -28,6 +28,7 @@ These instructions apply to the whole repository. Keep them concise; add a neste
 ## Skill routing
 
 - For non-trivial project decisions, use Wayfinder and `grilling`; use `domain-modeling` when terminology or architecture decisions change. Follow selected skill instructions when they are more specific than these general rules.
+- Use `issue-workflow` for current-status reporting, whole-board critique, destination drift, map hygiene, and recording an existing Wayfinder ruling. It cannot choose priorities or edit maps; Wayfinder remains the sole decision-maker and owns every ruling.
 - Use `develop-control-plane-sagas` for changes to sagas, actors, durable steps, mutations, retries, failures, compensation, recovery scenarios, audit ordering, concurrency, or crash behavior.
 
 ## Validation

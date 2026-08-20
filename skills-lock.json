@@ -13,6 +13,12 @@
       "skillPath": "skills/productivity/grilling/SKILL.md",
       "computedHash": "a16b2f661db6caf310d7e02dd0d069e597cb888873e210e66f641eae715c5f23"
     },
+    "issue-workflow": {
+      "source": "pipihouse/skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/issue-workflow/SKILL.md",
+      "computedHash": "84cd52267df2f7411047c9695312f2baff8b87d27cd01ce6363a3b3deaa5f22d"
+    },
     "wayfinder": {
       "source": "mattpocock/skills",
       "sourceType": "github",
