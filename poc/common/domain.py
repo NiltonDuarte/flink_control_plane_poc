@@ -9,32 +9,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
-
-MAX_FAMILY_IDENTIFIER_LENGTH = 128
-FAMILY_IDENTIFIER_CHARACTERS = frozenset(
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
-)
-
-
-class InvalidFamilyIdentifierError(ValueError):
-    """An untrusted family key is unsafe for resource or filesystem identity."""
-
-
-def validate_family_identifier(value: str) -> str:
-    """Reject identifiers that could escape the mock cluster family directory."""
-    if not value:
-        raise InvalidFamilyIdentifierError("family identifier must not be empty")
-    if len(value) > MAX_FAMILY_IDENTIFIER_LENGTH:
-        raise InvalidFamilyIdentifierError(
-            f"family identifier must be at most {MAX_FAMILY_IDENTIFIER_LENGTH} characters"
-        )
-    if any(character not in FAMILY_IDENTIFIER_CHARACTERS for character in value):
-        raise InvalidFamilyIdentifierError(
-            "family identifier may contain only ASCII letters, digits, '-' and '_'"
-        )
-    return value
-
+from pydantic import BaseModel, Field
 
 # --------------------------------------------------------------------------
 # Errors
@@ -97,11 +72,6 @@ class FamilyStatus(BaseModel):
     generation: int = 0
     savepoint_uri: str | None = None
 
-    @field_validator("family")
-    @classmethod
-    def family_identifier_is_safe(cls, value: str) -> str:
-        return validate_family_identifier(value)
-
 
 class FamilyCommand(str, Enum):
     """Normal RFC actor handlers plus the compensation-only restore handler."""
@@ -140,11 +110,6 @@ class MoveDatatypeRequest(BaseModel):
     source_family: str
     target_family: str
 
-    @field_validator("source_family", "target_family")
-    @classmethod
-    def family_identifiers_are_safe(cls, value: str) -> str:
-        return validate_family_identifier(value)
-
     @property
     def families(self) -> list[str]:
         """Families touched by this move, in a stable order.
@@ -168,11 +133,6 @@ class CommandRequest(BaseModel):
     update_id: str
     datatypes: list[str] | None = None
     desired_state: FamilyState | None = None
-
-    @field_validator("family")
-    @classmethod
-    def family_identifier_is_safe(cls, value: str) -> str:
-        return validate_family_identifier(value)
 
 
 class CommandResult(BaseModel):

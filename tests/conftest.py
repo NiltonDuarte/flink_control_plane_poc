@@ -96,10 +96,10 @@ async def run_move(
 
 
 def ops(cluster: MockCluster, *, successful_only: bool = True) -> list[str]:
-    """Flatten effective mutations, or all attempts, for order assertions."""
+    """Audit log flattened to ``"op(family)"`` strings, for order assertions."""
     return [
         f"{entry.op}({entry.family})"
-        for entry in cluster.audit(effective_only=successful_only)
+        for entry in cluster.audit(successful_only=successful_only)
     ]
 
 

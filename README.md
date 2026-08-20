@@ -40,12 +40,10 @@ make restate-scenario SCENARIO=fail-in-resume
 ```
 
 The ingress client reads `RESTATE_INGRESS_URL` and defaults to
-`http://localhost:8080`. It uses explicit 5-second connect/pool, 10-second
-write, and 120-second read timeouts. Deployment registration uses a 5-second
-connect timeout and 15-second total timeout. The Restate harness tests need
-Docker and pin the server to 1.7.2; the SDK is pinned to 1.0.3. Restate Virtual
-Object state survives CLI runs, so use a fresh local server when intentionally
-reseeding the fixed demo keys after an incomplete compensation.
+`http://localhost:8080`. The Restate harness tests need Docker and pin the
+server to 1.7.2; the SDK is pinned to 1.0.3. Restate Virtual Object state
+survives CLI runs, so use a fresh local server when intentionally reseeding the
+fixed demo keys after an incomplete compensation.
 
 ## Scenarios
 
@@ -115,20 +113,16 @@ that file and nothing else - it imports no Temporal and no workflow code.
   audit.jsonl             append-only, one line per attempted operation
   chaos.json              fault-injection rules
   chaos_hits.json         attempt counters
-  completed_operations.json  completed mutation identities and results
 ```
 
 Transitions are instant - an operation reads JSON, mutates it, writes it back.
 There is no desired/observed split and no polling, which is a deliberate scope
 cut: this POC is about orchestration semantics, not Flink lifecycle fidelity.
 
-`audit.jsonl` is the primary assertion surface, recording failed, successful,
-and deduplicated attempts. Every entry has an operation identity and a `changed`
-flag, so retry evidence remains complete while effective side effects can be
-counted exactly. Asserting on the *sequence* of effective side effects is what
-catches a rollback that compensates in the wrong order; a final-state check
-would wave that through, since a wrong-order rollback still lands in the right
-place.
+`audit.jsonl` is the primary assertion surface, recording failed attempts as well
+as successful ones. Asserting on the *sequence* of side effects is what catches a
+rollback that compensates in the wrong order; a final-state check would wave that
+through, since a wrong-order rollback still lands in the right place.
 
 `chaos.json` is the ticket's "explicit toggles/hooks":
 
@@ -140,10 +134,8 @@ place.
 ```
 
 `transient` and `permanent` fail before mutation. `lost_response` commits and
-audits a mutation, then raises a retryable error. The retry retains its audit
-entry but reuses the operation identity and becomes a successful no-op; a
-logical savepoint, suspend, resume, or config patch therefore changes state at
-most once. Distinct savepoint identities still create distinct artifacts.
+audits a mutating operation, then raises a retryable error. It models the
+ambiguous outcome where the caller cannot tell whether the request landed.
 
 ## Findings
 
@@ -161,20 +153,12 @@ calls the actor from outside the workflow sandbox
 That hop is the single biggest structural difference to expect when the same
 baseline is built on the other two engines.
 
-### 2. Durable command IDs and external operation IDs make crash recovery safe
+### 2. Update-id dedup is what makes crash recovery safe - and it must be scoped to the run
 
 The proxy activity can be retried by a crash or a timeout, and a naive retry
 would issue the command twice. `execute_update` accepts an `id`, and Temporal
 deduplicates on it, so a retry attaches to the original update instead of
 re-running it.
-
-That engine-level dedup is complemented at the external mutation boundary.
-Temporal derives mutation identities from the update ID and logical activity;
-Restate derives them from its durable invocation ID; the baseline keeps one
-identity across its in-process retries. If a response is lost after commit, the
-mock recognizes the completed identity on retry without advancing generation or
-creating another savepoint. Real adapters need the equivalent idempotency key
-or operation ledger.
 
 The id must include the **run** id, not just the workflow id. Actors outlive the
 sagas that call them, so a second execution of the same workflow id would
@@ -223,16 +207,6 @@ cluster, synchronizes the runtime-state cache, and applies only the missing
 runtime or config change. Successful no-ops create no mutation audit entries.
 `SagaFailure` reports applied compensations, no-ops, and errors separately.
 
-### 6. Durable waiting and external-call timeouts are separate bounds
-
-Restate waits durably for object calls, so a suspended workflow does not need an
-application-level timeout around that engine-to-object wait. Each durable
-cluster step is still bounded to four attempts and ten seconds total. The local
-mock has no network I/O; production Flink or Kubernetes adapters must also put
-an explicit timeout around every individual external attempt. The ingress HTTP
-client and deployment-registration request are independently bounded as
-described in Quick start.
-
 ## Tests
 
 ```sh
@@ -274,10 +248,5 @@ uv run python -m tests.temporal.record_histories
 - Only the Move Datatype saga. Batch Pause and Batch Resume are degenerate cases
   of it and are not separately implemented.
 - No reconciliation loop, no Ingestion Config Portal, no operational web API.
-- Virtual Object and actor serialization is per family only. Saga-level
-  ownership, leases, takeover, fencing, and stale-command rejection remain
-  unresolved in issue #28.
-- Incomplete compensation has structured evidence but no durable `RecoveryPlan`
-  or reconciliation API; issue #27 owns that design.
 - The actor's `continue_as_new` rollover is implemented but not covered by a
   test - reaching the history threshold takes longer than a POC test should run.

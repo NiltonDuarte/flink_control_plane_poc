@@ -2,14 +2,14 @@
   "events": [
     {
       "eventId": "1",
-      "eventTime": "2036-08-17T12:18:50.162Z",
+      "eventTime": "2036-08-14T14:21:14.548Z",
       "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
       "workflowExecutionStartedEventAttributes": {
         "workflowType": {
           "name": "MoveDatatypeWorkflow"
         },
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "input": {
           "payloads": [
@@ -24,9 +24,9 @@
         "workflowExecutionTimeout": "315360000s",
         "workflowRunTimeout": "315360000s",
         "workflowTaskTimeout": "10s",
-        "originalExecutionRunId": "ebe23869-5281-4a5a-b62c-c7868114291d",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "firstExecutionRunId": "ebe23869-5281-4a5a-b62c-c7868114291d",
+        "originalExecutionRunId": "b21534f6-3364-4f30-9f12-c0e44b2de9ae",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "firstExecutionRunId": "b21534f6-3364-4f30-9f12-c0e44b2de9ae",
         "attempt": 1,
         "firstWorkflowTaskBackoff": "0s",
         "priority": {}
@@ -34,11 +34,11 @@
     },
     {
       "eventId": "2",
-      "eventTime": "2036-08-17T12:18:50.162Z",
+      "eventTime": "2036-08-14T14:21:14.548Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -46,22 +46,22 @@
     },
     {
       "eventId": "3",
-      "eventTime": "2036-08-17T12:18:50.162Z",
+      "eventTime": "2036-08-14T14:21:14.549Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "359"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "371"
       }
     },
     {
       "eventId": "4",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.552Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {
           "coreUsedFlags": [
             3,
@@ -76,7 +76,7 @@
     },
     {
       "eventId": "5",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.552Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "1",
@@ -84,7 +84,7 @@
           "name": "read_status"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -113,17 +113,17 @@
     },
     {
       "eventId": "6",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.552Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "5",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "7",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.553Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -138,16 +138,16 @@
         },
         "scheduledEventId": "5",
         "startedEventId": "6",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "8",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.553Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -155,29 +155,29 @@
     },
     {
       "eventId": "9",
-      "eventTime": "2036-08-17T12:18:50.167Z",
+      "eventTime": "2036-08-14T14:21:14.553Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "995"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "1023"
       }
     },
     {
       "eventId": "10",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.554Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "11",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.554Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "2",
@@ -185,7 +185,7 @@
           "name": "read_status"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -214,17 +214,17 @@
     },
     {
       "eventId": "12",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.554Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "11",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "13",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.554Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -239,16 +239,16 @@
         },
         "scheduledEventId": "11",
         "startedEventId": "12",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "14",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.554Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -256,29 +256,29 @@
     },
     {
       "eventId": "15",
-      "eventTime": "2036-08-17T12:18:50.169Z",
+      "eventTime": "2036-08-14T14:21:14.555Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "1584"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "1628"
       }
     },
     {
       "eventId": "16",
-      "eventTime": "2036-08-17T12:18:50.170Z",
+      "eventTime": "2036-08-14T14:21:14.556Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "17",
-      "eventTime": "2036-08-17T12:18:50.170Z",
+      "eventTime": "2036-08-14T14:21:14.556Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "3",
@@ -286,7 +286,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -296,7 +296,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1mYWlsLWluLXJlc3VtZTplYmUyMzg2OS01MjgxLTRhNWEtYjYyYy1jNzg2ODExNDI5MWQ6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1mYWlsLWluLXJlc3VtZTpiMjE1MzRmNi0zMzY0LTRmMzAtOWYxMi1jMGU0NGIyZGU5YWU6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -316,17 +316,17 @@
     },
     {
       "eventId": "18",
-      "eventTime": "2036-08-17T12:18:50.170Z",
+      "eventTime": "2036-08-14T14:21:14.556Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "17",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "19",
-      "eventTime": "2036-08-17T12:18:50.181Z",
+      "eventTime": "2036-08-14T14:21:14.573Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -335,22 +335,22 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9hL3NwLTU5Y2U0MjMxZjUyZmFlNTQifQ=="
+              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9hL3NwLTAwMDEifQ=="
             }
           ]
         },
         "scheduledEventId": "17",
         "startedEventId": "18",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "20",
-      "eventTime": "2036-08-17T12:18:50.181Z",
+      "eventTime": "2036-08-14T14:21:14.573Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -358,29 +358,29 @@
     },
     {
       "eventId": "21",
-      "eventTime": "2036-08-17T12:18:50.181Z",
+      "eventTime": "2036-08-14T14:21:14.573Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "2329"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "2377"
       }
     },
     {
       "eventId": "22",
-      "eventTime": "2036-08-17T12:18:50.182Z",
+      "eventTime": "2036-08-14T14:21:14.575Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "23",
-      "eventTime": "2036-08-17T12:18:50.182Z",
+      "eventTime": "2036-08-14T14:21:14.575Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "4",
@@ -388,7 +388,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -398,7 +398,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1mYWlsLWluLXJlc3VtZTplYmUyMzg2OS01MjgxLTRhNWEtYjYyYy1jNzg2ODExNDI5MWQ6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1mYWlsLWluLXJlc3VtZTpiMjE1MzRmNi0zMzY0LTRmMzAtOWYxMi1jMGU0NGIyZGU5YWU6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -418,17 +418,17 @@
     },
     {
       "eventId": "24",
-      "eventTime": "2036-08-17T12:18:50.182Z",
+      "eventTime": "2036-08-14T14:21:14.575Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "23",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "25",
-      "eventTime": "2036-08-17T12:18:50.193Z",
+      "eventTime": "2036-08-14T14:21:14.588Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -437,22 +437,22 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9iL3NwLWQ3ZjlhM2FkNDkwYzhmYTEifQ=="
+              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9iL3NwLTAwMDEifQ=="
             }
           ]
         },
         "scheduledEventId": "23",
         "startedEventId": "24",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "26",
-      "eventTime": "2036-08-17T12:18:50.193Z",
+      "eventTime": "2036-08-14T14:21:14.588Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -460,29 +460,29 @@
     },
     {
       "eventId": "27",
-      "eventTime": "2036-08-17T12:18:50.193Z",
+      "eventTime": "2036-08-14T14:21:14.588Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "26",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "3074"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "3126"
       }
     },
     {
       "eventId": "28",
-      "eventTime": "2036-08-17T12:18:50.194Z",
+      "eventTime": "2036-08-14T14:21:14.590Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "26",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "29",
-      "eventTime": "2036-08-17T12:18:50.194Z",
+      "eventTime": "2036-08-14T14:21:14.590Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "5",
@@ -490,7 +490,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -500,7 +500,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6ZWJlMjM4NjktNTI4MS00YTVhLWI2MmMtYzc4NjgxMTQyOTFkOnBhdGNoOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6YjIxNTM0ZjYtMzM2NC00ZjMwLTlmMTItYzBlNDRiMmRlOWFlOnBhdGNoOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -520,17 +520,17 @@
     },
     {
       "eventId": "30",
-      "eventTime": "2036-08-17T12:18:50.194Z",
+      "eventTime": "2036-08-14T14:21:14.590Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "29",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "31",
-      "eventTime": "2036-08-17T12:18:50.199Z",
+      "eventTime": "2036-08-14T14:21:14.597Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -545,16 +545,16 @@
         },
         "scheduledEventId": "29",
         "startedEventId": "30",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "32",
-      "eventTime": "2036-08-17T12:18:50.199Z",
+      "eventTime": "2036-08-14T14:21:14.597Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -562,29 +562,29 @@
     },
     {
       "eventId": "33",
-      "eventTime": "2036-08-17T12:18:50.199Z",
+      "eventTime": "2036-08-14T14:21:14.597Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "32",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "3794"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "3862"
       }
     },
     {
       "eventId": "34",
-      "eventTime": "2036-08-17T12:18:50.200Z",
+      "eventTime": "2036-08-14T14:21:14.598Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "32",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "35",
-      "eventTime": "2036-08-17T12:18:50.200Z",
+      "eventTime": "2036-08-14T14:21:14.598Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "6",
@@ -592,7 +592,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -602,7 +602,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6ZWJlMjM4NjktNTI4MS00YTVhLWI2MmMtYzc4NjgxMTQyOTFkOnBhdGNoOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIiwiY2xpY2tzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6YjIxNTM0ZjYtMzM2NC00ZjMwLTlmMTItYzBlNDRiMmRlOWFlOnBhdGNoOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIiwiY2xpY2tzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -622,17 +622,17 @@
     },
     {
       "eventId": "36",
-      "eventTime": "2036-08-17T12:18:50.200Z",
+      "eventTime": "2036-08-14T14:21:14.598Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "35",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "37",
-      "eventTime": "2036-08-17T12:18:50.205Z",
+      "eventTime": "2036-08-14T14:21:14.605Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -647,16 +647,16 @@
         },
         "scheduledEventId": "35",
         "startedEventId": "36",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "38",
-      "eventTime": "2036-08-17T12:18:50.205Z",
+      "eventTime": "2036-08-14T14:21:14.605Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -664,29 +664,29 @@
     },
     {
       "eventId": "39",
-      "eventTime": "2036-08-17T12:18:50.205Z",
+      "eventTime": "2036-08-14T14:21:14.605Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "38",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "4517"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "4601"
       }
     },
     {
       "eventId": "40",
-      "eventTime": "2036-08-17T12:18:50.206Z",
+      "eventTime": "2036-08-14T14:21:14.606Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "38",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "41",
-      "eventTime": "2036-08-17T12:18:50.206Z",
+      "eventTime": "2036-08-14T14:21:14.606Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "7",
@@ -694,7 +694,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -704,7 +704,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6ZWJlMjM4NjktNTI4MS00YTVhLWI2MmMtYzc4NjgxMTQyOTFkOnJlc3VtZTpmYW1pbHlfYSIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6YjIxNTM0ZjYtMzM2NC00ZjMwLTlmMTItYzBlNDRiMmRlOWFlOnJlc3VtZTpmYW1pbHlfYSIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
             }
           ]
         },
@@ -724,17 +724,17 @@
     },
     {
       "eventId": "42",
-      "eventTime": "2036-08-17T12:18:50.206Z",
+      "eventTime": "2036-08-14T14:21:14.606Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "41",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "43",
-      "eventTime": "2036-08-17T12:18:50.210Z",
+      "eventTime": "2036-08-14T14:21:14.612Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -749,16 +749,16 @@
         },
         "scheduledEventId": "41",
         "startedEventId": "42",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "44",
-      "eventTime": "2036-08-17T12:18:50.210Z",
+      "eventTime": "2036-08-14T14:21:14.612Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -766,29 +766,29 @@
     },
     {
       "eventId": "45",
-      "eventTime": "2036-08-17T12:18:50.210Z",
+      "eventTime": "2036-08-14T14:21:14.612Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "44",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "5221"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "5321"
       }
     },
     {
       "eventId": "46",
-      "eventTime": "2036-08-17T12:18:50.211Z",
+      "eventTime": "2036-08-14T14:21:14.614Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "44",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "47",
-      "eventTime": "2036-08-17T12:18:50.211Z",
+      "eventTime": "2036-08-14T14:21:14.614Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "8",
@@ -796,7 +796,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -806,7 +806,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6ZWJlMjM4NjktNTI4MS00YTVhLWI2MmMtYzc4NjgxMTQyOTFkOnJlc3VtZTpmYW1pbHlfYiIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtZmFpbC1pbi1yZXN1bWU6YjIxNTM0ZjYtMzM2NC00ZjMwLTlmMTItYzBlNDRiMmRlOWFlOnJlc3VtZTpmYW1pbHlfYiIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
             }
           ]
         },
@@ -826,30 +826,30 @@
     },
     {
       "eventId": "48",
-      "eventTime": "2036-08-17T12:18:50.211Z",
+      "eventTime": "2036-08-14T14:21:14.614Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "47",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "49",
-      "eventTime": "2036-08-17T12:18:50.988Z",
+      "eventTime": "2036-08-14T14:21:15.359Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_FAILED",
       "activityTaskFailedEventAttributes": {
         "failure": {
           "message": "resume failed on family_b: Activity task failed",
-          "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 60, in execute_family_command\n    raise ApplicationError(\n    ...<2 lines>...\n    ) from err\n",
+          "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 62, in execute_family_command\n    raise ApplicationError(\n",
           "cause": {
             "message": "Workflow update failed",
-            "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 55, in execute_family_command\n    return await self._dispatch(handle, request)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 75, in _dispatch\n    changed: bool = await handle.execute_update(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        FlinkJobFamilyActor.resume, id=request.update_id\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/client/_workflow.py\", line 841, in execute_update\n    return await handle.result()\n           ^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/client/_workflow.py\", line 1924, in result\n    raise WorkflowUpdateFailedError(\n        await self._data_converter.decode_failure(self._known_outcome.failure),\n    )\n",
+            "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 57, in execute_family_command\n    return await self._dispatch(handle, request)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 75, in _dispatch\n    changed: bool = await handle.execute_update(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/client/_workflow.py\", line 841, in execute_update\n    return await handle.result()\n           ^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/client/_workflow.py\", line 1924, in result\n    raise WorkflowUpdateFailedError(\n",
             "cause": {
               "message": "Activity task failed",
               "cause": {
                 "message": "resume_job on family_b failed transiently (attempt 4/4)",
-                "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/activities.py\", line 36, in resume_job\n    return MockCluster.from_env().resume_job(family, operation_id)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/common/cluster.py\", line 257, in resume_job\n    self._maybe_fail(family, op, operation_id)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/common/cluster.py\", line 384, in _maybe_fail\n    raise TransientClusterError(\n        f\"{op} on {family} failed transiently (attempt {seen + 1}/{rule.times})\"\n    )\n",
+                "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/activities.py\", line 37, in resume_job\n    MockCluster.from_env().resume_job(family)\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/cluster.py\", line 195, in resume_job\n    self._maybe_fail(family, \"resume_job\")\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/cluster.py\", line 254, in _maybe_fail\n    raise TransientClusterError(\n",
                 "applicationFailureInfo": {
                   "type": "TransientClusterError"
                 }
@@ -857,7 +857,7 @@
               "activityFailureInfo": {
                 "scheduledEventId": "43",
                 "startedEventId": "44",
-                "identity": "67340@MBP-de-Bianca.localdomain",
+                "identity": "19195@MBP-de-Bianca.localdomain",
                 "activityType": {
                   "name": "resume_job"
                 },
@@ -875,17 +875,17 @@
         },
         "scheduledEventId": "47",
         "startedEventId": "48",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "retryState": "RETRY_STATE_NON_RETRYABLE_FAILURE"
       }
     },
     {
       "eventId": "50",
-      "eventTime": "2036-08-17T12:18:50.988Z",
+      "eventTime": "2036-08-14T14:21:15.359Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -893,29 +893,29 @@
     },
     {
       "eventId": "51",
-      "eventTime": "2036-08-17T12:18:50.988Z",
+      "eventTime": "2036-08-14T14:21:15.359Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "50",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "9787"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "9114"
       }
     },
     {
       "eventId": "52",
-      "eventTime": "2036-08-17T12:18:50.991Z",
+      "eventTime": "2036-08-14T14:21:15.360Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "50",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "53",
-      "eventTime": "2036-08-17T12:18:50.991Z",
+      "eventTime": "2036-08-14T14:21:15.360Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "9",
@@ -923,7 +923,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -933,7 +933,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjA6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOiJTVVNQRU5ERUQifQ=="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjA6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOiJTVVNQRU5ERUQifQ=="
             }
           ]
         },
@@ -953,17 +953,17 @@
     },
     {
       "eventId": "54",
-      "eventTime": "2036-08-17T12:18:50.991Z",
+      "eventTime": "2036-08-14T14:21:15.360Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "53",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "55",
-      "eventTime": "2036-08-17T12:18:51.001Z",
+      "eventTime": "2036-08-14T14:21:15.365Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -978,16 +978,16 @@
         },
         "scheduledEventId": "53",
         "startedEventId": "54",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "56",
-      "eventTime": "2036-08-17T12:18:51.001Z",
+      "eventTime": "2036-08-14T14:21:15.365Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -995,29 +995,29 @@
     },
     {
       "eventId": "57",
-      "eventTime": "2036-08-17T12:18:51.001Z",
+      "eventTime": "2036-08-14T14:21:15.365Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "56",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "10508"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "9849"
       }
     },
     {
       "eventId": "58",
-      "eventTime": "2036-08-17T12:18:51.004Z",
+      "eventTime": "2036-08-14T14:21:15.366Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "56",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "59",
-      "eventTime": "2036-08-17T12:18:51.004Z",
+      "eventTime": "2036-08-14T14:21:15.366Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "10",
@@ -1025,7 +1025,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -1035,7 +1035,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjE6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOiJTVVNQRU5ERUQifQ=="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjE6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOiJTVVNQRU5ERUQifQ=="
             }
           ]
         },
@@ -1055,17 +1055,17 @@
     },
     {
       "eventId": "60",
-      "eventTime": "2036-08-17T12:18:51.004Z",
+      "eventTime": "2036-08-14T14:21:15.366Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "59",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "61",
-      "eventTime": "2036-08-17T12:18:51.023Z",
+      "eventTime": "2036-08-14T14:21:15.376Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -1080,16 +1080,16 @@
         },
         "scheduledEventId": "59",
         "startedEventId": "60",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "62",
-      "eventTime": "2036-08-17T12:18:51.023Z",
+      "eventTime": "2036-08-14T14:21:15.376Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -1097,29 +1097,29 @@
     },
     {
       "eventId": "63",
-      "eventTime": "2036-08-17T12:18:51.023Z",
+      "eventTime": "2036-08-14T14:21:15.376Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "62",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "11226"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "10584"
       }
     },
     {
       "eventId": "64",
-      "eventTime": "2036-08-17T12:18:51.025Z",
+      "eventTime": "2036-08-14T14:21:15.378Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "62",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "65",
-      "eventTime": "2036-08-17T12:18:51.025Z",
+      "eventTime": "2036-08-14T14:21:15.378Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "11",
@@ -1127,7 +1127,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -1137,7 +1137,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjI6cmV2ZXJ0OmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjI6cmV2ZXJ0OmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -1157,17 +1157,17 @@
     },
     {
       "eventId": "66",
-      "eventTime": "2036-08-17T12:18:51.025Z",
+      "eventTime": "2036-08-14T14:21:15.378Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "65",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "67",
-      "eventTime": "2036-08-17T12:18:51.034Z",
+      "eventTime": "2036-08-14T14:21:15.389Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -1182,16 +1182,16 @@
         },
         "scheduledEventId": "65",
         "startedEventId": "66",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "68",
-      "eventTime": "2036-08-17T12:18:51.034Z",
+      "eventTime": "2036-08-14T14:21:15.389Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -1199,29 +1199,29 @@
     },
     {
       "eventId": "69",
-      "eventTime": "2036-08-17T12:18:51.034Z",
+      "eventTime": "2036-08-14T14:21:15.389Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "68",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "11944"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "11318"
       }
     },
     {
       "eventId": "70",
-      "eventTime": "2036-08-17T12:18:51.035Z",
+      "eventTime": "2036-08-14T14:21:15.390Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "68",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "71",
-      "eventTime": "2036-08-17T12:18:51.035Z",
+      "eventTime": "2036-08-14T14:21:15.390Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "12",
@@ -1229,7 +1229,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -1239,7 +1239,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjM6cmV2ZXJ0OmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImNsaWNrcyIsImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjM6cmV2ZXJ0OmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImNsaWNrcyIsImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -1259,17 +1259,17 @@
     },
     {
       "eventId": "72",
-      "eventTime": "2036-08-17T12:18:51.035Z",
+      "eventTime": "2036-08-14T14:21:15.390Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "71",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "73",
-      "eventTime": "2036-08-17T12:18:51.042Z",
+      "eventTime": "2036-08-14T14:21:15.398Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -1284,16 +1284,16 @@
         },
         "scheduledEventId": "71",
         "startedEventId": "72",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "74",
-      "eventTime": "2036-08-17T12:18:51.042Z",
+      "eventTime": "2036-08-14T14:21:15.398Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -1301,29 +1301,29 @@
     },
     {
       "eventId": "75",
-      "eventTime": "2036-08-17T12:18:51.042Z",
+      "eventTime": "2036-08-14T14:21:15.398Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "74",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "12677"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "12067"
       }
     },
     {
       "eventId": "76",
-      "eventTime": "2036-08-17T12:18:51.043Z",
+      "eventTime": "2036-08-14T14:21:15.399Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "74",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "77",
-      "eventTime": "2036-08-17T12:18:51.043Z",
+      "eventTime": "2036-08-14T14:21:15.399Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "13",
@@ -1331,7 +1331,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -1341,7 +1341,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjQ6cmVzdW1lOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpudWxsLCJkZXNpcmVkX3N0YXRlIjoiUlVOTklORyJ9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjQ6cmVzdW1lOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpudWxsLCJkZXNpcmVkX3N0YXRlIjoiUlVOTklORyJ9"
             }
           ]
         },
@@ -1361,17 +1361,17 @@
     },
     {
       "eventId": "78",
-      "eventTime": "2036-08-17T12:18:51.043Z",
+      "eventTime": "2036-08-14T14:21:15.399Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "77",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "79",
-      "eventTime": "2036-08-17T12:18:51.051Z",
+      "eventTime": "2036-08-14T14:21:15.406Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -1386,16 +1386,16 @@
         },
         "scheduledEventId": "77",
         "startedEventId": "78",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "80",
-      "eventTime": "2036-08-17T12:18:51.051Z",
+      "eventTime": "2036-08-14T14:21:15.406Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -1403,29 +1403,29 @@
     },
     {
       "eventId": "81",
-      "eventTime": "2036-08-17T12:18:51.051Z",
+      "eventTime": "2036-08-14T14:21:15.406Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "80",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "13395"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "12801"
       }
     },
     {
       "eventId": "82",
-      "eventTime": "2036-08-17T12:18:51.052Z",
+      "eventTime": "2036-08-14T14:21:15.407Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "80",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "83",
-      "eventTime": "2036-08-17T12:18:51.052Z",
+      "eventTime": "2036-08-14T14:21:15.407Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "14",
@@ -1433,7 +1433,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "flink-control-plane",
+          "name": "tq-record-fail-in-resume",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -1443,7 +1443,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmViZTIzODY5LTUyODEtNGE1YS1iNjJjLWM3ODY4MTE0MjkxZDpjb21wOjU6cmVzdW1lOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpudWxsLCJkZXNpcmVkX3N0YXRlIjoiUlVOTklORyJ9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN0b3JlIiwidXBkYXRlX2lkIjoicmVjb3JkLWZhaWwtaW4tcmVzdW1lOmIyMTUzNGY2LTMzNjQtNGYzMC05ZjEyLWMwZTQ0YjJkZTlhZTpjb21wOjU6cmVzdW1lOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpudWxsLCJkZXNpcmVkX3N0YXRlIjoiUlVOTklORyJ9"
             }
           ]
         },
@@ -1463,17 +1463,17 @@
     },
     {
       "eventId": "84",
-      "eventTime": "2036-08-17T12:18:51.052Z",
+      "eventTime": "2036-08-14T14:21:15.407Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "83",
-        "identity": "67340@MBP-de-Bianca.localdomain",
+        "identity": "19195@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "85",
-      "eventTime": "2036-08-17T12:18:51.059Z",
+      "eventTime": "2036-08-14T14:21:15.414Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -1488,16 +1488,16 @@
         },
         "scheduledEventId": "83",
         "startedEventId": "84",
-        "identity": "67340@MBP-de-Bianca.localdomain"
+        "identity": "19195@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "86",
-      "eventTime": "2036-08-17T12:18:51.059Z",
+      "eventTime": "2036-08-14T14:21:15.414Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "flink-control-plane"
+          "name": "tq-record-fail-in-resume"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -1505,47 +1505,47 @@
     },
     {
       "eventId": "87",
-      "eventTime": "2036-08-17T12:18:51.059Z",
+      "eventTime": "2036-08-14T14:21:15.414Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "86",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "14113"
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "13535"
       }
     },
     {
       "eventId": "88",
-      "eventTime": "2036-08-17T12:18:51.062Z",
+      "eventTime": "2036-08-14T14:21:15.417Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "86",
-        "identity": "67340@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
+        "identity": "19195@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "300712e8f9ca217d624c17e00bc7fb72",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "89",
-      "eventTime": "2036-08-17T12:18:51.062Z",
+      "eventTime": "2036-08-14T14:21:15.417Z",
       "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_FAILED",
       "workflowExecutionFailedEventAttributes": {
         "failure": {
           "message": "COMPENSATED: move of clicks failed at resume:family_b: Activity task failed; rollback applied=5 no_op=1 failed=0",
-          "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_workflow_instance.py\", line 2665, in _run_top_level_workflow_function\n    await coro\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_workflow_instance.py\", line 1127, in run_workflow\n    result = await self._inbound.execute_workflow(input)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/testing/_workflow.py\", line 563, in execute_workflow\n    return await super().execute_workflow(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_interceptor.py\", line 398, in execute_workflow\n    return await self.next.execute_workflow(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_workflow_instance.py\", line 3059, in execute_workflow\n    return await input.run_fn(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/saga.py\", line 164, in run\n    raise self._failure(\n    ...<7 lines>...\n    ) from err\n",
+          "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_workflow_instance.py\", line 2665, in _run_top_level_workflow_function\n    await coro\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_workflow_instance.py\", line 1127, in run_workflow\n    result = await self._inbound.execute_workflow(input)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/testing/_workflow.py\", line 563, in execute_workflow\n    return await super().execute_workflow(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_interceptor.py\", line 398, in execute_workflow\n    return await self.next.execute_workflow(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_workflow_instance.py\", line 3059, in execute_workflow\n    return await input.run_fn(*args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/saga.py\", line 161, in run\n    raise self._failure(\n",
           "cause": {
             "message": "Activity task failed",
             "cause": {
               "message": "resume failed on family_b: Activity task failed",
-              "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 60, in execute_family_command\n    raise ApplicationError(\n    ...<2 lines>...\n    ) from err\n",
+              "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 62, in execute_family_command\n    raise ApplicationError(\n",
               "cause": {
                 "message": "Workflow update failed",
-                "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 55, in execute_family_command\n    return await self._dispatch(handle, request)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/actor_proxy.py\", line 75, in _dispatch\n    changed: bool = await handle.execute_update(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        FlinkJobFamilyActor.resume, id=request.update_id\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/client/_workflow.py\", line 841, in execute_update\n    return await handle.result()\n           ^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/client/_workflow.py\", line 1924, in result\n    raise WorkflowUpdateFailedError(\n        await self._data_converter.decode_failure(self._known_outcome.failure),\n    )\n",
+                "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 57, in execute_family_command\n    return await self._dispatch(handle, request)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/actor_proxy.py\", line 75, in _dispatch\n    changed: bool = await handle.execute_update(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/client/_workflow.py\", line 841, in execute_update\n    return await handle.result()\n           ^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/client/_workflow.py\", line 1924, in result\n    raise WorkflowUpdateFailedError(\n",
                 "cause": {
                   "message": "Activity task failed",
                   "cause": {
                     "message": "resume_job on family_b failed transiently (attempt 4/4)",
-                    "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        start, running_activity, task_token, data_converter\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.13/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/temporal/activities.py\", line 36, in resume_job\n    return MockCluster.from_env().resume_job(family, operation_id)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/common/cluster.py\", line 257, in resume_job\n    self._maybe_fail(family, op, operation_id)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/common/cluster.py\", line 384, in _maybe_fail\n    raise TransientClusterError(\n        f\"{op} on {family} failed transiently (attempt {seen + 1}/{rule.times})\"\n    )\n",
+                    "stackTrace": "  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 351, in _handle_start_activity_task\n    result = await self._execute_activity(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 681, in _execute_activity\n    return await impl.execute_activity(input)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/.venv/lib/python3.12/site-packages/temporalio/worker/_activity.py\", line 890, in execute_activity\n    return await input.fn(*input.args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/activities.py\", line 37, in resume_job\n    MockCluster.from_env().resume_job(family)\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/cluster.py\", line 195, in resume_job\n    self._maybe_fail(family, \"resume_job\")\n\n  File \"/Users/biancaberdugo/dev/flink_control_plane_poc/poc/cluster.py\", line 254, in _maybe_fail\n    raise TransientClusterError(\n",
                     "applicationFailureInfo": {
                       "type": "TransientClusterError"
                     }
@@ -1553,7 +1553,7 @@
                   "activityFailureInfo": {
                     "scheduledEventId": "43",
                     "startedEventId": "44",
-                    "identity": "67340@MBP-de-Bianca.localdomain",
+                    "identity": "19195@MBP-de-Bianca.localdomain",
                     "activityType": {
                       "name": "resume_job"
                     },
@@ -1572,7 +1572,7 @@
             "activityFailureInfo": {
               "scheduledEventId": "47",
               "startedEventId": "48",
-              "identity": "67340@MBP-de-Bianca.localdomain",
+              "identity": "19195@MBP-de-Bianca.localdomain",
               "activityType": {
                 "name": "execute_family_command"
               },

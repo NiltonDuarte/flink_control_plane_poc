@@ -22,21 +22,21 @@ async def read_status(family: str) -> FamilyStatus:
 
 
 @app.activity(task_queue=TASK_QUEUE)
-async def trigger_savepoint(family: str, operation_id: str) -> str:
-    return MockCluster.from_env().trigger_savepoint(family, operation_id)
+async def trigger_savepoint(family: str) -> str:
+    return MockCluster.from_env().trigger_savepoint(family)
 
 
 @app.activity(task_queue=TASK_QUEUE)
-async def suspend_job(family: str, operation_id: str) -> bool:
-    return MockCluster.from_env().suspend_job(family, operation_id)
+async def suspend_job(family: str) -> None:
+    MockCluster.from_env().suspend_job(family)
 
 
 @app.activity(task_queue=TASK_QUEUE)
-async def resume_job(family: str, operation_id: str) -> bool:
-    return MockCluster.from_env().resume_job(family, operation_id)
+async def resume_job(family: str) -> None:
+    MockCluster.from_env().resume_job(family)
 
 
 @app.activity(task_queue=TASK_QUEUE)
-async def patch_configmap(family: str, datatypes: list[str], operation_id: str) -> bool:
-    """Replace routing config and report whether this attempt changed it."""
-    return MockCluster.from_env().patch_configmap(family, datatypes, operation_id)
+async def patch_configmap(family: str, datatypes: list[str]) -> list[str]:
+    """Replace routing config; the return value is informational only."""
+    return MockCluster.from_env().patch_configmap(family, datatypes)

@@ -35,7 +35,6 @@ with workflow.unsafe.imports_passed_through():
         MoveDatatypeRequest,
         SagaFailure,
         SagaOutcome,
-        validate_family_identifier,
     )
     from poc.temporal.activities import read_status
     from poc.temporal.actor_proxy import ActorProxy
@@ -72,15 +71,6 @@ class MoveDatatypeWorkflow:
         source, target = request.source_family, request.target_family
         done: list[str] = []
         stack: list[_Compensation] = []
-
-        identifier_error = self._family_identifier_error(request)
-        if identifier_error is not None:
-            raise self._failure(
-                request,
-                outcome=SagaOutcome.REJECTED,
-                failed_step="validate",
-                reason=identifier_error,
-            )
 
         statuses = await self._read_all(request.families)
         validation_error = self._validation_error(request, statuses)
@@ -197,15 +187,6 @@ class MoveDatatypeWorkflow:
             return f"{request.datatype} is not owned by {request.source_family}"
         if request.datatype in statuses[request.target_family].datatypes:
             return f"{request.datatype} is already owned by {request.target_family}"
-        return None
-
-    @staticmethod
-    def _family_identifier_error(request: MoveDatatypeRequest) -> str | None:
-        try:
-            for family in request.families:
-                validate_family_identifier(family)
-        except ValueError as err:
-            return str(err)
         return None
 
     @staticmethod

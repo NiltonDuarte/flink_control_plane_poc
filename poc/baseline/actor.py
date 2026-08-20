@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from functools import wraps
-from typing import Any, ClassVar, Self
+from typing import ClassVar
 
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyState, FamilyStatus, TransientClusterError
 
 
-def retryable(attempts: int) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    def decor(fn: Callable[..., Any]) -> Callable[..., Any]:
+def retryable(attempts):
+    def decor(fn):
         @wraps(fn)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args, **kwargs):
             for attempt in range(attempts):
                 try:
                     return fn(*args, **kwargs)
@@ -27,12 +26,12 @@ def retryable(attempts: int) -> Callable[[Callable[..., Any]], Callable[..., Any
 class FamilyActor:
     _instances: ClassVar[dict[str, FamilyActor]] = {}
 
-    def __new__(cls, name: str) -> Self:
+    def __new__(cls, name):
         if name not in cls._instances:
             cls._instances[name] = super().__new__(cls)
         return cls._instances[name]
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         self.name = name
         self.cluster = MockCluster.from_env()
 
@@ -40,30 +39,29 @@ class FamilyActor:
         return self.cluster.read(self.name)
 
     @retryable(4)
-    def _trigger_savepoint(self, operation_id: str) -> str:
-        return self.cluster.trigger_savepoint(self.name, operation_id)
+    def _trigger_savepoint(self):
+        self.cluster.trigger_savepoint(self.name)
 
     @retryable(4)
-    def _suspend(self, operation_id: str) -> bool:
-        return self.cluster.suspend_job(self.name, operation_id)
+    def _suspend(self):
+        self.cluster.suspend_job(self.name)
 
-    def pause(self, operation_id: str) -> None:
-        self._trigger_savepoint(f"{operation_id}:savepoint")
-        self._suspend(f"{operation_id}:suspend")
-
-    @retryable(4)
-    def patch_config(self, config: list[str], operation_id: str) -> bool:
-        return self.cluster.patch_configmap(self.name, config, operation_id)
+    def pause(self):
+        self._trigger_savepoint()
+        self._suspend()
 
     @retryable(4)
-    def resume(self, operation_id: str) -> bool:
-        return self.cluster.resume_job(self.name, operation_id)
+    def patch_config(self, config):
+        self.cluster.patch_configmap(self.name, config)
+
+    @retryable(4)
+    def resume(self):
+        self.cluster.resume_job(self.name)
 
     def restore(
         self,
         desired_state: FamilyState | None,
         datatypes: list[str] | None,
-        operation_id: str,
     ) -> bool:
         """Reconcile a compensation intent against authoritative cluster state.
 
@@ -78,14 +76,14 @@ class FamilyActor:
 
         if desired_state is not None and status.state != desired_state:
             if desired_state == FamilyState.SUSPENDED:
-                self._trigger_savepoint(f"{operation_id}:savepoint")
-                self._suspend(f"{operation_id}:suspend")
+                self._trigger_savepoint()
+                self._suspend()
             else:
-                self.resume(f"{operation_id}:resume")
+                self.resume()
             changed = True
 
         if datatypes is not None and status.datatypes != datatypes:
-            self.patch_config(datatypes, f"{operation_id}:config")
+            self.patch_config(datatypes)
             changed = True
 
         return changed

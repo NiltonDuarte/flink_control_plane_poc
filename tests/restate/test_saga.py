@@ -15,11 +15,12 @@ from poc.baseline.saga import MoveDatatypeWorkflow as BaselineWorkflow
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.domain import (
     FamilyState,
+    MoveDatatypeRequest,
     SagaError,
     SagaFailure,
     SagaOutcome,
 )
-from poc.common.scenarios import SCENARIOS, SEED, SOURCE, TARGET, Scenario
+from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET, Scenario
 from poc.restate.client import ENV_RESTATE_INGRESS_URL
 from poc.restate.errors import SAGA_HTTP_STATUS, decode_saga_failure
 from poc.restate.saga import run
@@ -28,9 +29,9 @@ from tests.restate.conftest import RestateCase
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
-def _audit(cluster: MockCluster, case: RestateCase) -> list[tuple[str, str, str, bool]]:
+def _audit(cluster: MockCluster, case: RestateCase) -> list[tuple[str, str, str]]:
     return [
-        (entry.op, case.normalize(entry.family), entry.outcome, entry.changed)
+        (entry.op, case.normalize(entry.family), entry.outcome)
         for entry in cluster.audit()
     ]
 
@@ -159,53 +160,6 @@ async def test_retry_attempts_and_permanent_errors(
         if entry.op == operation and entry.family == keyed_family
     ]
     assert attempts == outcomes
-
-
-@pytest.mark.parametrize(
-    ("scenario_name", "operation", "family", "changed"),
-    [
-        (
-            "lost-response-suspend",
-            "suspend_job",
-            TARGET,
-            [True, False, False, False],
-        ),
-        (
-            "lost-response-patch",
-            "patch_configmap",
-            SOURCE,
-            [True, False, False, False, True],
-        ),
-    ],
-)
-async def test_lost_response_attempts_have_one_effective_forward_mutation(
-    restate_env: HarnessEnvironment,
-    restate_case: RestateCase,
-    scenario_name: str,
-    operation: str,
-    family: str,
-    changed: list[bool],
-) -> None:
-    scenario = restate_case.scenario(SCENARIOS[scenario_name])
-    restate_case.cluster.set_chaos(scenario.chaos)
-
-    with pytest.raises(restate.HttpError):
-        await restate_env.client.workflow_call(
-            run,
-            key=f"lost-response-{scenario_name}-{uuid.uuid4()}",
-            arg=restate_case.request,
-        )
-
-    keyed_family = restate_case.source if family == SOURCE else restate_case.target
-    attempts = [
-        entry
-        for entry in restate_case.cluster.audit()
-        if entry.op == operation and entry.family == keyed_family
-    ]
-    assert [entry.changed for entry in attempts] == changed
-    assert len({entry.operation_id for entry in attempts[:4]}) == 1
-    if len(attempts) > 4:
-        assert attempts[-1].operation_id != attempts[0].operation_id
 
 
 class _no_error:

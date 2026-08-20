@@ -29,7 +29,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from poc.common.domain import FamilyState, validate_family_identifier
+    from poc.common.domain import FamilyState
     from poc.temporal.activities import (
         patch_configmap,
         read_status,
@@ -46,7 +46,7 @@ CLUSTER_RETRY = RetryPolicy(
     initial_interval=timedelta(milliseconds=100),
     backoff_coefficient=2.0,
     maximum_attempts=4,
-    non_retryable_error_types=["PermanentClusterError", "InvalidFamilyIdentifierError"],
+    non_retryable_error_types=["PermanentClusterError"],
 )
 
 ACTIVITY_TIMEOUT = timedelta(seconds=10)
@@ -58,16 +58,7 @@ HISTORY_ROLLOVER = 1_000
 
 def actor_id(family: str) -> str:
     """The workflow id for a family's actor. Uniqueness here *is* the actor."""
-    family = validate_family_identifier(family)
     return f"family:{family}"
-
-
-def _operation_id(action: str) -> str:
-    """Derive a mutation identity from the durable Temporal update identity."""
-    update = workflow.current_update_info()
-    if update is None:
-        raise RuntimeError("actor mutation must run inside a Temporal update")
-    return f"temporal:{update.id}:{action}"
 
 
 @app.workflow(task_queue=TASK_QUEUE)
@@ -128,14 +119,12 @@ class FlinkJobFamilyActor:
             uri: str = await app.execute_activity(
                 trigger_savepoint,
                 self._family,
-                _operation_id("savepoint"),
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
             await app.execute_activity(
                 suspend_job,
                 self._family,
-                _operation_id("suspend"),
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
@@ -152,7 +141,6 @@ class FlinkJobFamilyActor:
             await app.execute_activity(
                 resume_job,
                 self._family,
-                _operation_id("resume"),
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
@@ -160,18 +148,18 @@ class FlinkJobFamilyActor:
             return True
 
     @workflow.update
-    async def patch_config(self, datatypes: list[str]) -> bool:
-        """Replace routing configuration and report an effective mutation."""
+    async def patch_config(self, datatypes: list[str]) -> list[str]:
+        """Replace the routing config; returns the previous value for callers."""
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
-            return await app.execute_activity(
+            previous: list[str] = await app.execute_activity(
                 patch_configmap,
                 self._family,
                 datatypes,
-                _operation_id("config"),
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
+            return previous
 
     @workflow.update
     async def restore(
@@ -202,14 +190,12 @@ class FlinkJobFamilyActor:
                     await app.execute_activity(
                         trigger_savepoint,
                         self._family,
-                        _operation_id("restore-savepoint"),
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
                         retry_policy=CLUSTER_RETRY,
                     )
                     await app.execute_activity(
                         suspend_job,
                         self._family,
-                        _operation_id("restore-suspend"),
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
                         retry_policy=CLUSTER_RETRY,
                     )
@@ -217,7 +203,6 @@ class FlinkJobFamilyActor:
                     await app.execute_activity(
                         resume_job,
                         self._family,
-                        _operation_id("restore-resume"),
                         start_to_close_timeout=ACTIVITY_TIMEOUT,
                         retry_policy=CLUSTER_RETRY,
                     )
@@ -229,7 +214,6 @@ class FlinkJobFamilyActor:
                     patch_configmap,
                     self._family,
                     datatypes,
-                    _operation_id("restore-config"),
                     start_to_close_timeout=ACTIVITY_TIMEOUT,
                     retry_policy=CLUSTER_RETRY,
                 )

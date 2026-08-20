@@ -7,12 +7,12 @@ from dataclasses import dataclass
 import restate
 from poc.common.domain import (
     CommandResult,
+    FamilyCommand,
     FamilyState,
     FamilyStatus,
     MoveDatatypeRequest,
     SagaFailure,
     SagaOutcome,
-    validate_family_identifier,
 )
 from poc.restate.actor import (
     CLUSTER_RUN_OPTIONS,
@@ -46,14 +46,6 @@ async def run(ctx: restate.WorkflowContext, request: MoveDatatypeRequest) -> lis
     source, target = request.source_family, request.target_family
     done: list[str] = []
     stack: list[_Compensation] = []
-
-    identifier_error = _family_identifier_error(request)
-    if identifier_error is not None:
-        raise _failure(
-            outcome=SagaOutcome.REJECTED,
-            failed_step="validate",
-            reason=identifier_error,
-        )
 
     statuses = await _read_all(ctx, request.families)
     validation_error = _validation_error(request, statuses)
@@ -145,15 +137,6 @@ def _validation_error(
         return f"{request.datatype} is not owned by {request.source_family}"
     if request.datatype in statuses[request.target_family].datatypes:
         return f"{request.datatype} is already owned by {request.target_family}"
-    return None
-
-
-def _family_identifier_error(request: MoveDatatypeRequest) -> str | None:
-    try:
-        for family in request.families:
-            validate_family_identifier(family)
-    except ValueError as err:
-        return str(err)
     return None
 
 

@@ -1,6 +1,6 @@
 # Restate assessment
 
-Measured on 2026-08-20 with Restate Server and CLI 1.7.2 and the Python SDK
+Measured on 2026-08-18 with Restate Server and CLI 1.7.2 and the Python SDK
 1.0.3. The implementation is intentionally independent from the baseline and
 Temporal sagas. It imports only the shared domain models, mock cluster, and
 scenario definitions.
@@ -17,12 +17,11 @@ Temporal-style time skipping or offline history-file replay.
 
 All ten shared scenarios matched the baseline for verdict, completed steps,
 normalized audit attempts and order, and final cluster snapshot. Focused tests
-also proved one effective mutation under five concurrent pauses, exact mutation
-deduplication across four lost-response attempts, K/V state across calls,
-stale-cache repair, four-attempt retry exhaustion, and immediate permanent
-failure. The ASGI crash test killed Hypercorn after the saga had started,
-restarted it at the same endpoint, and required exactly one effective side
-effect for each of the eight logical mutations.
+also proved one effective mutation under five concurrent pauses, K/V state
+across calls, stale-cache repair after four lost responses, four-attempt retry
+exhaustion, and immediate permanent failure. The ASGI crash test killed
+Hypercorn after the saga had started, restarted it at the same endpoint, and
+completed from the server journal without replaying the completed first pause.
 
 ## Implementation findings
 
@@ -50,10 +49,9 @@ Restate retries ordinary handler and durable-step failures by default. Each
 mock-cluster operation is inside `ctx.run_typed` with 100 ms initial delay,
 factor 2, and four attempts, matching Temporal. A `PermanentClusterError` is
 translated inside the durable step to `TerminalError`; transient errors escape
-and consume that bounded policy. The retry sequence also has a ten-second
-maximum duration. When either bound is exhausted, the SDK surfaces a
-`TerminalError`, which is the only exception the saga and compensation loop
-catch. This follows the official guidance for
+and consume that bounded policy. When the attempt budget is exhausted, the SDK
+surfaces a `TerminalError`, which is the only exception the saga and
+compensation loop catch. This follows the official guidance for
 [durable steps](https://docs.restate.dev/develop/python/durable-steps) and
 [error handling](https://docs.restate.dev/develop/python/error-handling) and
 avoids swallowing SDK-internal control-flow exceptions.
@@ -73,21 +71,13 @@ Temporal-style explicit update ID is needed. This is the relevant guarantee in
 the official
 [service-call documentation](https://docs.restate.dev/develop/python/service-communication).
 
-That guarantee does not by itself make an arbitrary external side effect
-exactly once. A process can still die after the mock cluster commits but before
-the durable step result is journaled. Each handler therefore derives a stable
-operation identity from Restate's durable invocation ID and logical mutation.
-The shared boundary persists completed results, records a repeated attempt with
-`changed=false`, and does not advance generation or create another savepoint.
-Compensation remains pre-registered from authoritative pre-saga data because
-deduplication does not remove the need to restore a failed saga.
-
-Restate-to-object waiting is engine-durable rather than wrapped in an arbitrary
-application timeout. External I/O remains separately bounded: durable-step
-retries have four attempts and ten seconds total; the ingress client has
-explicit connect/read/write/pool timeouts; deployment registration has connect
-and total timeouts. A production Flink or Kubernetes adapter must additionally
-enforce a timeout for each individual external attempt.
+That guarantee does not make an arbitrary external side effect exactly once.
+A process can still die after the mock cluster commits but before the durable
+step result is journaled. The implementation therefore retains the same two
+defenses as Temporal: cluster mutations are reconciliation-friendly, and every
+compensation is registered before its forward call using authoritative
+pre-saga data. The lost-response scenarios deliberately show repeated landed
+operations followed by correct snapshot restoration.
 
 ### Testing, replay, and crash recovery
 
@@ -99,12 +89,12 @@ journal. It is not equivalent to Temporal's offline `Replayer` consuming a
 committed history JSON file, and the harness has no virtual clock. Retry delays
 therefore cost wall time.
 
-The measured fast Restate suite completed 22 tests in about 11 seconds on the
-local Docker runtime. The separate service-crash test keeps Restate running,
-kills Hypercorn on port 9080, restarts the same deployment endpoint, and
-requires the workflow to finish with exactly eight effective mutations. An
-in-flight durable step may still be attempted more than once, but the stable
-operation identity makes repeated attempts audited no-ops.
+The measured fast Restate suite completed 19 tests in about 9.5 seconds on the
+local Docker runtime. The separate service-crash test completed in about 6.5
+seconds. It kept Restate running, killed Hypercorn on port 9080, restarted the
+same deployment endpoint, and observed the workflow finish with the already
+completed first pause present only once. As with any external durable step, the
+currently in-flight call retains a narrow at-least-once window.
 
 ## UI, CLI, SQL, and operations — observed locally
 
@@ -146,10 +136,10 @@ CLI and HTTP query paths.
 
 | Area | Temporal implementation | Restate implementation |
 |---|---|---|
-| Actor / single writer | Entity workflow ID plus explicit `asyncio.Lock` around update handlers; resource-local only | Native keyed Virtual Object; exclusive handlers serialize automatically; resource-local only |
+| Actor / single writer | Entity workflow ID plus explicit `asyncio.Lock` around update handlers | Native keyed Virtual Object; exclusive handlers serialize automatically |
 | Saga → actor call | Proxy activity holds a client because workflow handles cannot execute updates | Direct journaled `ctx.object_call` with a return value |
-| Idempotency / dedup | Deterministic run-scoped `update_id` deduplicates proxy retries; derived external operation IDs deduplicate activity retries | Journaled service call reuses its result on replay; invocation-derived external operation IDs deduplicate durable-step retries |
-| Retry taxonomy | Activity `RetryPolicy`, four attempts, permanent exception type excluded | `RunOptions`, four attempts and ten seconds total; permanent cluster faults translated to `TerminalError` |
+| Idempotency / dedup | Deterministic run-scoped `update_id` deduplicates proxy retries | Journaled service call reuses its result on replay; external durable steps still have an ambiguous commit window |
+| Retry taxonomy | Activity `RetryPolicy`, four attempts, permanent exception type excluded | `RunOptions`, four attempts; permanent cluster faults translated to `TerminalError` |
 | Compensation ergonomics | Explicit pre-registered LIFO stack through proxy activities | Same explicit stack with direct restore-handler calls; less transport plumbing |
 | State | Actor workflow memory, replayed from history | Virtual Object K/V, inspectable as `runtime_state` |
 | Local tests | Time-skipping server; no Docker for most tests | Real server Testcontainer; Docker required; no time skipping |
@@ -169,8 +159,3 @@ The decision therefore turns on priorities: choose Restate for a smaller, more
 legible actor/saga implementation and strong built-in state introspection;
 choose Temporal if mature offline replay and virtual-time testing outweigh the
 extra actor-call plumbing.
-
-Neither engine's per-resource serialization establishes saga-level ownership,
-leases, takeover, fencing, or stale-command rejection; issue #28 owns that
-design. Incomplete compensation likewise has no reconciliation API or durable
-`RecoveryPlan`; issue #27 remains authoritative.
