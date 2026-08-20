@@ -24,6 +24,7 @@ from dbos import DBOS
 
 from poc.baseline.actor import FamilyActor
 from poc.common.domain import (
+    ClusterError,
     CommandRequest,
     CommandResult,
     FamilyCommand,
@@ -32,24 +33,8 @@ from poc.common.domain import (
     MoveDatatypeRequest,
     SagaFailure,
 )
-from poc.dbos.steps_service import DBOSActorService
+from poc.dbos.steps_service import FlinkJobFamilyActor
 from poc.temporal.activities import read_status
-
-# Referenced by name so this module never imports the Temporal client that
-# poc/actor_proxy.py needs - workflow code stays sandbox-friendly.
-PROXY_ACTIVITY = "execute_family_command"
-
-# The proxy is retried only for infrastructure blips. A command that genuinely
-# failed inside the actor comes back as a non_retryable ApplicationError, so it
-# lands here immediately and compensation starts without delay.
-PROXY_RETRY = RetryPolicy(
-    initial_interval=timedelta(milliseconds=100),
-    backoff_coefficient=2.0,
-    maximum_attempts=3,
-)
-
-PROXY_TIMEOUT = timedelta(seconds=30)
-READ_TIMEOUT = timedelta(seconds=10)
 
 
 @dataclass
@@ -95,7 +80,7 @@ def _compensate(
             desired_state=item.desired_state,
         )
         try:
-            result = DBOSActorService.execute_activity(
+            result = FlinkJobFamilyActor.execute_activity(
                 PROXY_ACTIVITY,
                 request,
                 result_type=CommandResult,
@@ -132,7 +117,6 @@ def move_datatype(self, request: MoveDatatypeRequest) -> list[str]:
     source, target = request.source_family, request.target_family
     done: list[str] = []
     stack: list[_Compensation] = []
-    actors = {source: FamilyActor(source), target: FamilyActor(target)}
 
     statuses = _read_all(request.families)
     # self._validate(request, statuses)
@@ -176,35 +160,34 @@ def move_datatype(self, request: MoveDatatypeRequest) -> list[str]:
         # -- Phase 1: pause ------------------------------------------
         for family in request.families:
             stack.append(pause_restore[family])
-            DBOSActorService.pause(family)
+            FlinkJobFamilyActor.pause(family)
             done.append(f"pause:{family}")
 
         # -- Phase 2: patch config -----------------------------------
         for family in request.families:
             stack.append(config_restore[family])
-            DBOSActorService.patch_config(family)
+            FlinkJobFamilyActor.patch_config(family)
 
             done.append(f"patch:{family}")
 
         # -- Phase 3: resume -----------------------------------------
         for family in request.families:
             stack.append(resume_restore[family])
-            DBOSActorService.resume(family)
+            FlinkJobFamilyActor.resume(family)
             done.append(f"resume:{family}")
 
         return done
 
     except Exception as err:  # noqa: BLE001 - any failure triggers rollback
         failed_step = self._next_step(request, done)
-        compensated, noops, errors = await self._compensate(stack)
-        raise ApplicationError(
-            f"move of {request.datatype} aborted at {failed_step}: {err}",
-            SagaFailure(
-                failed_step=failed_step,
-                reason=str(err),
-                compensated=compensated,
-                compensation_noops=noops,
-                compensation_errors=errors,
-            ),
-            non_retryable=True,
+        compensated, noops, errors = _compensate(stack)
+        raise ClusterError(
+            f"move of {request.datatype} aborted at {failed_step}: {err}." +
+            f"{str(SagaFailure(
+                            failed_step=failed_step,
+                            reason=str(err),
+                            compensated=compensated,
+                            compensation_noops=noops,
+                            compensation_errors=errors,
+                        ).model_dump())}"
         ) from err
