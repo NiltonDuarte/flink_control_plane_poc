@@ -23,8 +23,6 @@ of duplicated side effects.
 
 from __future__ import annotations
 
-from typing import Any
-
 from temporalio.client import Client, WorkflowHandle, WorkflowUpdateFailedError
 from temporalio.common import WorkflowIDConflictPolicy
 from temporalio.exceptions import ApplicationError
@@ -63,7 +61,9 @@ class ActorProxy:
             ) from err
 
     async def _dispatch(
-        self, handle: WorkflowHandle[Any, Any], request: CommandRequest
+        self,
+        handle: WorkflowHandle[FlinkJobFamilyActor, None],
+        request: CommandRequest,
     ) -> CommandResult:
         if request.command is FamilyCommand.PAUSE:
             uri: str | None = await handle.execute_update(
@@ -72,10 +72,10 @@ class ActorProxy:
             return CommandResult(changed=uri is not None, savepoint_uri=uri)
 
         if request.command is FamilyCommand.RESUME:
-            changed: bool = await handle.execute_update(
+            resumed: bool = await handle.execute_update(
                 FlinkJobFamilyActor.resume, id=request.update_id
             )
-            return CommandResult(changed=changed)
+            return CommandResult(changed=resumed)
 
         if request.command is FamilyCommand.PATCH_CONFIG:
             await handle.execute_update(
@@ -86,12 +86,12 @@ class ActorProxy:
             return CommandResult(changed=True)
 
         if request.command is FamilyCommand.RESTORE:
-            changed: bool = await handle.execute_update(
+            restored: bool = await handle.execute_update(
                 FlinkJobFamilyActor.restore,
                 args=[request.desired_state, request.datatypes],
                 id=request.update_id,
             )
-            return CommandResult(changed=changed)
+            return CommandResult(changed=restored)
 
         raise ApplicationError(
             f"unknown command: {request.command}", non_retryable=True

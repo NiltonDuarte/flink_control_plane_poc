@@ -284,7 +284,7 @@ class MoveDatatypeWorkflow:
                 desired_state=item.desired_state,
             )
             try:
-                result = await app.execute_activity(
+                result: CommandResult = await app.execute_activity(
                     ActorProxy.execute_family_command,
                     request,
                     result_type=CommandResult,

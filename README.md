@@ -11,8 +11,11 @@ no Kubernetes. Agreed scope is in [`POC_SCOPE.md`](POC_SCOPE.md).
 
 ## Quick start
 
+Python 3.13 or newer and [uv](https://docs.astral.sh/uv/) are required.
+
 ```sh
 uv sync
+make check                             # Lint, format, types, fast tests
 uv run pytest                          # Full suite
 uv run python -m poc.cli list          # List scenarios
 uv run python -m poc.cli run happy --engine None # Run with bare Python
@@ -190,6 +193,7 @@ runtime or config change. Successful no-ops create no mutation audit entries.
 ## Tests
 
 ```sh
+make check                     # non-mutating quality gate used by CI
 uv run pytest                  # everything
 uv run pytest -m "not crash"   # fast subset
 uv run pytest -m crash         # worker-kill durability, real server

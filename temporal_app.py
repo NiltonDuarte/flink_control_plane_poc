@@ -12,7 +12,7 @@ from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 from types import MappingProxyType
-from typing import Any, TypedDict, TypeVar, Unpack, cast
+from typing import Any, TypedDict, TypeVar, Unpack, cast, overload
 
 from temporalio import activity as temporal_activity
 from temporalio import workflow as temporal_workflow
@@ -405,23 +405,40 @@ class TemporalApp:
             )
         return registration
 
+    @overload
     async def execute_activity(
         self,
-        activity: Callable[..., ResultT] | Callable[..., Awaitable[ResultT]],
+        activity: Callable[..., Awaitable[ResultT]],
         *activity_args: Any,
         **options: Unpack[ActivityOptions],
     ) -> ResultT:
+        ...
+
+    @overload
+    async def execute_activity(
+        self,
+        activity: Callable[..., ResultT],
+        *activity_args: Any,
+        **options: Unpack[ActivityOptions],
+    ) -> ResultT:
+        ...
+
+    async def execute_activity(
+        self,
+        activity: Callable[..., Any],
+        *activity_args: Any,
+        **options: Unpack[ActivityOptions],
+    ) -> Any:
         """Execute an activity on its registered queue with native options."""
 
         registration = self.activity_registration(activity)
         execute = cast(Callable[..., Awaitable[ResultT]], temporal_workflow.execute_activity)
-        result = await execute(
+        return await execute(
             activity,
             args=activity_args,
             task_queue=registration.task_queue,
             **options,
         )
-        return result
 
     async def execute_child_workflow(
         self,

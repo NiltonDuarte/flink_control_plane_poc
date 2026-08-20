@@ -19,7 +19,7 @@ so that going to production means replacing one module, not rewriting the saga.
 | Saga | **Move Datatype Between Jobs** only — it is the superset of Batch Pause / Batch Resume |
 | Infra | Fully mocked. Files in / files out. **Instant state transitions**, no polling, no operator simulation |
 | Actor | **Kept.** `FlinkJobFamilyActor` as a real entity workflow — it is one of the things being proven |
-| Rigor | Lean. Typed and Pydantic-modelled because it costs nothing, but no `mypy --strict` gate, no packaging ceremony |
+| Rigor | Lean runtime scope with typed Pydantic models, strict mypy across `poc/` and `tests/`, and one non-mutating `make check` quality gate |
 | Out of scope | Ingestion Config Portal, reconciliation loop, Operational Web API, Restate/DBOS implementations |
 
 ## What must be proven
@@ -138,7 +138,7 @@ tests/
     worker_process.py        crash-test worker entrypoint
 README.md         how to run each success/failure mode
 Makefile
-pyproject.toml    uv, Python 3.12, temporalio + pydantic + pytest
+pyproject.toml    uv, Python 3.13, runtime and development dependencies, tool configuration
 ```
 
 ## Assumption to confirm

@@ -29,7 +29,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from poc.common.domain import FamilyState
+    from poc.common.domain import FamilyState, FamilyStatus
     from poc.temporal.activities import (
         patch_configmap,
         read_status,
@@ -76,7 +76,7 @@ class FlinkJobFamilyActor:
         self._family = family
         if state is None:
             # First incarnation: adopt whatever the cluster currently says.
-            status = await app.execute_activity(
+            status: FamilyStatus = await app.execute_activity(
                 read_status,
                 family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
@@ -176,7 +176,7 @@ class FlinkJobFamilyActor:
         """
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
-            status = await app.execute_activity(
+            status: FamilyStatus = await app.execute_activity(
                 read_status,
                 self._family,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,

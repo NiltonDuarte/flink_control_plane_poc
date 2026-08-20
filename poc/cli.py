@@ -77,7 +77,8 @@ def _extract_saga_failure(
             return cause.failure, cause.type
         if isinstance(cause, ApplicationError) and cause.details:
             try:
-                return SagaFailure.model_validate(cause.details[0]), cause.type
+                error_type = cause.type or type(cause).__name__
+                return SagaFailure.model_validate(cause.details[0]), error_type
             except ValueError:
                 pass
         cause = cause.__cause__ or getattr(cause, "cause", None)

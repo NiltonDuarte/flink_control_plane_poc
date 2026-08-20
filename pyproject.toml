@@ -1,7 +1,7 @@
 [project]
 name = "flink-control-plane-poc"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.13.4",
     "temporalio>=1.30,<2",
@@ -9,10 +9,21 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy>=1.18.2",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "pre-commit",
+    "ruff>=0.15.2",
 ]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+explicit_package_bases = true
+
+[tool.ruff]
+target-version = "py313"
+exclude = ["temporal_app.py"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
