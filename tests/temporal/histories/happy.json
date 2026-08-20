@@ -2,14 +2,14 @@
   "events": [
     {
       "eventId": "1",
-      "eventTime": "2026-08-17T13:44:39.924Z",
+      "eventTime": "2026-08-20T12:18:50.067Z",
       "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_STARTED",
       "workflowExecutionStartedEventAttributes": {
         "workflowType": {
           "name": "MoveDatatypeWorkflow"
         },
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "input": {
           "payloads": [
@@ -24,9 +24,9 @@
         "workflowExecutionTimeout": "315360000s",
         "workflowRunTimeout": "315360000s",
         "workflowTaskTimeout": "10s",
-        "originalExecutionRunId": "46b5b90e-63d7-4d87-b156-7e1d2364de47",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "firstExecutionRunId": "46b5b90e-63d7-4d87-b156-7e1d2364de47",
+        "originalExecutionRunId": "2cf31e0a-59fd-4895-ba72-fa77621d6dbb",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "firstExecutionRunId": "2cf31e0a-59fd-4895-ba72-fa77621d6dbb",
         "attempt": 1,
         "firstWorkflowTaskBackoff": "0s",
         "priority": {}
@@ -34,11 +34,11 @@
     },
     {
       "eventId": "2",
-      "eventTime": "2026-08-17T13:44:39.924Z",
+      "eventTime": "2026-08-20T12:18:50.067Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -46,26 +46,26 @@
     },
     {
       "eventId": "3",
-      "eventTime": "2026-08-17T13:44:39.927Z",
+      "eventTime": "2026-08-20T12:18:50.069Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "353"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "359"
       }
     },
     {
       "eventId": "4",
-      "eventTime": "2026-08-17T13:44:39.952Z",
+      "eventTime": "2026-08-20T12:18:50.093Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "2",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {
           "coreUsedFlags": [
-            1,
             2,
+            1,
             3
           ],
           "sdkName": "temporal-python",
@@ -76,7 +76,7 @@
     },
     {
       "eventId": "5",
-      "eventTime": "2026-08-17T13:44:39.952Z",
+      "eventTime": "2026-08-20T12:18:50.093Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "1",
@@ -84,7 +84,7 @@
           "name": "read_status"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -113,17 +113,17 @@
     },
     {
       "eventId": "6",
-      "eventTime": "2026-08-17T13:44:39.952Z",
+      "eventTime": "2026-08-20T12:18:50.093Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "5",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "7",
-      "eventTime": "2026-08-17T13:44:39.956Z",
+      "eventTime": "2026-08-20T12:18:50.096Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -138,16 +138,16 @@
         },
         "scheduledEventId": "5",
         "startedEventId": "6",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "8",
-      "eventTime": "2026-08-17T13:44:39.956Z",
+      "eventTime": "2026-08-20T12:18:50.096Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -155,29 +155,29 @@
     },
     {
       "eventId": "9",
-      "eventTime": "2026-08-17T13:44:39.956Z",
+      "eventTime": "2026-08-20T12:18:50.096Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "986"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "995"
       }
     },
     {
       "eventId": "10",
-      "eventTime": "2026-08-17T13:44:39.959Z",
+      "eventTime": "2026-08-20T12:18:50.097Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "8",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "11",
-      "eventTime": "2026-08-17T13:44:39.959Z",
+      "eventTime": "2026-08-20T12:18:50.097Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "2",
@@ -185,7 +185,7 @@
           "name": "read_status"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -214,17 +214,17 @@
     },
     {
       "eventId": "12",
-      "eventTime": "2026-08-17T13:44:39.959Z",
+      "eventTime": "2026-08-20T12:18:50.097Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "11",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "13",
-      "eventTime": "2026-08-17T13:44:39.960Z",
+      "eventTime": "2026-08-20T12:18:50.098Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -239,16 +239,16 @@
         },
         "scheduledEventId": "11",
         "startedEventId": "12",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "14",
-      "eventTime": "2026-08-17T13:44:39.960Z",
+      "eventTime": "2026-08-20T12:18:50.098Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -256,29 +256,29 @@
     },
     {
       "eventId": "15",
-      "eventTime": "2026-08-17T13:44:39.961Z",
+      "eventTime": "2026-08-20T12:18:50.098Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "1572"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "1584"
       }
     },
     {
       "eventId": "16",
-      "eventTime": "2026-08-17T13:44:39.967Z",
+      "eventTime": "2026-08-20T12:18:50.099Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "14",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "17",
-      "eventTime": "2026-08-17T13:44:39.967Z",
+      "eventTime": "2026-08-20T12:18:50.099Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "3",
@@ -286,7 +286,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -296,7 +296,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1oYXBweTo0NmI1YjkwZS02M2Q3LTRkODctYjE1Ni03ZTFkMjM2NGRlNDc6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1oYXBweToyY2YzMWUwYS01OWZkLTQ4OTUtYmE3Mi1mYTc3NjIxZDZkYmI6cGF1c2U6ZmFtaWx5X2EiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -316,17 +316,17 @@
     },
     {
       "eventId": "18",
-      "eventTime": "2026-08-17T13:44:39.967Z",
+      "eventTime": "2026-08-20T12:18:50.099Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "17",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "19",
-      "eventTime": "2026-08-17T13:44:40.001Z",
+      "eventTime": "2026-08-20T12:18:50.115Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -335,22 +335,22 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9hL3NwLTAwMDEifQ=="
+              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9hL3NwLWUzZDgyZTYzZmQ1YmM1Y2IifQ=="
             }
           ]
         },
         "scheduledEventId": "17",
         "startedEventId": "18",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "20",
-      "eventTime": "2026-08-17T13:44:40.001Z",
+      "eventTime": "2026-08-20T12:18:50.115Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -358,29 +358,29 @@
     },
     {
       "eventId": "21",
-      "eventTime": "2026-08-17T13:44:40.001Z",
+      "eventTime": "2026-08-20T12:18:50.115Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "2290"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "2320"
       }
     },
     {
       "eventId": "22",
-      "eventTime": "2026-08-17T13:44:40.003Z",
+      "eventTime": "2026-08-20T12:18:50.116Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "20",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "23",
-      "eventTime": "2026-08-17T13:44:40.003Z",
+      "eventTime": "2026-08-20T12:18:50.116Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "4",
@@ -388,7 +388,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -398,7 +398,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1oYXBweTo0NmI1YjkwZS02M2Q3LTRkODctYjE1Ni03ZTFkMjM2NGRlNDc6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXVzZSIsInVwZGF0ZV9pZCI6InJlY29yZC1oYXBweToyY2YzMWUwYS01OWZkLTQ4OTUtYmE3Mi1mYTc3NjIxZDZkYmI6cGF1c2U6ZmFtaWx5X2IiLCJkYXRhdHlwZXMiOm51bGwsImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -418,17 +418,17 @@
     },
     {
       "eventId": "24",
-      "eventTime": "2026-08-17T13:44:40.003Z",
+      "eventTime": "2026-08-20T12:18:50.116Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "23",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "25",
-      "eventTime": "2026-08-17T13:44:40.022Z",
+      "eventTime": "2026-08-20T12:18:50.127Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -437,22 +437,22 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9iL3NwLTAwMDEifQ=="
+              "data": "eyJjaGFuZ2VkIjp0cnVlLCJzYXZlcG9pbnRfdXJpIjoiczM6Ly9zYXZlcG9pbnRzL2ZhbWlseV9iL3NwLWI2YTAwZDU3OTc0Yjc5NzIifQ=="
             }
           ]
         },
         "scheduledEventId": "23",
         "startedEventId": "24",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "26",
-      "eventTime": "2026-08-17T13:44:40.022Z",
+      "eventTime": "2026-08-20T12:18:50.127Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -460,29 +460,29 @@
     },
     {
       "eventId": "27",
-      "eventTime": "2026-08-17T13:44:40.022Z",
+      "eventTime": "2026-08-20T12:18:50.127Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "26",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "3005"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "3056"
       }
     },
     {
       "eventId": "28",
-      "eventTime": "2026-08-17T13:44:40.024Z",
+      "eventTime": "2026-08-20T12:18:50.128Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "26",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "29",
-      "eventTime": "2026-08-17T13:44:40.024Z",
+      "eventTime": "2026-08-20T12:18:50.128Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "5",
@@ -490,7 +490,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -500,7 +500,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6NDZiNWI5MGUtNjNkNy00ZDg3LWIxNTYtN2UxZDIzNjRkZTQ3OnBhdGNoOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6MmNmMzFlMGEtNTlmZC00ODk1LWJhNzItZmE3NzYyMWQ2ZGJiOnBhdGNoOmZhbWlseV9hIiwiZGF0YXR5cGVzIjpbImltcHJlc3Npb25zIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -520,17 +520,17 @@
     },
     {
       "eventId": "30",
-      "eventTime": "2026-08-17T13:44:40.024Z",
+      "eventTime": "2026-08-20T12:18:50.128Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "29",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "31",
-      "eventTime": "2026-08-17T13:44:40.041Z",
+      "eventTime": "2026-08-20T12:18:50.133Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -545,16 +545,16 @@
         },
         "scheduledEventId": "29",
         "startedEventId": "30",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "32",
-      "eventTime": "2026-08-17T13:44:40.041Z",
+      "eventTime": "2026-08-20T12:18:50.133Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -562,29 +562,29 @@
     },
     {
       "eventId": "33",
-      "eventTime": "2026-08-17T13:44:40.041Z",
+      "eventTime": "2026-08-20T12:18:50.133Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "32",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "3708"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "3767"
       }
     },
     {
       "eventId": "34",
-      "eventTime": "2026-08-17T13:44:40.043Z",
+      "eventTime": "2026-08-20T12:18:50.135Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "32",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "35",
-      "eventTime": "2026-08-17T13:44:40.043Z",
+      "eventTime": "2026-08-20T12:18:50.135Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "6",
@@ -592,7 +592,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -602,7 +602,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6NDZiNWI5MGUtNjNkNy00ZDg3LWIxNTYtN2UxZDIzNjRkZTQ3OnBhdGNoOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIiwiY2xpY2tzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJwYXRjaF9jb25maWciLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6MmNmMzFlMGEtNTlmZC00ODk1LWJhNzItZmE3NzYyMWQ2ZGJiOnBhdGNoOmZhbWlseV9iIiwiZGF0YXR5cGVzIjpbInZpZXdzIiwiY2xpY2tzIl0sImRlc2lyZWRfc3RhdGUiOm51bGx9"
             }
           ]
         },
@@ -622,17 +622,17 @@
     },
     {
       "eventId": "36",
-      "eventTime": "2026-08-17T13:44:40.043Z",
+      "eventTime": "2026-08-20T12:18:50.135Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "35",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "37",
-      "eventTime": "2026-08-17T13:44:40.052Z",
+      "eventTime": "2026-08-20T12:18:50.141Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -647,16 +647,16 @@
         },
         "scheduledEventId": "35",
         "startedEventId": "36",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "38",
-      "eventTime": "2026-08-17T13:44:40.052Z",
+      "eventTime": "2026-08-20T12:18:50.141Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -664,29 +664,29 @@
     },
     {
       "eventId": "39",
-      "eventTime": "2026-08-17T13:44:40.052Z",
+      "eventTime": "2026-08-20T12:18:50.141Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "38",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "4414"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "4481"
       }
     },
     {
       "eventId": "40",
-      "eventTime": "2026-08-17T13:44:40.055Z",
+      "eventTime": "2026-08-20T12:18:50.142Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "38",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "41",
-      "eventTime": "2026-08-17T13:44:40.055Z",
+      "eventTime": "2026-08-20T12:18:50.142Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "7",
@@ -694,7 +694,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -704,7 +704,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6NDZiNWI5MGUtNjNkNy00ZDg3LWIxNTYtN2UxZDIzNjRkZTQ3OnJlc3VtZTpmYW1pbHlfYSIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYSIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6MmNmMzFlMGEtNTlmZC00ODk1LWJhNzItZmE3NzYyMWQ2ZGJiOnJlc3VtZTpmYW1pbHlfYSIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
             }
           ]
         },
@@ -724,17 +724,17 @@
     },
     {
       "eventId": "42",
-      "eventTime": "2026-08-17T13:44:40.055Z",
+      "eventTime": "2026-08-20T12:18:50.142Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "41",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "43",
-      "eventTime": "2026-08-17T13:44:40.063Z",
+      "eventTime": "2026-08-20T12:18:50.147Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -749,16 +749,16 @@
         },
         "scheduledEventId": "41",
         "startedEventId": "42",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "44",
-      "eventTime": "2026-08-17T13:44:40.063Z",
+      "eventTime": "2026-08-20T12:18:50.147Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -766,29 +766,29 @@
     },
     {
       "eventId": "45",
-      "eventTime": "2026-08-17T13:44:40.063Z",
+      "eventTime": "2026-08-20T12:18:50.147Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "44",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "5101"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "5176"
       }
     },
     {
       "eventId": "46",
-      "eventTime": "2026-08-17T13:44:40.065Z",
+      "eventTime": "2026-08-20T12:18:50.148Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "44",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "47",
-      "eventTime": "2026-08-17T13:44:40.065Z",
+      "eventTime": "2026-08-20T12:18:50.148Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_SCHEDULED",
       "activityTaskScheduledEventAttributes": {
         "activityId": "8",
@@ -796,7 +796,7 @@
           "name": "execute_family_command"
         },
         "taskQueue": {
-          "name": "tq-record-happy",
+          "name": "flink-control-plane",
           "kind": "TASK_QUEUE_KIND_NORMAL"
         },
         "header": {},
@@ -806,7 +806,7 @@
               "metadata": {
                 "encoding": "anNvbi9wbGFpbg=="
               },
-              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6NDZiNWI5MGUtNjNkNy00ZDg3LWIxNTYtN2UxZDIzNjRkZTQ3OnJlc3VtZTpmYW1pbHlfYiIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
+              "data": "eyJmYW1pbHkiOiJmYW1pbHlfYiIsImNvbW1hbmQiOiJyZXN1bWUiLCJ1cGRhdGVfaWQiOiJyZWNvcmQtaGFwcHk6MmNmMzFlMGEtNTlmZC00ODk1LWJhNzItZmE3NzYyMWQ2ZGJiOnJlc3VtZTpmYW1pbHlfYiIsImRhdGF0eXBlcyI6bnVsbCwiZGVzaXJlZF9zdGF0ZSI6bnVsbH0="
             }
           ]
         },
@@ -826,17 +826,17 @@
     },
     {
       "eventId": "48",
-      "eventTime": "2026-08-17T13:44:40.066Z",
+      "eventTime": "2026-08-20T12:18:50.148Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_STARTED",
       "activityTaskStartedEventAttributes": {
         "scheduledEventId": "47",
-        "identity": "14204@MBP-de-Bianca.localdomain",
+        "identity": "67340@MBP-de-Bianca.localdomain",
         "attempt": 1
       }
     },
     {
       "eventId": "49",
-      "eventTime": "2026-08-17T13:44:40.084Z",
+      "eventTime": "2026-08-20T12:18:50.153Z",
       "eventType": "EVENT_TYPE_ACTIVITY_TASK_COMPLETED",
       "activityTaskCompletedEventAttributes": {
         "result": {
@@ -851,16 +851,16 @@
         },
         "scheduledEventId": "47",
         "startedEventId": "48",
-        "identity": "14204@MBP-de-Bianca.localdomain"
+        "identity": "67340@MBP-de-Bianca.localdomain"
       }
     },
     {
       "eventId": "50",
-      "eventTime": "2026-08-17T13:44:40.084Z",
+      "eventTime": "2026-08-20T12:18:50.153Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_SCHEDULED",
       "workflowTaskScheduledEventAttributes": {
         "taskQueue": {
-          "name": "tq-record-happy"
+          "name": "flink-control-plane"
         },
         "startToCloseTimeout": "10s",
         "attempt": 1
@@ -868,29 +868,29 @@
     },
     {
       "eventId": "51",
-      "eventTime": "2026-08-17T13:44:40.084Z",
+      "eventTime": "2026-08-20T12:18:50.153Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_STARTED",
       "workflowTaskStartedEventAttributes": {
         "scheduledEventId": "50",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "historySizeBytes": "5788"
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "historySizeBytes": "5871"
       }
     },
     {
       "eventId": "52",
-      "eventTime": "2026-08-17T13:44:40.087Z",
+      "eventTime": "2026-08-20T12:18:50.155Z",
       "eventType": "EVENT_TYPE_WORKFLOW_TASK_COMPLETED",
       "workflowTaskCompletedEventAttributes": {
         "scheduledEventId": "50",
-        "identity": "14204@MBP-de-Bianca.localdomain",
-        "binaryChecksum": "f399498e10935aa037668cc154f7bb33",
+        "identity": "67340@MBP-de-Bianca.localdomain",
+        "binaryChecksum": "b680f3119b1633f41c01a0037810f5be",
         "sdkMetadata": {},
         "meteringMetadata": {}
       }
     },
     {
       "eventId": "53",
-      "eventTime": "2026-08-17T13:44:40.087Z",
+      "eventTime": "2026-08-20T12:18:50.155Z",
       "eventType": "EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED",
       "workflowExecutionCompletedEventAttributes": {
         "result": {

@@ -21,6 +21,14 @@ from poc.temporal.worker import build_worker
 from tests.conftest import ops
 
 
+def test_unsafe_family_identifier_is_rejected_before_actor_identity(
+    cluster: MockCluster,
+) -> None:
+    with pytest.raises(ValueError, match="family identifier"):
+        actor_id("../escape")
+    assert cluster.audit() == []
+
+
 async def test_concurrent_pauses_are_serialized(
     client: Client, cluster: MockCluster
 ) -> None:
@@ -122,3 +130,11 @@ async def test_restore_refreshes_stale_cache_after_lost_response(
             await handle.query(FlinkJobFamilyActor.current_state) == FamilyState.RUNNING
         )
         assert cluster.read(SOURCE).state == FamilyState.RUNNING
+
+    attempts = [
+        entry
+        for entry in cluster.audit()
+        if entry.op == "suspend_job" and entry.family == SOURCE
+    ]
+    assert [entry.changed for entry in attempts] == [True, False, False, False]
+    assert len({entry.operation_id for entry in attempts}) == 1

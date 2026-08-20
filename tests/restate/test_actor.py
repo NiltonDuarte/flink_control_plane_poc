@@ -17,6 +17,17 @@ from tests.restate.conftest import RestateCase
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
+async def test_unsafe_family_identifier_is_rejected_before_object_resource_access(
+    restate_env: HarnessEnvironment, restate_case: RestateCase
+) -> None:
+    with pytest.raises(restate.HttpError) as raised:
+        await restate_env.client.object_call(pause, "a" * 129, Empty())
+
+    assert raised.value.status_code == 422
+    assert "family identifier" in (raised.value.body or str(raised.value))
+    assert restate_case.cluster.audit() == []
+
+
 async def test_concurrent_commands_serialize_to_one_effective_mutation(
     restate_env: HarnessEnvironment, restate_case: RestateCase
 ) -> None:
@@ -91,3 +102,10 @@ async def test_restore_refreshes_stale_state_after_lost_response(
     )
     assert refreshed.state == FamilyState.RUNNING
     assert restate_case.cluster.read(restate_case.source).state == FamilyState.RUNNING
+    attempts = [
+        entry
+        for entry in restate_case.cluster.audit()
+        if entry.op == "suspend_job" and entry.family == restate_case.source
+    ]
+    assert [entry.changed for entry in attempts] == [True, False, False, False]
+    assert len({entry.operation_id for entry in attempts}) == 1

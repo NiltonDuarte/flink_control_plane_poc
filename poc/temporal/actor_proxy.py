@@ -78,12 +78,12 @@ class ActorProxy:
             return CommandResult(changed=changed)
 
         if request.command is FamilyCommand.PATCH_CONFIG:
-            await handle.execute_update(
+            changed: bool = await handle.execute_update(
                 FlinkJobFamilyActor.patch_config,
                 request.datatypes or [],
                 id=request.update_id,
             )
-            return CommandResult(changed=True)
+            return CommandResult(changed=changed)
 
         if request.command is FamilyCommand.RESTORE:
             changed: bool = await handle.execute_update(

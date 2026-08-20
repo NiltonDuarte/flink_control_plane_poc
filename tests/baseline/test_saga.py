@@ -210,3 +210,62 @@ def test_failed_compensation_is_reported_and_remaining_restores_continue(
     assert err.failure.compensation_noops == [f"pause:{TARGET}"]
     assert len(err.failure.compensation_errors) == 1
     assert err.failure.compensation_errors[0].startswith(f"resume:{TARGET}:")
+
+
+def test_lost_response_retries_preserve_attempts_but_mutate_once(
+    cluster: MockCluster,
+) -> None:
+    before = cluster.snapshot()
+
+    _, err = run_scenario(cluster, SCENARIOS["lost-response-suspend"])
+
+    assert err is not None
+    attempts = [
+        entry
+        for entry in cluster.audit()
+        if entry.op == "suspend_job" and entry.family == TARGET
+    ]
+    assert len(attempts) == 4
+    assert [entry.changed for entry in attempts] == [True, False, False, False]
+    assert len({entry.operation_id for entry in attempts}) == 1
+    assert cluster.snapshot() == before
+
+
+def test_lost_patch_response_applies_forward_operation_once(
+    cluster: MockCluster,
+) -> None:
+    before = cluster.snapshot()
+
+    _, err = run_scenario(cluster, SCENARIOS["lost-response-patch"])
+
+    assert err is not None
+    attempts = [
+        entry
+        for entry in cluster.audit()
+        if entry.op == "patch_configmap" and entry.family == SOURCE
+    ]
+    assert len(attempts) == 5
+    assert [entry.changed for entry in attempts] == [
+        True,
+        False,
+        False,
+        False,
+        True,
+    ]
+    assert len({entry.operation_id for entry in attempts[:4]}) == 1
+    assert attempts[-1].operation_id != attempts[0].operation_id
+    assert cluster.snapshot() == before
+
+
+def test_unsafe_family_identifier_is_rejected_before_cluster_read(
+    cluster: MockCluster,
+) -> None:
+    request = REQUEST.model_copy(update={"source_family": "../escape"})
+
+    with pytest.raises(SagaError) as raised:
+        MoveDatatypeWorkflow().run(request)
+
+    assert raised.value.failure.outcome == SagaOutcome.REJECTED
+    assert raised.value.failure.failed_step == "validate"
+    assert "family identifier" in raised.value.failure.reason
+    assert cluster.audit() == []

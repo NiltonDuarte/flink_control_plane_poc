@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 
 from poc.baseline.actor import FamilyActor
@@ -10,6 +11,7 @@ from poc.common.domain import (
     SagaError,
     SagaFailure,
     SagaOutcome,
+    validate_family_identifier,
 )
 
 
@@ -29,8 +31,18 @@ class MoveDatatypeWorkflow:
         source, target = request.source_family, request.target_family
         done: list[str] = []
         stack: list[_Compensation] = []
-        actors = {source: FamilyActor(source), target: FamilyActor(target)}
+        operation_namespace = f"baseline:{uuid.uuid4().hex}"
 
+        identifier_error = self._family_identifier_error(request)
+        if identifier_error is not None:
+            raise self._failure(
+                request,
+                outcome=SagaOutcome.REJECTED,
+                failed_step="validate",
+                reason=identifier_error,
+            )
+
+        actors = {source: FamilyActor(source), target: FamilyActor(target)}
         statuses = self._read_all(request.families)
         validation_error = self._validation_error(request, statuses)
         if validation_error is not None:
@@ -80,25 +92,27 @@ class MoveDatatypeWorkflow:
             # -- Phase 1: pause ------------------------------------------
             for family in request.families:
                 stack.append(pause_restore[family])
-                actors[family].pause()
+                actors[family].pause(f"{operation_namespace}:pause:{family}")
                 done.append(f"pause:{family}")
             # -- Phase 2: patch config -----------------------------------
             for family in request.families:
                 stack.append(config_restore[family])
-                actors[family].patch_config(new_config[family])
+                actors[family].patch_config(
+                    new_config[family], f"{operation_namespace}:patch:{family}"
+                )
                 done.append(f"patch:{family}")
 
             # -- Phase 3: resume -----------------------------------------
             for family in request.families:
                 stack.append(resume_restore[family])
-                actors[family].resume()
+                actors[family].resume(f"{operation_namespace}:resume:{family}")
                 done.append(f"resume:{family}")
 
             return done
 
         except Exception as err:
             failed_step = self._next_step(request, done)
-            compensated, noops, errors = self._compensate(stack)
+            compensated, noops, errors = self._compensate(stack, operation_namespace)
             outcome = (
                 SagaOutcome.COMPENSATION_INCOMPLETE
                 if errors
@@ -134,6 +148,15 @@ class MoveDatatypeWorkflow:
             return f"{request.datatype} is not owned by {request.source_family}"
         if request.datatype in statuses[request.target_family].datatypes:
             return f"{request.datatype} is already owned by {request.target_family}"
+        return None
+
+    @staticmethod
+    def _family_identifier_error(request: MoveDatatypeRequest) -> str | None:
+        try:
+            for family in request.families:
+                validate_family_identifier(family)
+        except ValueError as err:
+            return str(err)
         return None
 
     @staticmethod
@@ -175,7 +198,7 @@ class MoveDatatypeWorkflow:
         )
 
     def _compensate(
-        self, stack: list[_Compensation]
+        self, stack: list[_Compensation], operation_namespace: str
     ) -> tuple[list[str], list[str], list[str]]:
         """Unwind LIFO, best effort.
 
@@ -186,10 +209,12 @@ class MoveDatatypeWorkflow:
         compensated: list[str] = []
         noops: list[str] = []
         errors: list[str] = []
-        for item in reversed(stack):
+        for index, item in enumerate(reversed(stack)):
             try:
                 changed = FamilyActor(item.family).restore(
-                    item.desired_state, item.datatypes
+                    item.desired_state,
+                    item.datatypes,
+                    f"{operation_namespace}:comp:{index}:{item.label}",
                 )
                 if changed:
                     compensated.append(item.label)

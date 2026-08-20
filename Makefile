@@ -60,7 +60,8 @@ restate-service:
 	POC_CLUSTER_ROOT=.cluster uv run python -m poc.restate.run_service
 
 restate-register:
-	curl -sS -X POST http://localhost:9070/deployments \
+	curl -sS --connect-timeout 5 --max-time 15 \
+		-X POST http://localhost:9070/deployments \
 		-H 'content-type: application/json' \
 		-d '{"uri":"http://localhost:9080"}'
 

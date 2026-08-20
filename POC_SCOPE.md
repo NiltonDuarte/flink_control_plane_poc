@@ -43,8 +43,9 @@ one fault-injection file.
   families/family_a.json     {"state":"RUNNING","datatypes":["clicks"],"generation":3}
   families/family_b.json     {"state":"RUNNING","datatypes":["views"],"generation":7}
   savepoints/family_a-sp-0001.json
-  audit.jsonl                append-only, one line per activity call
+  audit.jsonl                append-only, one line per cluster-call attempt
   chaos.json                 fault injection rules
+  completed_operations.json stable mutation identities and results
 ```
 
 Every mutating activity: read JSON → mutate → write JSON → append to
@@ -66,15 +67,20 @@ final state — a saga that rolls back in the wrong order still ends in the righ
 
 `transient` → retryable error, `times` occurrences then success.
 `permanent` → non-retryable `ApplicationError`.
-`lost_response` → commit and audit the mutation, then raise a retryable error,
-`times` occurrences before a response succeeds.
+`lost_response` → commit and audit the mutation once, then raise a retryable
+error. Retries reuse the stable operation identity, retain audited attempt
+evidence with `changed=false`, and do not advance generation or create another
+savepoint.
 
 ## Components
 
 **Activities** — thin, idempotent, the only code that touches the mock:
 `trigger_savepoint`, `suspend_job`, `resume_job`, `patch_configmap`, and
-`read_status`. Rollback never derives its payload from a mutating call's return
-value.
+`read_status`. Every mutating call carries a stable operation identity. The mock
+records whether each attempt changed external state, deduplicates completed
+identities, and treats an already-present desired runtime/config state as a
+successful no-op. Rollback never derives its payload from a mutating call's
+return value.
 
 **`FlinkJobFamilyActor`** — long-lived entity workflow, `workflow_id = "family:<name>"`.
 Handlers `pause` / `resume` / `patch_config` / `restore` exposed as Temporal **updates**
@@ -96,10 +102,12 @@ LIFO, reconciling each intent against fresh cluster state, and aborts.
 
 **Restate implementation** — `poc/restate/` owns a separate Workflow and
 Virtual Object implementation. Exclusive object handlers supply the native
-single-writer guarantee; K/V state stores the runtime cache; every cluster call
-is a typed durable step with the same four-attempt retry budget. The Workflow
-calls object handlers directly and does not import the Temporal saga, proxy,
-activities, or update-id scheme.
+resource-local single-writer guarantee; K/V state stores the runtime cache;
+every cluster call is a typed durable step with the same four-attempt retry
+budget and a ten-second maximum retry duration. The Workflow calls object
+handlers directly and does not import the Temporal saga, proxy, activities, or
+update-id scheme. Resource-local serialization does not establish saga-level
+ownership, leases, or fencing; that remains deferred to issue #28.
 
 ## Test plan
 
@@ -122,6 +130,9 @@ activities, or update-id scheme.
 Every failure test asserts against `audit.jsonl`, and asserts observable runtime
 state and datatype routing equal their pre-saga snapshot. Generation counters and
 savepoint artifacts are intentionally irreversible.
+
+Incomplete compensation reports structured evidence but has no reconciliation
+API or durable `RecoveryPlan`; that design remains deferred to issue #27.
 
 ## Layout
 

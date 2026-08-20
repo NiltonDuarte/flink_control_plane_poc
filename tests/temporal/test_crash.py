@@ -11,12 +11,10 @@ has to time out before the server hands it to the new worker).
 
     uv run pytest -m crash
 
-A note on what "no duplicated side effects" can honestly mean here. Temporal
-gives activities *at-least-once* execution, so an activity interrupted by the
-kill will run again on recovery; that is by design, and it is why the cluster
-operations are idempotent. What must not happen is the saga replaying phases it
-already completed. That is the assertion below: each operation appears about
-once, not twice over.
+Temporal gives activities *at-least-once* execution, so an interrupted activity
+may be attempted again. Stable mutation identities make the repeated attempt a
+successful audited no-op. The assertion below therefore requires exactly one
+effective side effect for every logical operation.
 """
 
 from __future__ import annotations
@@ -84,11 +82,11 @@ async def _wait_for_ops(
             raise AssertionError(
                 f"worker exited early with code {return_code}: {detail or '<no stderr>'}"
             )
-        if len(cluster.audit(successful_only=True)) >= count:
+        if len(cluster.audit(effective_only=True)) >= count:
             return
         await asyncio.sleep(0.1)
     raise AssertionError(
-        f"only {len(cluster.audit(successful_only=True))} ops after {timeout}s"
+        f"only {len(cluster.audit(effective_only=True))} ops after {timeout}s"
     )
 
 
@@ -113,7 +111,7 @@ async def test_saga_survives_worker_kill(
         # Let the saga get properly underway - past the first pause, into the
         # second - so the kill lands mid-transaction rather than before it began.
         await _wait_for_ops(cluster, 3, worker)
-        ops_before_kill = len(cluster.audit(successful_only=True))
+        ops_before_kill = len(cluster.audit(effective_only=True))
 
         worker.send_signal(signal.SIGKILL)
         worker.wait(timeout=10)
@@ -122,7 +120,7 @@ async def test_saga_survives_worker_kill(
         # Nothing can progress with no worker: the saga is parked in the server,
         # not lost, and not spinning.
         await asyncio.sleep(2)
-        assert len(cluster.audit(successful_only=True)) == ops_before_kill
+        assert len(cluster.audit(effective_only=True)) == ops_before_kill
 
         worker = _spawn_worker(address, cluster.root)
         steps = await asyncio.wait_for(handle.result(), timeout=120)
@@ -144,8 +142,16 @@ async def test_saga_survives_worker_kill(
     assert cluster.read(SOURCE).datatypes == ["impressions"]
     assert cluster.read(TARGET).datatypes == ["views", "clicks"]
 
-    # It resumed rather than restarted. A from-scratch replay would run the
-    # 8-operation happy path twice; at-least-once activity semantics allow the
-    # one interrupted operation to repeat, so the ceiling is 8 + a small margin.
-    successful = cluster.audit(successful_only=True)
-    assert 8 <= len(successful) <= 11, [str(entry) for entry in successful]
+    effective = [
+        (entry.op, entry.family) for entry in cluster.audit(effective_only=True)
+    ]
+    assert effective == [
+        ("trigger_savepoint", SOURCE),
+        ("suspend_job", SOURCE),
+        ("trigger_savepoint", TARGET),
+        ("suspend_job", TARGET),
+        ("patch_configmap", SOURCE),
+        ("patch_configmap", TARGET),
+        ("resume_job", SOURCE),
+        ("resume_job", TARGET),
+    ]
