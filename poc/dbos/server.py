@@ -3,25 +3,30 @@ from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
-from dbos import DBOSClient, EnqueueOptions
+from dbos import DBOSClient, EnqueueOptions, SQLAlchemyDatasource
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+from poc.common.domain import MoveDatatypeRequest
+
+family_repository = SQLAlchemyDatasource.create(os.environ["APP_DATABASE_URL"])
 
 # Create a FastAPI app and API router
 app = FastAPI()
 api = APIRouter(prefix="/api")
 
 # Create a DBOS client
-system_database_url = os.environ.get(
+SYSTEM_DATABASE_URL = os.environ.get(
     "DBOS_SYSTEM_DATABASE_URL", "sqlite:///dbos_queue_worker.sqlite"
 )
-client = DBOSClient(system_database_url=system_database_url)
 
+DBOS_CLIENT = DBOSClient(system_database_url=SYSTEM_DATABASE_URL)
 
-# Define constants and models
 WF_PROGRESS_KEY = "workflow_progress"
+WF_QUEUE_NAME = "workflow-queue"
+
 frontend_dist = Path(__file__).parent / "frontend" / "dist"
 
 
@@ -34,27 +39,28 @@ class WorkflowStatus(BaseModel):
 
 # Use the DBOS client to enqueue a workflow
 # for execution on the worker.
-@api.post("/workflows")
-def enqueue_workflow():
+@api.post("/workflows/move_datatype")
+def enqueue_workflow(request: MoveDatatypeRequest):
     options: EnqueueOptions = {
-        "queue_name": "workflow-queue",
-        "workflow_name": "workflow",
+        "queue_name": WF_QUEUE_NAME,
+        "workflow_name": "move_datatype",
     }
-    num_steps = 10
-    client.enqueue(options, num_steps)
+    DBOS_CLIENT.enqueue(
+        options, 
+        request,
+    )
     return {"status": "enqueued"}
-
 
 # List all workflows and their progress to display on the frontend
 @api.get("/workflows")
 def list_workflows() -> List[WorkflowStatus]:
     # Use the DBOS client to list all workflows
-    workflows = client.list_workflows(name="workflow", sort_desc=True)
+    workflows = DBOS_CLIENT.list_workflows(name="workflow", sort_desc=True)
     statuses: List[WorkflowStatus] = []
     for workflow in workflows:
         # Query each workflow's progress event. This may not be available
         # if the workflow has not yet started executing.
-        progress = client.get_event(
+        progress = DBOS_CLIENT.get_event(
             workflow.workflow_id, WF_PROGRESS_KEY, timeout_seconds=0
         )
         status = WorkflowStatus(

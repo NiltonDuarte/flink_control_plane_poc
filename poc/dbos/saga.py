@@ -22,6 +22,7 @@ from datetime import timedelta
 
 from dbos import DBOS
 
+from poc.baseline.actor import FamilyActor
 from poc.common.domain import (
     CommandRequest,
     CommandResult,
@@ -31,6 +32,7 @@ from poc.common.domain import (
     MoveDatatypeRequest,
     SagaFailure,
 )
+from poc.dbos.steps_service import DBOSActorService
 from poc.temporal.activities import read_status
 
 # Referenced by name so this module never imports the Temporal client that
@@ -59,15 +61,81 @@ class _Compensation:
     datatypes: list[str] | None = None
     desired_state: FamilyState | None = None
 
+# -- helpers -----------------------------------------------------------
+
+def _read_all(self, families: list[str]) -> dict[str, FamilyStatus]:
+    """Read sequentially, so the audit log has a deterministic order."""
+    statuses: dict[str, FamilyStatus] = {}
+    for family in families:
+        statuses[family] = await workflow.execute_activity(
+            read_status,
+            family,
+            start_to_close_timeout=READ_TIMEOUT,
+        )
+    return statuses
+
+def _compensate(
+    self, stack: list[_Compensation]
+) -> tuple[list[str], list[str], list[str]]:
+    """Unwind LIFO, best effort.
+
+    A failing compensation must not abort the unwind - stopping halfway would
+    strand the cluster in a worse state than finishing the remaining ones.
+    Errors are collected and reported instead.
+    """
+    compensated: list[str] = []
+    noops: list[str] = []
+    errors: list[str] = []
+    for index, item in enumerate(reversed(stack)):
+        request = CommandRequest(
+            family=item.family,
+            command=FamilyCommand.RESTORE,
+            update_id=_update_id(f"comp:{index}:{item.label}"),
+            datatypes=item.datatypes,
+            desired_state=item.desired_state,
+        )
+        try:
+            result = DBOSActorService.execute_activity(
+                PROXY_ACTIVITY,
+                request,
+                result_type=CommandResult,
+                start_to_close_timeout=PROXY_TIMEOUT,
+                retry_policy=PROXY_RETRY,
+            )
+            if result.changed:
+                compensated.append(item.label)
+            else:
+                noops.append(item.label)
+        except Exception as err:  # noqa: BLE001 - keep unwinding
+            errors.append(f"{item.label}: {err}")
+    return compensated, noops, errors
+
+def _update_id(step: str) -> str:
+    return f"{DBOS.workflow_id}:{step}"
+
+@staticmethod
+def _next_step(request: MoveDatatypeRequest, done: list[str]) -> str:
+    """The step that failed: the first one not in `done`."""
+    expected = [
+        *(f"pause:{f}" for f in request.families),
+        *(f"patch:{f}" for f in request.families),
+        *(f"resume:{f}" for f in request.families),
+    ]
+    for step in expected:
+        if step not in done:
+            return step
+    return "unknown"
+
 @DBOS.workflow()
-def run_move_datatype_request(self, request: MoveDatatypeRequest) -> list[str]:
+def move_datatype(self, request: MoveDatatypeRequest) -> list[str]:
     """Move one datatype between two families. Returns the executed steps."""
     source, target = request.source_family, request.target_family
     done: list[str] = []
     stack: list[_Compensation] = []
+    actors = {source: FamilyActor(source), target: FamilyActor(target)}
 
-    statuses = await self._read_all(request.families)
-    self._validate(request, statuses)
+    statuses = _read_all(request.families)
+    # self._validate(request, statuses)
 
     # A move is two-sided: the datatype leaves the source and joins the
     # target, so both configs change and a partial apply breaks routing.
@@ -108,24 +176,20 @@ def run_move_datatype_request(self, request: MoveDatatypeRequest) -> list[str]:
         # -- Phase 1: pause ------------------------------------------
         for family in request.families:
             stack.append(pause_restore[family])
-            await self._call(FamilyCommand.PAUSE, family, f"pause:{family}")
+            DBOSActorService.pause(family)
             done.append(f"pause:{family}")
 
         # -- Phase 2: patch config -----------------------------------
         for family in request.families:
             stack.append(config_restore[family])
-            await self._call(
-                FamilyCommand.PATCH_CONFIG,
-                family,
-                f"patch:{family}",
-                datatypes=new_config[family],
-            )
+            DBOSActorService.patch_config(family)
+
             done.append(f"patch:{family}")
 
         # -- Phase 3: resume -----------------------------------------
         for family in request.families:
             stack.append(resume_restore[family])
-            await self._call(FamilyCommand.RESUME, family, f"resume:{family}")
+            DBOSActorService.resume(family)
             done.append(f"resume:{family}")
 
         return done
@@ -144,127 +208,3 @@ def run_move_datatype_request(self, request: MoveDatatypeRequest) -> list[str]:
             ),
             non_retryable=True,
         ) from err
-
-# -- helpers -----------------------------------------------------------
-
-async def _read_all(self, families: list[str]) -> dict[str, FamilyStatus]:
-    """Read sequentially, so the audit log has a deterministic order."""
-    statuses: dict[str, FamilyStatus] = {}
-    for family in families:
-        statuses[family] = await workflow.execute_activity(
-            read_status,
-            family,
-            start_to_close_timeout=READ_TIMEOUT,
-        )
-    return statuses
-
-def _validate(
-    self, request: MoveDatatypeRequest, statuses: dict[str, FamilyStatus]
-) -> None:
-    """Reject impossible moves before anything has been mutated.
-
-    Failing here costs no compensation, which is the cheapest place to fail.
-    """
-    if request.source_family == request.target_family:
-        raise ApplicationError(
-            "source and target family are the same", non_retryable=True
-        )
-    if request.datatype not in statuses[request.source_family].datatypes:
-        raise ApplicationError(
-            f"{request.datatype} is not owned by {request.source_family}",
-            non_retryable=True,
-        )
-    if request.datatype in statuses[request.target_family].datatypes:
-        raise ApplicationError(
-            f"{request.datatype} is already owned by {request.target_family}",
-            non_retryable=True,
-        )
-
-async def _call(
-    self,
-    command: FamilyCommand,
-    family: str,
-    step: str,
-    datatypes: list[str] | None = None,
-) -> CommandResult:
-    """Invoke one actor handler through the proxy activity.
-
-    The update id is stable across replays and retries of *this* execution,
-    which is what makes a retried proxy activity attach to the original
-    update instead of issuing the command twice.
-
-    It is keyed on the **run** id, not the workflow id. Actors outlive the
-    sagas that call them, so a second execution of the same workflow id
-    (a re-run, a retry) would otherwise dedupe onto the *previous*
-    execution's updates and silently receive its stale results - including
-    its failures. Keying on run id scopes the dedup to one execution, which
-    is exactly the window in which it is wanted.
-    """
-    request = CommandRequest(
-        family=family,
-        command=command,
-        update_id=self._update_id(step),
-        datatypes=datatypes,
-    )
-    return await workflow.execute_activity(
-        PROXY_ACTIVITY,
-        request,
-        result_type=CommandResult,
-        start_to_close_timeout=PROXY_TIMEOUT,
-        retry_policy=PROXY_RETRY,
-    )
-
-async def _compensate(
-    self, stack: list[_Compensation]
-) -> tuple[list[str], list[str], list[str]]:
-    """Unwind LIFO, best effort.
-
-    A failing compensation must not abort the unwind - stopping halfway would
-    strand the cluster in a worse state than finishing the remaining ones.
-    Errors are collected and reported instead.
-    """
-    compensated: list[str] = []
-    noops: list[str] = []
-    errors: list[str] = []
-    for index, item in enumerate(reversed(stack)):
-        request = CommandRequest(
-            family=item.family,
-            command=FamilyCommand.RESTORE,
-            update_id=self._update_id(f"comp:{index}:{item.label}"),
-            datatypes=item.datatypes,
-            desired_state=item.desired_state,
-        )
-        try:
-            result = await workflow.execute_activity(
-                PROXY_ACTIVITY,
-                request,
-                result_type=CommandResult,
-                start_to_close_timeout=PROXY_TIMEOUT,
-                retry_policy=PROXY_RETRY,
-            )
-            if result.changed:
-                compensated.append(item.label)
-            else:
-                noops.append(item.label)
-        except Exception as err:  # noqa: BLE001 - keep unwinding
-            errors.append(f"{item.label}: {err}")
-    return compensated, noops, errors
-
-@staticmethod
-def _update_id(step: str) -> str:
-    """Dedup key for one actor command, scoped to this workflow execution."""
-    info = workflow.info()
-    return f"{info.workflow_id}:{info.run_id}:{step}"
-
-@staticmethod
-def _next_step(request: MoveDatatypeRequest, done: list[str]) -> str:
-    """The step that failed: the first one not in `done`."""
-    expected = [
-        *(f"pause:{f}" for f in request.families),
-        *(f"patch:{f}" for f in request.families),
-        *(f"resume:{f}" for f in request.families),
-    ]
-    for step in expected:
-        if step not in done:
-            return step
-    return "unknown"
