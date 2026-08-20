@@ -2,16 +2,13 @@
 
 from pathlib import Path
 
-import pytest
 from temporalio.exceptions import ApplicationError
 
 from poc.cli import WorkflowEngine, _print_failure, _run
 from poc.common.domain import SagaFailure, SagaOutcome
 
 
-def test_cli_prints_structured_saga_verdict(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
+def test_cli_prints_structured_saga_verdict(capsys) -> None:
     saga_error = ApplicationError(
         "COMPENSATED: stable history message",
         SagaFailure(
@@ -37,16 +34,14 @@ def test_cli_prints_structured_saga_verdict(
     assert "stable history message" not in output
 
 
-def test_cli_falls_back_to_raw_unrelated_exception(
-    capsys: pytest.CaptureFixture[str],
-) -> None:
+def test_cli_falls_back_to_raw_unrelated_exception(capsys) -> None:
     _print_failure(RuntimeError("transport disappeared"))
 
     assert capsys.readouterr().out == ("RESULT   : failed - transport disappeared\n\n")
 
 
 async def test_baseline_failure_reaches_shared_structured_formatter(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path, capsys
 ) -> None:
     result = await _run(
         "permanent-first-step", tmp_path / "cluster", WorkflowEngine.NONE

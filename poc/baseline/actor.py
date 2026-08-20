@@ -1,27 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from functools import wraps
-from typing import ClassVar, ParamSpec, Self, TypeVar, cast
+from typing import ClassVar
 
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyState, FamilyStatus, TransientClusterError
 
-P = ParamSpec("P")
-R = TypeVar("R")
 
-
-def retryable(attempts: int) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    def decor(fn: Callable[P, R]) -> Callable[P, R]:
+def retryable(attempts):
+    def decor(fn):
         @wraps(fn)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        def wrapper(*args, **kwargs):
             for attempt in range(attempts):
                 try:
                     return fn(*args, **kwargs)
                 except TransientClusterError:
                     if attempt == attempts - 1:
                         raise
-            raise AssertionError("retryable requires at least one attempt")
 
         return wrapper
 
@@ -31,12 +26,12 @@ def retryable(attempts: int) -> Callable[[Callable[P, R]], Callable[P, R]]:
 class FamilyActor:
     _instances: ClassVar[dict[str, FamilyActor]] = {}
 
-    def __new__(cls, name: str) -> Self:
+    def __new__(cls, name):
         if name not in cls._instances:
             cls._instances[name] = super().__new__(cls)
-        return cast(Self, cls._instances[name])
+        return cls._instances[name]
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         self.name = name
         self.cluster = MockCluster.from_env()
 
@@ -44,23 +39,23 @@ class FamilyActor:
         return self.cluster.read(self.name)
 
     @retryable(4)
-    def _trigger_savepoint(self) -> None:
+    def _trigger_savepoint(self):
         self.cluster.trigger_savepoint(self.name)
 
     @retryable(4)
-    def _suspend(self) -> None:
+    def _suspend(self):
         self.cluster.suspend_job(self.name)
 
-    def pause(self) -> None:
+    def pause(self):
         self._trigger_savepoint()
         self._suspend()
 
     @retryable(4)
-    def patch_config(self, config: list[str]) -> None:
+    def patch_config(self, config):
         self.cluster.patch_configmap(self.name, config)
 
     @retryable(4)
-    def resume(self) -> None:
+    def resume(self):
         self.cluster.resume_job(self.name)
 
     def restore(

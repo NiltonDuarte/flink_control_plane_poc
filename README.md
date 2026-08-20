@@ -15,7 +15,7 @@ Python 3.13 or newer and [uv](https://docs.astral.sh/uv/) are required.
 
 ```sh
 uv sync
-make check                             # Lint, format, types, fast tests
+make check                             # Lint, format, fast tests
 uv run pytest                          # Full suite
 uv run python -m poc.cli list          # List scenarios
 uv run python -m poc.cli run happy --engine None # Run with bare Python

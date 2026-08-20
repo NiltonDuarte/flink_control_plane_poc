@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar
 
 import pytest
-from temporalio.client import Client
 
 import temporal_app as app_module
 from poc.temporal import activities as activities_module  # noqa: F401
@@ -52,8 +51,8 @@ def test_registry_owns_all_definitions_and_one_queue() -> None:
 def test_worker_binds_exact_proxy_instance(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeWorker.created = []
     monkeypatch.setattr(app_module, "Worker", FakeWorker)
-    native_client = cast(Client, object())
-    returned_worker: object = build_worker(native_client)
+    native_client = object()
+    returned_worker = build_worker(native_client)  # type: ignore[arg-type]
 
     assert len(FakeWorker.created) == 1
     worker = FakeWorker.created[0]
@@ -71,7 +70,7 @@ def test_worker_binds_exact_proxy_instance(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_worker_rejects_missing_proxy_instance() -> None:
-    native_client = cast(Client, object())
+    native_client = object()
 
     with pytest.raises(ActivityBindingError, match="execute_family_command"):
-        app.create_workers(native_client)
+        app.create_workers(native_client)  # type: ignore[arg-type]

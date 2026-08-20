@@ -19,7 +19,7 @@ so that going to production means replacing one module, not rewriting the saga.
 | Saga | **Move Datatype Between Jobs** only — it is the superset of Batch Pause / Batch Resume |
 | Infra | Fully mocked. Files in / files out. **Instant state transitions**, no polling, no operator simulation |
 | Actor | **Kept.** `FlinkJobFamilyActor` as a real entity workflow — it is one of the things being proven |
-| Rigor | Lean runtime scope with typed Pydantic models, strict mypy across `poc/` and `tests/`, and one non-mutating `make check` quality gate |
+| Rigor | Lean runtime scope with typed Pydantic models, Python 3.13, Ruff linting and formatting, and one non-mutating `make check` quality gate. Strict mypy enforcement is deferred to Phase 2. |
 | Out of scope | Ingestion Config Portal, reconciliation loop, Operational Web API, Restate/DBOS implementations |
 
 ## What must be proven

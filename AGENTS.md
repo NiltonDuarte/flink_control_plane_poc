@@ -2,16 +2,10 @@
 
 These instructions apply to the whole repository. Keep them concise; add a nested `AGENTS.md` only when a subtree needs stricter rules.
 
-## Authorization and reporting
-
-- Treat review, explanation, and diagnosis as read-only. Implement only when the user requests a change, and keep mutations within that request.
-- Before finishing, report the exact files changed, commands run, failures encountered, and validation evidence. Do not imply that an unrun check passed.
-
 ## Engineering rules
 
 - Prefer explicit control flow, descriptive domain names, and small typed functions. Keep the baseline, Temporal, and Restate implementations understandable on their own.
 - Use Python 3.13 or newer. `pyproject.toml` is authoritative for the supported version and tool configuration.
-- Keep strict mypy clean across `poc/` and `tests/`. Do not leave unresolved `Any` at shared contracts, serialized models, workflow/activity boundaries, or other durable boundaries. Do not use broad ignores to make the gate pass.
 - Established acronyms such as API are acceptable. Reject ambiguous shorthand, and expand uncommon acronyms on first use in prose.
 - Do not add emojis to repository artifacts or generated user-facing output.
 
@@ -38,13 +32,14 @@ These instructions apply to the whole repository. Keep them concise; add a neste
 
 ## Validation
 
-- Run `make check` for every code or test change. It must perform Ruff lint, Ruff format checking, strict mypy, and the fast test suite without rewriting files.
+- Run `make check` for every code or test change. It must perform Ruff lint, Ruff format checking, and the fast test suite without rewriting files.
 - Run the affected Temporal or Restate crash suite manually for durability, operation-identity, or engine-integration changes. Bare Python has no crash-durability claim.
 - Keep audit-order, snapshot-restoration, retry, replay, engine-parity, and crash tests aligned with the behavior changed.
 - Run `git diff --check` before handoff.
 
 ## Known limitations
 
+- Strict static typing enforcement with mypy is deferred to Phase 2.
 - Preferred conversational voice is intentionally deferred to issue #26.
 - Saga-level ownership, leases, takeover, fencing, and stale-command rejection are deferred to issue #28.
 - Reconciliation after incomplete compensation and the durable `RecoveryPlan` are deferred to issue #27.

@@ -16,7 +16,7 @@ from pathlib import Path
 
 from temporalio.client import Client
 
-from poc.common.scenarios import REQUEST, SEED, Scenario
+from poc.common.scenarios import REQUEST, SEED
 from poc.temporal.actor import actor_id
 from poc.temporal.application import app
 from poc.temporal.saga import MoveDatatypeWorkflow
@@ -48,9 +48,7 @@ async def _clear_actors(client: Client) -> None:
             pass
 
 
-async def _run_workflow(
-    scenario: Scenario,
-) -> tuple[list[str] | None, Exception | None]:
+async def _run_workflow(scenario) -> tuple[list[str] | None, Exception | None]:
     client = await connect()
     await _clear_actors(client)
     async with build_worker(client):

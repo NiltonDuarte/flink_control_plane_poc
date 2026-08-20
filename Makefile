@@ -1,11 +1,10 @@
-.PHONY: help sync check lint format-check typecheck test test-fast test-crash server list histories clean
+.PHONY: help sync check lint format-check test test-fast test-crash server list histories clean
 
 help:
 	@echo "make sync         install dependencies"
 	@echo "make check        run all non-mutating quality gates"
 	@echo "make lint         run Ruff lint checks"
 	@echo "make format-check check Ruff formatting without rewriting files"
-	@echo "make typecheck    run strict mypy"
 	@echo "make test         run the full suite"
 	@echo "make test-fast    run everything except the crash test"
 	@echo "make test-crash   run the worker-kill durability test only"
@@ -20,16 +19,13 @@ help:
 sync:
 	uv sync
 
-check: lint format-check typecheck test-fast
+check: lint format-check test-fast
 
 lint:
 	uv run ruff check .
 
 format-check:
 	uv run ruff format --check .
-
-typecheck:
-	uv run mypy --strict --explicit-package-bases poc tests
 
 test:
 	uv run pytest

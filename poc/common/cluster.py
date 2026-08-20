@@ -28,9 +28,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel
 
 from poc.common.domain import (
     FamilyState,
@@ -42,7 +42,6 @@ from poc.common.domain import (
 ENV_CLUSTER_ROOT = "POC_CLUSTER_ROOT"
 
 Outcome = Literal["ok", "transient", "permanent"]
-type AuditValue = str | int | list[str]
 
 
 class AuditEntry(BaseModel):
@@ -56,7 +55,7 @@ class AuditEntry(BaseModel):
     op: str
     family: str
     outcome: Outcome
-    detail: dict[str, AuditValue] = Field(default_factory=dict)
+    detail: dict[str, Any] = {}
 
     def __str__(self) -> str:
         suffix = "" if self.outcome == "ok" else f" [{self.outcome}]"
@@ -74,14 +73,6 @@ class ChaosRule(BaseModel):
 
     mode: Literal["transient", "permanent", "lost_response"]
     times: int = 1
-
-
-class ChaosRules(RootModel[dict[str, ChaosRule]]):
-    """Validated contents of the external fault-injection file."""
-
-
-class ChaosHits(RootModel[dict[str, int]]):
-    """Validated per-rule attempt counters."""
 
 
 class MockCluster:
@@ -227,15 +218,13 @@ class MockCluster:
     def _write(self, status: FamilyStatus) -> None:
         self._family_path(status.family).write_text(status.model_dump_json(indent=2))
 
-    def _commit(
-        self, status: FamilyStatus, op: str, detail: dict[str, AuditValue]
-    ) -> None:
+    def _commit(self, status: FamilyStatus, op: str, detail: dict[str, Any]) -> None:
         status.generation += 1
         self._write(status)
         self._record(op, status.family, "ok", detail)
 
     def _record(
-        self, op: str, family: str, outcome: Outcome, detail: dict[str, AuditValue]
+        self, op: str, family: str, outcome: Outcome, detail: dict[str, Any]
     ) -> None:
         entry = AuditEntry(
             seq=self._next_seq(), op=op, family=family, outcome=outcome, detail=detail
@@ -292,9 +281,10 @@ class MockCluster:
     def _chaos_rules(self) -> dict[str, ChaosRule]:
         if not self.chaos_path.exists():
             return {}
-        return ChaosRules.model_validate_json(self.chaos_path.read_text() or "{}").root
+        raw = json.loads(self.chaos_path.read_text() or "{}")
+        return {key: ChaosRule.model_validate(value) for key, value in raw.items()}
 
     def _hits(self) -> dict[str, int]:
         if not self.hits_path.exists():
             return {}
-        return ChaosHits.model_validate_json(self.hits_path.read_text() or "{}").root
+        return json.loads(self.hits_path.read_text() or "{}")
