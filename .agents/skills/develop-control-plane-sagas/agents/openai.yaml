@@ -1,0 +1,4 @@
+interface:
+  display_name: "Develop Control-Plane Sagas"
+  short_description: "Guardrails for cross-engine saga changes"
+  default_prompt: "Use $develop-control-plane-sagas to implement a safe control-plane saga change across the affected engines."
