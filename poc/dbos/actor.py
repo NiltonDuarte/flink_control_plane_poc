@@ -58,19 +58,46 @@ class FlinkJobFamilyActor:
         self._terminate = False
         # # Serializes every command handler. See the module docstring.
         # self._lock = asyncio.Lock()
-    
-    # @family_repository.transaction()
-    # def lock_and_get_state(family: str) -> FamilyState:
-    #     family_repository.session.execute(
-    #         text("INSERT INTO family_state (family, state) VALUES (:family, :state) ON CONFLICT DO NOTHING"),
-    #         {"family": family, "state": FamilyState.RUNNING.value}
-    #     )
-    #     result = family_repository.session.execute(
-    #         text("SELECT state FROM family_state WHERE family = :family FOR UPDATE"),
-    #         {"family": family}
-    #     ).fetchone()
-    #     return FamilyState(result[0])
 
+    @family_repository.transaction()
+    def acquire_lock_on_state(family: str) -> FamilyState:
+        family_repository.session.execute(
+            text("""
+                INSERT INTO family_state (family, state) 
+                VALUES (:family, :state) 
+                ON CONFLICT DO NOTHING
+            """),
+            {"family": family, "state": FamilyState.RUNNING.value}
+        )
+        
+        result = family_repository.session.execute(
+            text("SELECT state FROM family_state WHERE family = :family FOR UPDATE"),
+            {"family": family}
+        ).fetchone()
+        return FamilyState(result[0])
+
+    @family_repository.transaction()
+    def release_lock(family: str, final_state: str):
+        family_repository.session.execute(
+            text("""
+                INSERT INTO family_state (family, state) 
+                VALUES (:family, :state) 
+                ON CONFLICT DO NOTHING
+            """),
+            {"family": family, "state": FamilyState.RUNNING.value}
+        )
+        
+        result = family_repository.session.execute(
+            text("SELECT state FROM family_state WHERE family = :family FOR UPDATE"),
+            {"family": family}
+        ).fetchone()
+        return FamilyState(result[0])
+
+    @family_repository.transaction()
+    def current_state(self) -> FamilyState:
+        sql = text("SELECT state FROM family_state WHERE family = :family")
+        result = family_repository.session.execute(sql, {"family": self._family}).fetchone()
+        return result[0] if result else "NOT_FOUND"
 
     @DBOS.step()
     def run(self, family: str, state: FamilyState | None = None) -> None:
