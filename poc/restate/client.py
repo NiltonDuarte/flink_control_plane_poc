@@ -23,5 +23,6 @@ async def run_scenario(scenario: Scenario) -> tuple[list[str] | None, Exception 
                 arg=REQUEST,
             )
         return steps, None
-    except Exception as err:  # Client-side transport and terminal domain failures.
+    # Client-side transport and terminal domain failures.
+    except Exception as err:  # noqa: BLE001
         return None, err

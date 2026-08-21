@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import os
+import shutil
 import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -19,7 +21,6 @@ from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.scenarios import REQUEST, SEED, SOURCE, TARGET
 from poc.restate.cluster_steps import ENV_STEP_DELAY
 from poc.restate.saga import run
-from tests.restate.conftest import RESTATE_TEST_IMAGE
 
 pytestmark = [pytest.mark.crash, pytest.mark.restate_crash]
 
@@ -85,53 +86,75 @@ def _kill(process: subprocess.Popen[bytes]) -> None:
 
 async def test_saga_survives_asgi_service_kill(tmp_path: Path) -> None:
     """The server journals progress while the stateless SDK endpoint restarts."""
-    os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
-    from restate.harness import create_restate_container
-
     cluster = MockCluster(tmp_path / "cluster")
     cluster.seed(SEED)
     cluster.set_chaos({})
     service = _spawn_service(cluster.root)
 
+    restate_bin = shutil.which("restate-server") or shutil.which("restate")
+    if not restate_bin:
+        pytest.fail("restate-server or restate binary not found in PATH")
+
     try:
         await _wait_for_service(service)
-        with create_restate_container(
-            restate_image=RESTATE_TEST_IMAGE,
-            always_replay=True,
-        ) as runtime:
-            response = runtime.get_admin_client().post(
-                "/deployments",
-                headers={"content-type": "application/json"},
-                json={"uri": f"http://host.docker.internal:{SERVICE_PORT}"},
+        with tempfile.TemporaryDirectory() as db_dir:
+            cmd = [restate_bin]
+            if "restate-server" not in restate_bin:
+                cmd.append("server")
+
+            env = {**os.environ, "RESTATE_BIFROST__STORAGE__PATH": db_dir}
+            server_proc = subprocess.Popen(  # noqa: ASYNC220
+                cmd,
+                env=env,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
             )
-            assert response.is_success, response.text
 
-            # Restate may keep the ingress request open across endpoint recovery;
-            # the SDK helper's default HTTP timeout is too short for that test.
-            async with httpx.AsyncClient(
-                base_url=runtime.ingress_url(),
-                http2=True,
-                timeout=130,
-            ) as http_client:
-                client = Client(http_client)
-                result = asyncio.create_task(
-                    client.workflow_call(
-                        run,
-                        key=f"crash-{uuid.uuid4()}",
-                        arg=REQUEST,
+            try:
+                deadline = asyncio.get_running_loop().time() + 15
+                while asyncio.get_running_loop().time() < deadline:
+                    with socket.socket() as connection:
+                        if connection.connect_ex(("127.0.0.1", 9070)) == 0:
+                            break
+                    await asyncio.sleep(0.1)
+
+                async with httpx.AsyncClient() as http:
+                    response = await http.post(
+                        "http://127.0.0.1:9070/deployments",
+                        headers={"content-type": "application/json"},
+                        json={"uri": f"http://127.0.0.1:{SERVICE_PORT}"},
                     )
-                )
-                await _wait_for_ops(cluster, service, 3)
-                completed_before_kill = [
-                    (entry.op, entry.family)
-                    for entry in cluster.audit(successful_only=True)
-                ]
-                _kill(service)
+                    assert response.is_success, response.text
 
-                await asyncio.sleep(0.5)
-                service = _spawn_service(cluster.root)
-                await _wait_for_service(service)
-                steps = await asyncio.wait_for(result, timeout=120)
+                # Restate may keep the ingress request open across endpoint recovery;
+                # the SDK helper's default HTTP timeout is too short for that test.
+                async with httpx.AsyncClient(
+                    base_url="http://127.0.0.1:8080",
+                    http2=True,
+                    timeout=130,
+                ) as http_client:
+                    client = Client(http_client)
+                    result = asyncio.create_task(
+                        client.workflow_call(
+                            run,
+                            key=f"crash-{uuid.uuid4()}",
+                            arg=REQUEST,
+                        )
+                    )
+                    await _wait_for_ops(cluster, service, 3)
+                    completed_before_kill = [
+                        (entry.op, entry.family)
+                        for entry in cluster.audit(successful_only=True)
+                    ]
+                    _kill(service)
+
+                    await asyncio.sleep(0.5)
+                    service = _spawn_service(cluster.root)
+                    await _wait_for_service(service)
+                    steps = await asyncio.wait_for(result, timeout=120)
+            finally:
+                server_proc.terminate()
+                server_proc.wait()
     finally:
         _kill(service)
 

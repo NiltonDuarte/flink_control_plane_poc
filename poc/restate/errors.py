@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import base64
+import json
 import re
 import traceback
 
@@ -13,8 +13,7 @@ ENVELOPE_VERSION = "RESTATE_SAGA_V1"
 _ENVELOPE = re.compile(
     rf"{ENVELOPE_VERSION}:"
     r"(REJECTED|COMPENSATED|COMPENSATION_INCOMPLETE):"
-    r"(SagaRejectedError|SagaCompensatedError|SagaCompensationIncompleteError):"
-    r"([A-Za-z0-9_-]+)"
+    r"(SagaRejectedError|SagaCompensatedError|SagaCompensationIncompleteError)"
 )
 
 SAGA_HTTP_STATUS = {
@@ -25,32 +24,37 @@ SAGA_HTTP_STATUS = {
 
 
 def encode_saga_failure(failure: SagaFailure) -> str:
-    """Encode a searchable prefix plus an opaque, stable Pydantic payload."""
+    """Encode a searchable prefix."""
     return (
         f"{ENVELOPE_VERSION}:{failure.outcome.value}:"
         f"{SAGA_ERROR_TYPES[failure.outcome]}"
     )
 
 
-def decode_saga_failure(text: str | None) -> tuple[SagaFailure, str] | None:
+def decode_saga_failure(text: str | bytes | None) -> tuple[SagaFailure, str] | None:
     """Find an encoded verdict in a Restate exception or HTTP response body."""
     if not text:
         return None
+
+    if isinstance(text, bytes):
+        text = text.decode("utf-8")
+
     match = _ENVELOPE.search(text)
     if match is None:
         return None
-    encoded = match.group(3)
-    encoded += "=" * (-len(encoded) % 4)
-    try:
-        failure = SagaFailure.model_validate_json(
-            base64.urlsafe_b64decode(encoded).decode()
-        )
-    except (ValueError, UnicodeDecodeError):
-        return None
+
     error_type = match.group(2)
-    if error_type != SAGA_ERROR_TYPES[failure.outcome]:
+
+    try:
+        body = json.loads(text)
+        payload = body.get("metadata", {}).get("payload")
+        if not payload:
+            return None
+
+        failure = SagaFailure.model_validate_json(payload)
+        return failure, error_type
+    except (ValueError, TypeError):
         return None
-    return failure, error_type
 
 
 def saga_terminal_error(
@@ -58,7 +62,6 @@ def saga_terminal_error(
 ) -> TerminalError:
     metadata = {}
     if original_error:
-        # Python 3.10+ allows passing the exception directly
         metadata["traceback"] = "".join(traceback.format_exception(original_error))
     metadata["payload"] = failure.model_dump_json()
 

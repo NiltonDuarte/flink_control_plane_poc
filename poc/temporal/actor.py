@@ -148,18 +148,17 @@ class FlinkJobFamilyActor:
             return True
 
     @workflow.update
-    async def patch_config(self, datatypes: list[str]) -> list[str]:
+    async def patch_config(self, datatypes: list[str]) -> None:
         """Replace the routing config; returns the previous value for callers."""
         await workflow.wait_condition(lambda: self._ready)
         async with self._lock:
-            previous: list[str] = await app.execute_activity(
+            await app.execute_activity(
                 patch_configmap,
                 self._family,
                 datatypes,
                 start_to_close_timeout=ACTIVITY_TIMEOUT,
                 retry_policy=CLUSTER_RETRY,
             )
-            return previous
 
     @workflow.update
     async def restore(

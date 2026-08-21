@@ -5,17 +5,15 @@ from __future__ import annotations
 import os
 import time
 from collections.abc import Callable
-from typing import TypeVar
 
 from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyStatus, PermanentClusterError
 from restate import TerminalError
 
-T = TypeVar("T")
 ENV_STEP_DELAY = "RESTATE_STEP_DELAY"  # TODO: This is not documented anywhere
 
 
-def _call(operation: Callable[[], T]) -> T:
+def _call[T](operation: Callable[[], T]) -> T:
     """Translate only permanent infrastructure faults into terminal failures."""
     delay = float(os.environ.get(ENV_STEP_DELAY, "0"))
     if delay > 0:

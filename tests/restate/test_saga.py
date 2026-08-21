@@ -15,12 +15,11 @@ from poc.baseline.saga import MoveDatatypeWorkflow as BaselineWorkflow
 from poc.common.cluster import ENV_CLUSTER_ROOT, MockCluster
 from poc.common.domain import (
     FamilyState,
-    MoveDatatypeRequest,
     SagaError,
     SagaFailure,
     SagaOutcome,
 )
-from poc.common.scenarios import REQUEST, SCENARIOS, SEED, SOURCE, TARGET, Scenario
+from poc.common.scenarios import SCENARIOS, SEED, SOURCE, TARGET, Scenario
 from poc.restate.client import ENV_RESTATE_INGRESS_URL
 from poc.restate.errors import SAGA_HTTP_STATUS, decode_saga_failure
 from poc.restate.saga import run

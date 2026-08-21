@@ -1,5 +1,6 @@
 """CLI rendering for typed saga verdicts and unrelated failures."""
 
+import json
 from pathlib import Path
 
 from restate import HttpError
@@ -51,10 +52,18 @@ def test_cli_decodes_restate_terminal_error_envelope(capsys) -> None:
         compensation_noops=["pause:family_b"],
         compensation_errors=["resume:family_b: still unavailable"],
     )
+
+    response_body = json.dumps(
+        {
+            "message": encode_saga_failure(failure),
+            "metadata": {"payload": failure.model_dump_json()},
+        }
+    )
+
     error = HttpError(
         500,
         "Internal Server Error",
-        body=f'{{"message":"{encode_saga_failure(failure)}"}}',
+        body=response_body,
     )
 
     _print_failure(error)

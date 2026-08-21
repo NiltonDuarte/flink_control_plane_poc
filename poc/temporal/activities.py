@@ -37,6 +37,6 @@ async def resume_job(family: str) -> None:
 
 
 @app.activity(task_queue=TASK_QUEUE)
-async def patch_configmap(family: str, datatypes: list[str]) -> list[str]:
+async def patch_configmap(family: str, datatypes: list[str]) -> None:
     """Replace routing config; the return value is informational only."""
-    return MockCluster.from_env().patch_configmap(family, datatypes)
+    MockCluster.from_env().patch_configmap(family, datatypes)
