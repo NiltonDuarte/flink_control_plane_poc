@@ -1,0 +1,6 @@
+{
+  "family_a:patch_configmap": {
+    "mode": "lost_response",
+    "times": 4
+  }
+}

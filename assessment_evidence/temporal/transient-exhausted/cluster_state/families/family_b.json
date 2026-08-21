@@ -1,0 +1,9 @@
+{
+  "family": "family_b",
+  "state": "RUNNING",
+  "datatypes": [
+    "views"
+  ],
+  "generation": 1,
+  "savepoint_uri": "s3://savepoints/family_b/sp-0001"
+}

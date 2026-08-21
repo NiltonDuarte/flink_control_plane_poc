@@ -1,0 +1,9 @@
+{
+  "family": "family_b",
+  "state": "RUNNING",
+  "datatypes": [
+    "views"
+  ],
+  "generation": 0,
+  "savepoint_uri": null
+}

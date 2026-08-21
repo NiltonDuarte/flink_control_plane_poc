@@ -1,0 +1,17 @@
+{"seq":0,"op":"trigger_savepoint","family":"family_a","outcome":"ok","detail":{"uri":"s3://savepoints/family_a/sp-0001"}}
+{"seq":1,"op":"suspend_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":2,"op":"trigger_savepoint","family":"family_b","outcome":"ok","detail":{"uri":"s3://savepoints/family_b/sp-0001"}}
+{"seq":3,"op":"suspend_job","family":"family_b","outcome":"ok","detail":{}}
+{"seq":4,"op":"patch_configmap","family":"family_a","outcome":"ok","detail":{"from":["clicks","impressions"],"to":["impressions"]}}
+{"seq":5,"op":"patch_configmap","family":"family_b","outcome":"ok","detail":{"from":["views"],"to":["views","clicks"]}}
+{"seq":6,"op":"resume_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":7,"op":"resume_job","family":"family_b","outcome":"transient","detail":{"attempt":1}}
+{"seq":8,"op":"resume_job","family":"family_b","outcome":"transient","detail":{"attempt":2}}
+{"seq":9,"op":"resume_job","family":"family_b","outcome":"transient","detail":{"attempt":3}}
+{"seq":10,"op":"resume_job","family":"family_b","outcome":"transient","detail":{"attempt":4}}
+{"seq":11,"op":"trigger_savepoint","family":"family_a","outcome":"ok","detail":{"uri":"s3://savepoints/family_a/sp-0005"}}
+{"seq":12,"op":"suspend_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":13,"op":"patch_configmap","family":"family_b","outcome":"ok","detail":{"from":["views","clicks"],"to":["views"]}}
+{"seq":14,"op":"patch_configmap","family":"family_a","outcome":"ok","detail":{"from":["impressions"],"to":["clicks","impressions"]}}
+{"seq":15,"op":"resume_job","family":"family_b","outcome":"ok","detail":{}}
+{"seq":16,"op":"resume_job","family":"family_a","outcome":"ok","detail":{}}

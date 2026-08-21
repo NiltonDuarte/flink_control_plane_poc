@@ -27,13 +27,13 @@ help:
 sync:
 	uv sync
 
-check: lint format-check test-fast
+check: lint format test-fast
 
 lint:
-	uv run ruff check .
+	uv run ruff check --fix .
 
-format-check:
-	uv run ruff format --check .
+format:
+	uv run ruff format .
 
 test:
 	uv run pytest

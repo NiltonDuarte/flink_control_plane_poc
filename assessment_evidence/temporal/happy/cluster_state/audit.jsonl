@@ -1,0 +1,8 @@
+{"seq":0,"op":"trigger_savepoint","family":"family_a","outcome":"ok","detail":{"uri":"s3://savepoints/family_a/sp-0001"}}
+{"seq":1,"op":"suspend_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":2,"op":"trigger_savepoint","family":"family_b","outcome":"ok","detail":{"uri":"s3://savepoints/family_b/sp-0001"}}
+{"seq":3,"op":"suspend_job","family":"family_b","outcome":"ok","detail":{}}
+{"seq":4,"op":"patch_configmap","family":"family_a","outcome":"ok","detail":{"from":["clicks","impressions"],"to":["impressions"]}}
+{"seq":5,"op":"patch_configmap","family":"family_b","outcome":"ok","detail":{"from":["views"],"to":["views","clicks"]}}
+{"seq":6,"op":"resume_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":7,"op":"resume_job","family":"family_b","outcome":"ok","detail":{}}

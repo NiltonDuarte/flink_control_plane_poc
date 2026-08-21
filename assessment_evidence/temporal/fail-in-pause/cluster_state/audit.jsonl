@@ -1,0 +1,5 @@
+{"seq":0,"op":"trigger_savepoint","family":"family_a","outcome":"ok","detail":{"uri":"s3://savepoints/family_a/sp-0001"}}
+{"seq":1,"op":"suspend_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":2,"op":"trigger_savepoint","family":"family_b","outcome":"ok","detail":{"uri":"s3://savepoints/family_b/sp-0001"}}
+{"seq":3,"op":"suspend_job","family":"family_b","outcome":"permanent","detail":{}}
+{"seq":4,"op":"resume_job","family":"family_a","outcome":"ok","detail":{}}

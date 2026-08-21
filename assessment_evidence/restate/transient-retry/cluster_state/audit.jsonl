@@ -1,0 +1,6 @@
+{"seq":0,"op":"trigger_savepoint","family":"family_a","outcome":"ok","detail":{"uri":"s3://savepoints/family_a/sp-0001"}}
+{"seq":1,"op":"suspend_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":2,"op":"patch_configmap","family":"family_a","outcome":"ok","detail":{"from":["clicks","impressions"],"to":["impressions"]}}
+{"seq":3,"op":"patch_configmap","family":"family_b","outcome":"ok","detail":{"from":["views"],"to":["views","clicks"]}}
+{"seq":4,"op":"resume_job","family":"family_a","outcome":"ok","detail":{}}
+{"seq":5,"op":"resume_job","family":"family_b","outcome":"ok","detail":{}}

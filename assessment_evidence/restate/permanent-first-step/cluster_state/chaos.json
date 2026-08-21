@@ -1,0 +1,6 @@
+{
+  "family_a:trigger_savepoint": {
+    "mode": "permanent",
+    "times": 1
+  }
+}
