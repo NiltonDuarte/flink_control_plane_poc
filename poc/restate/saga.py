@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import restate
 from poc.common.domain import (
     CommandResult,
-    FamilyCommand,
     FamilyState,
     FamilyStatus,
     MoveDatatypeRequest,
@@ -108,6 +107,7 @@ async def run(ctx: restate.WorkflowContext, request: MoveDatatypeRequest) -> lis
             outcome=outcome,
             failed_step=_next_step(request, done),
             reason=err.message,
+            original_error=err,
             compensated=compensated,
             compensation_noops=noops,
             compensation_errors=errors,
@@ -167,6 +167,7 @@ def _failure(
     outcome: SagaOutcome,
     failed_step: str,
     reason: str,
+    original_error: Exception | None = None,
     compensated: list[str] | None = None,
     compensation_noops: list[str] | None = None,
     compensation_errors: list[str] | None = None,
@@ -179,7 +180,8 @@ def _failure(
             compensated=compensated or [],
             compensation_noops=compensation_noops or [],
             compensation_errors=compensation_errors or [],
-        )
+        ),
+        original_error=original_error,
     )
 
 

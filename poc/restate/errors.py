@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import re
+import traceback
 
 from poc.common.domain import SAGA_ERROR_TYPES, SagaFailure, SagaOutcome
 from restate import TerminalError
@@ -25,10 +26,9 @@ SAGA_HTTP_STATUS = {
 
 def encode_saga_failure(failure: SagaFailure) -> str:
     """Encode a searchable prefix plus an opaque, stable Pydantic payload."""
-    payload = base64.urlsafe_b64encode(failure.model_dump_json().encode()).decode()
     return (
         f"{ENVELOPE_VERSION}:{failure.outcome.value}:"
-        f"{SAGA_ERROR_TYPES[failure.outcome]}:{payload.rstrip('=')}"
+        f"{SAGA_ERROR_TYPES[failure.outcome]}"
     )
 
 
@@ -53,9 +53,17 @@ def decode_saga_failure(text: str | None) -> tuple[SagaFailure, str] | None:
     return failure, error_type
 
 
-def saga_terminal_error(failure: SagaFailure) -> TerminalError:
-    """Build the engine terminal error and outcome-specific ingress status."""
+def saga_terminal_error(
+    failure: SagaFailure, original_error: BaseException | None = None
+) -> TerminalError:
+    metadata = {}
+    if original_error:
+        # Python 3.10+ allows passing the exception directly
+        metadata["traceback"] = "".join(traceback.format_exception(original_error))
+    metadata["payload"] = failure.model_dump_json()
+
     return TerminalError(
         encode_saga_failure(failure),
         status_code=SAGA_HTTP_STATUS[failure.outcome],
+        metadata=metadata,
     )

@@ -1,6 +1,8 @@
 .idea
 .vscode/*
 restate-data/
+codebase.zip
+repomix-output.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
