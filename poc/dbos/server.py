@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
-from dbos import DBOSClient, EnqueueOptions, SQLAlchemyDatasource
+from dbos import DBOSClient, EnqueueOptions, SQLAlchemyDatasource, DBOS
+from sqlalchemy import text
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,23 +12,24 @@ from pydantic import BaseModel
 
 from poc.common.domain import MoveDatatypeRequest
 
-family_repository = SQLAlchemyDatasource.create(os.environ["APP_DATABASE_URL"])
+# 1. Define a single shared database URL
+SHARED_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///app_and_dbos.sqlite")
 
-# Create a FastAPI app and API router
+# 2. Initialize DBOS system state in the shared database
+DBOS(config={"system_database_url": SHARED_DATABASE_URL, "name": "flink_control_plane"})
+DBOS_CLIENT = DBOSClient(system_database_url=SHARED_DATABASE_URL)
+
+# 3. Initialize your application tables in the exact same database
+family_repository = SQLAlchemyDatasource.create(SHARED_DATABASE_URL)
+
 app = FastAPI()
 api = APIRouter(prefix="/api")
-
-# Create a DBOS client
-SYSTEM_DATABASE_URL = os.environ.get(
-    "DBOS_SYSTEM_DATABASE_URL", "sqlite:///dbos_queue_worker.sqlite"
-)
-
-DBOS_CLIENT = DBOSClient(system_database_url=SYSTEM_DATABASE_URL)
+DBOS_CLIENT = DBOSClient(system_database_url=SHARED_DATABASE_URL)
 
 WF_PROGRESS_KEY = "workflow_progress"
 WF_QUEUE_NAME = "workflow-queue"
 
-frontend_dist = Path(__file__).parent / "frontend" / "dist"
+frontend_dist = Path(__file__).parent / "frontend"
 
 
 class WorkflowStatus(BaseModel):
@@ -76,16 +78,27 @@ def list_workflows() -> List[WorkflowStatus]:
 # Serve the API router from the FastAPI app
 app.include_router(api)
 
+# app.frontend("/", directory=frontend_dist)
 
-# Serve index.html for root
-@app.get("/")
-async def serve_index():
-    return FileResponse(frontend_dist / "index.html")
+# # Serve index.html for root
+# @app.get("/")
+# async def serve_index():
+#     return FileResponse(frontend_dist / "index.html")
 
-
-# Mount static frontend files last
-app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
+# # Mount static frontend files last
+# app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
 
 
 if __name__ == "__main__":
+    with family_repository.sessionmaker() as session:
+        session.execute(text("""
+            CREATE TABLE IF NOT EXISTS family_state (
+                family TEXT PRIMARY KEY,
+                state TEXT NOT NULL
+            )
+        """))
+        session.commit()
+        print("✅ Application schema initialized.")
+    DBOS.launch()
+    DBOS.register_queue(WF_QUEUE_NAME)
     uvicorn.run(app, host="0.0.0.0", port=8000)
