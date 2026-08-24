@@ -1,6 +1,6 @@
-.PHONY: help sync check lint format-check test test-fast test-crash server list histories clean \
+.PHONY: help sync check lint format-check test server list histories clean \
 	restate-server restate-service restate-register restate-test \
-	restate-test-crash restate-scenario
+	restate-scenario
 
 help:
 	@echo "make sync         install dependencies"
@@ -8,16 +8,13 @@ help:
 	@echo "make lint         run Ruff lint checks"
 	@echo "make format-check check Ruff formatting without rewriting files"
 	@echo "make test         run the full suite"
-	@echo "make test-fast    run everything except the crash test"
-	@echo "make test-crash   run the worker-kill durability test only"
 	@echo "make server       start a local Temporal dev server"
 	@echo "make list         list the runnable scenarios"
 	@echo "make histories    re-record the replay fixtures"
 	@echo "make restate-server       start a local Restate server"
 	@echo "make restate-service      serve the Restate SDK endpoint on :9080"
 	@echo "make restate-register     register the local SDK endpoint"
-	@echo "make restate-test         run Restate tests except crash recovery"
-	@echo "make restate-test-crash   run Restate service-crash recovery"
+	@echo "make restate-test         run Restate tests except"
 	@echo "make restate-scenario SCENARIO=happy  run one Restate scenario"
 	@echo "make clean        remove the local cluster directory"
 	@echo ""
@@ -36,13 +33,14 @@ format:
 	uv run ruff format .
 
 test:
-	uv run pytest
-
-test-fast:
-	uv run pytest -m "not crash"
-
-test-crash:
-	uv run pytest -m crash
+	@restate-server --bind-ip 127.0.0.1 > /dev/null 2>&1 & RESTATE_PID=$$!; \
+	sleep 2; \
+	uv run pytest; \
+	TEST_EXIT=$$?; \
+	echo ""; \
+	read -p "Tests finished. Press Enter to stop the Restate server... " dummy; \
+	kill $$RESTATE_PID 2>/dev/null || true; \
+	exit $$TEST_EXIT
 
 server:
 	temporal server start-dev
@@ -65,10 +63,8 @@ restate-register:
 		-d '{"uri":"http://localhost:9080"}'
 
 restate-test:
-	uv run pytest tests/restate -m "not crash"
+	uv run pytest tests/restate
 
-restate-test-crash:
-	uv run pytest tests/restate/test_crash.py
 
 restate-scenario:
 	@test -n "$(SCENARIO)" || (echo "usage: make restate-scenario SCENARIO=happy"; exit 2)

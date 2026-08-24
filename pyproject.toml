@@ -27,9 +27,3 @@ exclude = ["temporal_app.py"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
-# The crash test needs a real server and real seconds; everything else runs on
-# the time-skipping test server. The marker supports focused or fast-subset runs.
-markers = [
-    "crash: worker-crash durability test (real dev server, slow)",
-    "restate_crash: Restate ASGI-process crash durability test",
-]

@@ -7,16 +7,15 @@ from poc.common.scenarios import SCENARIOS
 
 
 def generate_evidence_matrix() -> None:
-    results_dir = Path("assessment_evidence")
+    results_dir = Path("docs", "poc", "assessment_evidence")
     if results_dir.exists():
         shutil.rmtree(results_dir)
 
-    engines = [WorkflowEngine.TEMPORAL, WorkflowEngine.RESTATE]
     cluster_root = Path(".cluster")
     total_scenarios = len(SCENARIOS)
 
     print("Starting Scenarios..")
-    for engine in engines:
+    for engine in WorkflowEngine:
         for index, scenario in enumerate(SCENARIOS.keys(), start=1):
             print(f"Running {engine} scenario {scenario} [{index}/{total_scenarios}]")
             target = results_dir / engine.value.lower() / scenario

@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-import shutil
 import socket
-import subprocess
-import tempfile
 import uuid
 from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass
@@ -55,23 +52,29 @@ class RestateCase:
         return value.replace(self.source, SOURCE).replace(self.target, TARGET)
 
 
+def _check_port(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as connection:
+        connection.settimeout(0.5)
+        return connection.connect_ex(("127.0.0.1", port)) == 0
+
+
 async def _wait_for_port(port: int, timeout: float = 15.0) -> None:
     deadline = asyncio.get_running_loop().time() + timeout
     while asyncio.get_running_loop().time() < deadline:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as connection:
-            connection.settimeout(0.1)
-            if connection.connect_ex(("127.0.0.1", port)) == 0:
-                return
+        if _check_port(port):
+            return
         await asyncio.sleep(0.1)
     raise AssertionError(f"Port {port} did not open in time")
 
 
 @pytest.fixture(scope="session")
 async def restate_env() -> AsyncIterator[HarnessEnvironment]:
-    """One server, running locally. App runs in-process to share os.environ."""
-    restate_bin = shutil.which("restate-server") or shutil.which("restate")
-    if not restate_bin:
-        pytest.fail("restate-server or restate binary not found in PATH")
+    """Expects external Restate server. App runs in-process to share os.environ."""
+    if not all([_check_port(8080), _check_port(9070)]):
+        pytest.fail(
+            "Restate server is not running. "
+            "Start it outside the test suite using `make restate-server`."
+        )
 
     config = Config()
     config.bind = ["127.0.0.1:9080"]
@@ -80,44 +83,25 @@ async def restate_env() -> AsyncIterator[HarnessEnvironment]:
         serve(app, config, shutdown_trigger=shutdown_event.wait)
     )
 
-    with tempfile.TemporaryDirectory() as db_dir:
-        cmd = [restate_bin]
-        if "restate-server" not in restate_bin:
-            cmd.append("server")
+    try:
+        await _wait_for_port(9080)
 
-        env = {**os.environ, "RESTATE_BIFROST__STORAGE__PATH": db_dir}
-        restate_proc = subprocess.Popen(  # noqa: ASYNC220
-            cmd,
-            env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-        )
+        async with httpx.AsyncClient() as http:
+            response = await http.post(
+                "http://127.0.0.1:9070/deployments",
+                json={"uri": "http://127.0.0.1:9080"},
+                headers={"content-type": "application/json"},
+                timeout=10.0,
+            )
+            response.raise_for_status()
 
-        try:
-            await _wait_for_port(9080)
-            await _wait_for_port(8080)
-            await _wait_for_port(9070)
+        async with httpx.AsyncClient(base_url="http://127.0.0.1:8080") as http:
+            client = Client(http)
+            yield HarnessEnvironment(client=client, ingress_url="http://127.0.0.1:8080")
 
-            async with httpx.AsyncClient() as http:
-                response = await http.post(
-                    "http://127.0.0.1:9070/deployments",
-                    json={"uri": "http://127.0.0.1:9080"},
-                    headers={"content-type": "application/json"},
-                    timeout=25.0,
-                )
-                response.raise_for_status()
-
-            async with httpx.AsyncClient(base_url="http://127.0.0.1:8080") as http:
-                client = Client(http)
-                yield HarnessEnvironment(
-                    client=client, ingress_url="http://127.0.0.1:8080"
-                )
-
-        finally:
-            restate_proc.terminate()
-            restate_proc.wait()
-            shutdown_event.set()
-            await server_task
+    finally:
+        shutdown_event.set()
+        await server_task
 
 
 @pytest.fixture

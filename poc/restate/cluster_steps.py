@@ -10,14 +10,9 @@ from poc.common.cluster import MockCluster
 from poc.common.domain import FamilyStatus, PermanentClusterError
 from restate import TerminalError
 
-ENV_STEP_DELAY = "RESTATE_STEP_DELAY"  # TODO: This is not documented anywhere
-
 
 def _call[T](operation: Callable[[], T]) -> T:
     """Translate only permanent infrastructure faults into terminal failures."""
-    delay = float(os.environ.get(ENV_STEP_DELAY, "0"))
-    if delay > 0:
-        time.sleep(delay)
     try:
         return operation()
     except PermanentClusterError as err:
