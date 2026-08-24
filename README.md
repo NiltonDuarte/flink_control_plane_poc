@@ -51,6 +51,8 @@ Each is a seed cluster plus a set of fault-injection rules, defined once in
 [`poc/common/scenarios.py`](poc/common/scenarios.py) and shared by all three
 implementations, their CLIs, and the tests.
 
+Comparison report [here](https://niltonduarte.github.io/flink_control_plane_poc/poc/docs/assessment_evidence/comparison.html).
+
 | Scenario | What it exercises |
 |---|---|
 | `happy` | Success path |
