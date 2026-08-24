@@ -138,3 +138,8 @@ async def current_state(
     """Expose the persisted cache for tests and operational inspection."""
     cached = await ctx.get(STATE_KEY, type_hint=str)
     return ActorState(state=FamilyState(cached or FamilyState.RUNNING.value))
+
+
+@flink_job_family.handler()
+async def reset(ctx: restate.ObjectContext, _request: Empty) -> None:
+    ctx.clear(STATE_KEY)
