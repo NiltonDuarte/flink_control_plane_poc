@@ -5,6 +5,6 @@
     "views",
     "clicks"
   ],
-  "generation": 2,
-  "savepoint_uri": null
+  "generation": 4,
+  "savepoint_uri": "s3://savepoints/family_b/sp-0001"
 }
