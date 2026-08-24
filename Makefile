@@ -24,13 +24,16 @@ help:
 sync:
 	uv sync
 
-check: lint format test
+check: lint format pre-commit test
 
 lint:
 	uv run ruff check --fix .
 
 format:
 	uv run ruff format .
+
+pre-commit:
+	pre-commit run --all-files
 
 test:
 	@restate-server --bind-ip 127.0.0.1 > /dev/null 2>&1 & RESTATE_PID=$$!; \

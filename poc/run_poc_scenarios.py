@@ -7,7 +7,7 @@ from poc.common.scenarios import SCENARIOS
 
 
 def generate_evidence_matrix() -> None:
-    results_dir = Path("docs", "poc", "assessment_evidence")
+    results_dir = Path("poc", "docs", "assessment_evidence")
     if results_dir.exists():
         shutil.rmtree(results_dir)
 

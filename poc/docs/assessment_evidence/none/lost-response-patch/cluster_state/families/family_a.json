@@ -1,0 +1,10 @@
+{
+  "family": "family_a",
+  "state": "RUNNING",
+  "datatypes": [
+    "clicks",
+    "impressions"
+  ],
+  "generation": 8,
+  "savepoint_uri": "s3://savepoints/family_a/sp-0001"
+}

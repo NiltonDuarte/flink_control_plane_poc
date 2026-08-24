@@ -1,0 +1,6 @@
+{
+  "family_b:patch_configmap": {
+    "mode": "permanent",
+    "times": 1
+  }
+}
