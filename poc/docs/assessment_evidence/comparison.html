@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset='utf-8'>
+<style>
+body { font-family: system-ui, sans-serif; background: #fdfdfd; color: #111; margin: 20px; }
+table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+th, td { border: 1px solid #aaa; padding: 12px; vertical-align: top; }
+th { background: #eee; text-align: left; }
+.match { border-left: 5px solid #333; padding: 8px; margin-bottom: 8px; background: #fafafa; }
+.mismatch { border-left: 5px dashed #333; padding: 8px; margin-bottom: 8px; background: #eaeaea; }
+.status-label { font-weight: bold; font-family: monospace; font-size: 1.1em; display: block; margin-bottom: 6px; }
+details { margin-top: 12px; background: #fff; padding: 8px; border: 1px solid #ccc; }
+summary { cursor: pointer; font-weight: bold; }
+.code-container { position: relative; margin-top: 8px; }
+.copy-btn { position: absolute; top: 8px; right: 8px; cursor: pointer; padding: 4px 8px; border: 1px solid #999; background: #e0e0e0; font-size: 11px; }
+.copy-btn:hover { background: #ccc; }
+pre { white-space: pre; overflow-x: auto; background: #f4f4f4; padding: 12px 12px 12px 12px; font-size: 13px; border: 1px solid #ddd; margin: 0; }
+</style></head><body>
+<h1>Scenario Comparison Matrix</h1>
+<table>
+<tr><th>Scenario</th>
+<th>None</th>
+<th>Temporal</th>
+<th>Restate</th>
+</tr>
+<tr><td style='width: 15%;'><strong>happy</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> f1ad91a8
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> f1ad91a8
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> f1ad91a8
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>fail-in-pause</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 74a96f7e
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "permanent", "seq": 3}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 4}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 74a96f7e
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "permanent", "seq": 3}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 4}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 74a96f7e
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "permanent", "seq": 3}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 4}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>fail-in-update</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> a0086f54
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "patch_configmap", "outcome": "permanent", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 60f6053b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> a0086f54
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "patch_configmap", "outcome": "permanent", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 60f6053b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> a0086f54
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "patch_configmap", "outcome": "permanent", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 60f6053b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>fail-in-resume</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 3cd38b6b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 7}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 8}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 9}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 10}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 12}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 13}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 14}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 15}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 16}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 9eab572f
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 3cd38b6b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 7}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 8}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 9}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 10}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 12}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 13}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 14}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 15}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 16}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 9eab572f
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 3cd38b6b
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 7}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 8}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 9}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "resume_job", "outcome": "transient", "seq": 10}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 12}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 13}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 14}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 15}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 16}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 9eab572f
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 5,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>compensation-unreachable</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> c83341ae
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 7}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 9}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 10}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 12}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 13}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 54bec9d6
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "SUSPENDED"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> c83341ae
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 7}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 9}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 10}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 12}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 13}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 54bec9d6
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "SUSPENDED"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> c83341ae
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 7}
+{"detail": {"uri": "s3://savepoints/family_a/sp-0005"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 9}
+{"detail": {"from": ["views", "clicks"], "to": ["views"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 10}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 11}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "permanent", "seq": 12}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 13}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 54bec9d6
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0005",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "SUSPENDED"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>transient-retry</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 2d316fee
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 2d316fee
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 2d316fee
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["views"], "to": ["views", "clicks"]}, "family": "family_b", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> be741ce2
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views",
+      "clicks"
+    ],
+    "family": "family_b",
+    "generation": 4,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>transient-exhausted</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 192d6fba
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 5}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 6}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 192d6fba
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 5}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 6}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 192d6fba
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {"attempt": 1}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 3}
+{"detail": {"attempt": 2}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 4}
+{"detail": {"attempt": 3}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 5}
+{"detail": {"attempt": 4}, "family": "family_b", "op": "suspend_job", "outcome": "transient", "seq": 6}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 7}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 645aca27
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 1,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>lost-response-suspend</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> d8a512dc
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 7a37f5ca
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 6,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> d8a512dc
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 7a37f5ca
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 6,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> d8a512dc
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 4}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 5}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 6}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 7}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 8}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> 7a37f5ca
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 6,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>lost-response-patch</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> eaa2f1a7
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 10}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> ab7db0eb
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> eaa2f1a7
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 10}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> ab7db0eb
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> eaa2f1a7
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {"uri": "s3://savepoints/family_a/sp-0001"}, "family": "family_a", "op": "trigger_savepoint", "outcome": "ok", "seq": 0}
+{"detail": {}, "family": "family_a", "op": "suspend_job", "outcome": "ok", "seq": 1}
+{"detail": {"uri": "s3://savepoints/family_b/sp-0001"}, "family": "family_b", "op": "trigger_savepoint", "outcome": "ok", "seq": 2}
+{"detail": {}, "family": "family_b", "op": "suspend_job", "outcome": "ok", "seq": 3}
+{"detail": {"from": ["clicks", "impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 4}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 5}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 6}
+{"detail": {"from": ["impressions"], "to": ["impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 7}
+{"detail": {"from": ["impressions"], "to": ["clicks", "impressions"]}, "family": "family_a", "op": "patch_configmap", "outcome": "ok", "seq": 8}
+{"detail": {}, "family": "family_b", "op": "resume_job", "outcome": "ok", "seq": 9}
+{"detail": {}, "family": "family_a", "op": "resume_job", "outcome": "ok", "seq": 10}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> ab7db0eb
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 8,
+    "savepoint_uri": "s3://savepoints/family_a/sp-0001",
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 3,
+    "savepoint_uri": "s3://savepoints/family_b/sp-0001",
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+<tr><td style='width: 15%;'><strong>permanent-first-step</strong></td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 471a0531
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {}, "family": "family_a", "op": "trigger_savepoint", "outcome": "permanent", "seq": 0}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> c89aea50
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 471a0531
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {}, "family": "family_a", "op": "trigger_savepoint", "outcome": "permanent", "seq": 0}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> c89aea50
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+<td>
+<div class='match'><span class='status-label'>[ MATCH ] Audit</span><strong>Hash:</strong> 471a0531
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{"detail": {}, "family": "family_a", "op": "trigger_savepoint", "outcome": "permanent", "seq": 0}</pre></div></details>
+</div>
+<div class='match'><span class='status-label'>[ MATCH ] State</span><strong>Hash:</strong> c89aea50
+<details><summary>View JSON</summary><div class='code-container'>
+<button class='copy-btn' onclick='copyContent(this)'>Copy</button>
+<pre>{
+  "family_a.json": {
+    "datatypes": [
+      "clicks",
+      "impressions"
+    ],
+    "family": "family_a",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  },
+  "family_b.json": {
+    "datatypes": [
+      "views"
+    ],
+    "family": "family_b",
+    "generation": 0,
+    "savepoint_uri": null,
+    "state": "RUNNING"
+  }
+}</pre></div></details>
+</div>
+</td>
+</tr>
+</table>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const allDetails = document.querySelectorAll('details');
+        allDetails.forEach(detail => {
+            detail.addEventListener('toggle', (e) => {
+                const tr = detail.closest('tr');
+                if (!tr) return;
+                const targetState = detail.open;
+                const siblings = tr.querySelectorAll('details');
+                siblings.forEach(sibling => {
+                    if (sibling !== detail && sibling.open !== targetState) {
+                        sibling.open = targetState;
+                    }
+                });
+            });
+        });
+    });
+
+    async function copyContent(button) {
+        const pre = button.nextElementSibling;
+        if (!pre) return;
+        try {
+            await navigator.clipboard.writeText(pre.textContent);
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            button.textContent = 'Error';
+        }
+    }
+    </script>
+
+</body></html>

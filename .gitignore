@@ -3,6 +3,7 @@
 restate-data/
 codebase.zip
 repomix-output.xml
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

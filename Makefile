@@ -73,5 +73,8 @@ restate-scenario:
 	@test -n "$(SCENARIO)" || (echo "usage: make restate-scenario SCENARIO=happy"; exit 2)
 	uv run python -m poc.cli run "$(SCENARIO)" --engine Restate
 
+repomix:
+	repomix --ignore tests/temporal/histories --ignore poc/docs/
+
 clean:
 	rm -rf .cluster
