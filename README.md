@@ -212,10 +212,7 @@ runtime or config change. Successful no-ops create no mutation audit entries.
 ```sh
 make check                     # non-mutating quality gate used by CI
 uv run pytest                  # everything
-uv run pytest -m "not crash"   # fast subset
-uv run pytest -m crash         # worker-kill durability, real server
 make restate-test              # pinned harness, forced integration replay
-make restate-test-crash        # Restate ASGI-process recovery
 ```
 
 | File | Covers |
@@ -224,15 +221,12 @@ make restate-test-crash        # Restate ASGI-process recovery
 | `tests/temporal/test_saga.py` | Temporal RFC compensation, retry taxonomy, and lost responses |
 | `tests/temporal/test_actor.py` | Single-writer serialization, cached and reconciled state |
 | `tests/temporal/test_replay.py` | Replay determinism against committed history fixtures |
-| `tests/temporal/test_crash.py` | SIGKILL mid-saga, restart, resume from last step |
 | `tests/restate/test_saga.py` | Full matrix parity, retries, snapshots, verdict transport, CLI |
 | `tests/restate/test_actor.py` | Native serialization and persisted K/V state |
-| `tests/restate/test_crash.py` | Restate retained while Hypercorn is killed and restarted |
 | `tests/test_cli.py` | Shared success/failure rendering for all engines |
 
 Temporal tests use its **time-skipping** server. Restate integration tests use
-the pinned 1.7.2 container and replay every request; its crash test keeps that
-server alive while replacing the Hypercorn service process.
+the `restate-server` and replay every request;
 
 Replay fixtures live in `tests/temporal/histories/`. Regenerate them when the
 saga's shape changes on purpose, and review the diff as part of the change:

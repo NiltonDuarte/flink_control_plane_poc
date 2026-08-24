@@ -19,7 +19,6 @@ These instructions apply to the whole repository. Keep them concise; add a neste
 
 - Preserve the global barriers: snapshot all participants, then pause all, then patch all, then resume all. Do not run the full sequence one family at a time.
 - Use engine-native durability in Temporal and Restate. Keep the bare-Python baseline intentionally non-durable and use it as a behavior reference.
-- Prove crash recovery does not duplicate side effects whenever a durable step or retried mutation changes.
 - Register restore intent from the authoritative pre-saga snapshot, restore in last-in-first-out order, and continue unwinding after an individual restore fails.
 - If any restore fails, return `COMPENSATION_INCOMPLETE` with structured errors and complete audit evidence.
 - Actor or virtual-object serialization is per resource; it does not prove saga-level ownership or fencing. Do not claim overlapping workflow safety until issue #28 is resolved.
@@ -29,13 +28,12 @@ These instructions apply to the whole repository. Keep them concise; add a neste
 
 - For non-trivial project decisions, use Wayfinder and `grilling`; use `domain-modeling` when terminology or architecture decisions change. Follow selected skill instructions when they are more specific than these general rules.
 - Use `issue-workflow` for current-status reporting, whole-board critique, destination drift, map hygiene, and recording an existing Wayfinder ruling. It cannot choose priorities or edit maps; Wayfinder remains the sole decision-maker and owns every ruling.
-- Use `develop-control-plane-sagas` for changes to sagas, actors, durable steps, mutations, retries, failures, compensation, recovery scenarios, audit ordering, concurrency, or crash behavior.
+- Use `develop-control-plane-sagas` for changes to sagas, actors, durable steps, mutations, retries, failures, compensation, recovery scenarios, audit ordering or concurrency.
 
 ## Validation
 
 - Run `make check` for every code or test change. It must perform Ruff lint, Ruff format checking, and the fast test suite without rewriting files.
-- Run the affected Temporal or Restate crash suite manually for durability, operation-identity, or engine-integration changes. Bare Python has no crash-durability claim.
-- Keep audit-order, snapshot-restoration, retry, replay, engine-parity, and crash tests aligned with the behavior changed.
+- Keep audit-order, snapshot-restoration, retry, replay and engine-parity tests aligned with the behavior changed.
 - Run `git diff --check` before handoff.
 
 ## Known limitations

@@ -24,7 +24,7 @@ help:
 sync:
 	uv sync
 
-check: lint format test-fast
+check: lint format test
 
 lint:
 	uv run ruff check --fix .

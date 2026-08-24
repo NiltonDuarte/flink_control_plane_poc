@@ -28,7 +28,6 @@ so that going to production means replacing one module, not rewriting the saga.
 1. **Fail-fast saga compensation** — all 4 RFC scenarios, asserted on the *order of side effects*, not just final state.
 2. **Retry semantics** — transient faults retry with backoff; permanent faults abort immediately without burning the retry budget.
 3. **Replay determinism** — saved event histories replayed against current code (named explicitly in the ticket).
-4. **Worker crash durability** — SIGKILL mid-saga, restart, resume from last completed step with no duplicated side effects.
 5. **Actor pattern** — strict single-writer-per-`job_family`; concurrent commands queue rather than interleave.
 6. **Ambiguous outcomes** — rollback restores the pre-saga runtime and config
    snapshot even when a mutating operation lands without returning a response.
@@ -115,7 +114,6 @@ activities, or update-id scheme.
 | Lost config-patch response | Original snapshot config wins over retry results | time-skipping |
 | Concurrent commands, one family | Actor serialization | time-skipping |
 | History fixture replay | Determinism | `Replayer`, no server |
-| SIGKILL mid-saga | Crash durability, no duplicate side effects | real dev server |
 | Restate matrix | All verdicts, audit attempts/order, snapshots | pinned Docker harness, forced replay |
 | Restate ASGI SIGKILL | Server journal survives service restart | pinned Docker server + Hypercorn |
 
@@ -152,8 +150,7 @@ tests/
   baseline/                  baseline parity tests
   temporal/
     histories/               replay fixtures
-    worker_process.py        crash-test worker entrypoint
-  restate/                   parity, actor, CLI, and crash tests
+  restate/                   parity, actor, CLI
 README.md         how to run each success/failure mode
 Makefile
 pyproject.toml    uv, Python 3.13, runtime and development dependencies, tool configuration

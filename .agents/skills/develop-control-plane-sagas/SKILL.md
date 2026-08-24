@@ -1,6 +1,6 @@
 ---
 name: develop-control-plane-sagas
-description: Develop safe Flink control-plane saga behavior across the bare-Python baseline, Temporal, and Restate. Use when changing a saga, actor, durable step, mutation, retry, failure, compensation, recovery scenario, audit order, concurrency behavior, replay behavior, or crash behavior in `poc/` or `tests/`.
+description: Develop safe Flink control-plane saga behavior across the bare-Python baseline, Temporal, and Restate. Use when changing a saga, actor, durable step, mutation, retry, failure, compensation, recovery scenario, audit order, concurrency behavior or replay behavior in `poc/` or `tests/`.
 ---
 
 # Develop Control Plane Sagas
