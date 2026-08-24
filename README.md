@@ -17,7 +17,7 @@ Python 3.13 or newer and [uv](https://docs.astral.sh/uv/) are required.
 ```sh
 uv sync
 make check                             # Lint, format, fast tests
-uv run pytest                          # Full suite
+make test                              # Full suite (starts Restate server)
 uv run python -m poc.cli list          # List scenarios
 uv run python -m poc.cli run happy --engine None # Run with bare Python
 ```
@@ -39,11 +39,11 @@ make restate-register
 make restate-scenario SCENARIO=fail-in-resume
 ```
 
-The ingress client reads `RESTATE_INGRESS_URL` and defaults to
-`http://localhost:8080`. The Restate harness tests need Docker and pin the
-server to 1.7.2; the SDK is pinned to 1.0.3. Restate Virtual Object state
-survives CLI runs, so use a fresh local server when intentionally reseeding the
-fixed demo keys after an incomplete compensation.
+The ingress client reads `RESTATE_INGRESS_URL` and defaults to `http://localhost:8080`.
+The Restate harness tests require an external server (managed automatically
+by `make test`); the SDK is pinned to 1.0.3. Restate Virtual Object state
+survives CLI runs, so use a fresh local server when intentionally reseeding
+the fixed demo keys after an incomplete compensation.
 
 ## Scenarios
 

@@ -14,7 +14,7 @@ help:
 	@echo "make restate-server       start a local Restate server"
 	@echo "make restate-service      serve the Restate SDK endpoint on :9080"
 	@echo "make restate-register     register the local SDK endpoint"
-	@echo "make restate-test         run Restate tests except"
+	@echo "make restate-test         run Restate tests"
 	@echo "make restate-scenario SCENARIO=happy  run one Restate scenario"
 	@echo "make clean        remove the local cluster directory"
 	@echo ""

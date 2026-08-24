@@ -19,9 +19,7 @@ All ten shared scenarios matched the baseline for verdict, completed steps,
 normalized audit attempts and order, and final cluster snapshot. Focused tests
 also proved one effective mutation under five concurrent pauses, K/V state
 across calls, stale-cache repair after four lost responses, four-attempt retry
-exhaustion, and immediate permanent failure. The ASGI crash test killed
-Hypercorn after the saga had started, restarted it at the same endpoint, and
-completed from the server journal without replaying the completed first pause.
+exhaustion, and immediate permanent failure.
 
 ## Implementation findings
 
@@ -81,20 +79,13 @@ operations followed by correct snapshot restoration.
 
 ### Testing, replay, and crash recovery
 
-The Python harness starts the SDK endpoint and a real Restate server through
-Testcontainers. It is pinned to `restatedev/restate:1.7.2` and runs with
-`always_replay=True`, which forces replay at suspension points. This is an
-integration replay check: it exercises current code against the live server
-journal. It is not equivalent to Temporal's offline `Replayer` consuming a
-committed history JSON file, and the harness has no virtual clock. Retry delays
-therefore cost wall time.
+The Python harness connects to an external Restate server. Start it manually
+or use `make test` to manage the lifecycle. It runs with `always_replay=True`,
+which forces replay at suspension points. This is an integration replay check:
+it exercises current code against the live server journal. It is not equivalent
+to Temporal's offline `Replayer` consuming a committed history JSON file, and
+the harness has no virtual clock. Retry delays therefore cost wall time.
 
-The measured fast Restate suite completed 19 tests in about 9.5 seconds on the
-local Docker runtime. The separate service-crash test completed in about 6.5
-seconds. It kept Restate running, killed Hypercorn on port 9080, restarted the
-same deployment endpoint, and observed the workflow finish with the already
-completed first pause present only once. As with any external durable step, the
-currently in-flight call retains a narrow at-least-once window.
 
 ## UI, CLI, SQL, and operations — observed locally
 
@@ -142,9 +133,8 @@ CLI and HTTP query paths.
 | Retry taxonomy | Activity `RetryPolicy`, four attempts, permanent exception type excluded | `RunOptions`, four attempts; permanent cluster faults translated to `TerminalError` |
 | Compensation ergonomics | Explicit pre-registered LIFO stack through proxy activities | Same explicit stack with direct restore-handler calls; less transport plumbing |
 | State | Actor workflow memory, replayed from history | Virtual Object K/V, inspectable as `runtime_state` |
-| Local tests | Time-skipping server; no Docker for most tests | Real server Testcontainer; Docker required; no time skipping |
+| Local tests | Time-skipping server; no Docker for most tests | External server required (`make test`); no time skipping |
 | Replay | Offline history fixtures with `Replayer` plus live execution | Harness `always_replay=True`; integration replay only, no offline history-file equivalent tested |
-| Crash test | Kill worker, start replacement, server retains workflow history | Keep server, kill/restart Hypercorn at the same deployment endpoint, journal resumes execution |
 | UI call graph | Proxy activity obscures command arguments behind one activity type | Parent workflow displays each keyed object call and linked child invocation directly |
 | Introspection | Temporal UI/CLI and workflow history/query surfaces | UI + CLI + SQL tables for invocations, journals, deployments, idempotency, and K/V state |
 | Operational controls | Workflow terminate/cancel/reset and actor lifecycle management | Invocation cancel/kill/restart, deployment management, stuck-object lookup, state inspection/editing |

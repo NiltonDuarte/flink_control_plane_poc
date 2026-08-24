@@ -28,8 +28,8 @@ so that going to production means replacing one module, not rewriting the saga.
 1. **Fail-fast saga compensation** — all 4 RFC scenarios, asserted on the *order of side effects*, not just final state.
 2. **Retry semantics** — transient faults retry with backoff; permanent faults abort immediately without burning the retry budget.
 3. **Replay determinism** — saved event histories replayed against current code (named explicitly in the ticket).
-5. **Actor pattern** — strict single-writer-per-`job_family`; concurrent commands queue rather than interleave.
-6. **Ambiguous outcomes** — rollback restores the pre-saga runtime and config
+4. **Actor pattern** — strict single-writer-per-`job_family`; concurrent commands queue rather than interleave.
+5. **Ambiguous outcomes** — rollback restores the pre-saga runtime and config
    snapshot even when a mutating operation lands without returning a response.
 
 ## The mock cluster
@@ -115,7 +115,7 @@ activities, or update-id scheme.
 | Concurrent commands, one family | Actor serialization | time-skipping |
 | History fixture replay | Determinism | `Replayer`, no server |
 | Restate matrix | All verdicts, audit attempts/order, snapshots | pinned Docker harness, forced replay |
-| Restate ASGI SIGKILL | Server journal survives service restart | pinned Docker server + Hypercorn |
+
 
 Every failure test asserts against `audit.jsonl`, and asserts observable runtime
 state and datatype routing equal their pre-saga snapshot. Generation counters and

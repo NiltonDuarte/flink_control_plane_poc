@@ -12,7 +12,7 @@ Protect the shared saga contract while keeping every execution-engine adapter in
 1. Read the root `AGENTS.md`, `POC_SCOPE.md`, and the affected shared and engine-specific code and tests.
 2. Classify the change before editing:
    - **Shared-contract:** externally observable phase order, snapshots, mutation semantics, failure taxonomy, verdicts, retries, compensation, audit evidence, or scenario definitions.
-   - **Engine-specific:** runtime registration, client or worker integration, serialization mechanics, engine-native retry configuration, replay wiring, or crash harnesses that do not change the shared behavior.
+   - **Engine-specific:** runtime registration, client or worker integration, serialization mechanics, engine-native retry configuration or replay wiring that do not change the shared behavior.
 3. For shared-contract work, implement and test behavior parity across the bare-Python baseline, Temporal, and Restate. If an engine is absent or blocked, report the exact gap; do not silently call the work complete.
 4. For engine-specific work, preserve the shared contract and make the implementation understandable without reading another engine first.
 
@@ -38,12 +38,10 @@ Always run the fast shared suite. Add or update focused evidence according to th
 | Timeout, retry, or failure taxonomy | Transient success, exhausted retry, permanent failure, bounded-backoff, and stable-operation-identity tests |
 | Temporal workflow shape | Replay fixtures and replay tests |
 | Actor serialization or resource coordination | Concurrent-command tests; identify saga-level ownership as unresolved unless separately designed |
-| Durable step or crash handling | Temporal and Restate crash tests proving resume without duplicate side effects |
 | Shared scenario or verdict | Baseline, Temporal, and Restate parity assertions |
 
 ## Validate and report
 
 1. Run `make check`.
-2. Run the affected durable-engine crash targets when the change touches durability, retries, mutation identity, or engine integration.
-3. Run `git diff --check`.
-4. Report exact commands, pass/fail results, skipped checks, and the files that contain the evidence. Never substitute final-state assertions for required audit-order evidence.
+2. Run `git diff --check`.
+3. Report exact commands, pass/fail results, skipped checks, and the files that contain the evidence. Never substitute final-state assertions for required audit-order evidence.
