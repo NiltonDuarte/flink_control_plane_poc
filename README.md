@@ -69,6 +69,17 @@ Comparison report [here](https://niltonduarte.github.io/flink_control_plane_poc/
 | `lost-response-patch` | Config patch lands without a response; snapshot rollback |
 | `permanent-first-step` | Non-retryable failure, restore evaluates to a no-op |
 
+### Running all scenarios
+
+We have a script that will run each engine for each available scenarios, to do so
+you must start the infrastructure described in Quick Start section and run
+
+```bash
+uv run python -m poc.run_poc_scenarios
+```
+The artifacts will be generated at poc/docs/assessment_evidence/<Engine>.
+Also a report file `comparison.html` is generated checking if the content of the artifacts matches
+
 ## Failed saga verdicts
 
 Every saga that does not complete exposes the same verdict in its engine error
