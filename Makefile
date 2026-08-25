@@ -55,7 +55,7 @@ histories:
 	uv run python -m tests.temporal.record_histories
 
 restate-server:
-	restate-server
+	restate-server --bind-ip 127.0.0.1
 
 restate-service:
 	POC_CLUSTER_ROOT=.cluster uv run python -m poc.restate.run_service

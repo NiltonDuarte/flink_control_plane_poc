@@ -33,11 +33,14 @@ uv run python -m poc.cli run fail-in-resume --engine Temporal
 To run the same scenario on Restate, start these in separate terminals:
 
 ```sh
-restate-server                         # ingress :8080, admin/UI :9070
-make restate-service                   # SDK endpoint :9080
+brew install restatedev/tap/restate-server restatedev/tap/restate # https://docs.restate.dev/installation
+restate-server --bind-ip 127.0.0.1                                                   # ingress :8080, admin/UI :9070
+make restate-service                                              # SDK endpoint :9080
 make restate-register
 make restate-scenario SCENARIO=fail-in-resume
 ```
+
+You can check the UI/admin by visiting http://localhost:9070/ui/overview
 
 The ingress client reads `RESTATE_INGRESS_URL` and defaults to `http://localhost:8080`.
 The Restate harness tests require an external server (managed automatically
