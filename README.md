@@ -33,7 +33,7 @@ uv run python -m poc.cli run fail-in-resume --engine Temporal
 To run the same scenario on Restate, start these in separate terminals:
 
 ```sh
-restate-server                         # ingress :8080, admin/UI :9070
+restate-server --bind-ip 127.0.0.1     # ingress :8080, admin/UI :9070
 make restate-service                   # SDK endpoint :9080
 make restate-register
 make restate-scenario SCENARIO=fail-in-resume

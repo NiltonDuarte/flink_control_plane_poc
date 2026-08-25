@@ -36,7 +36,7 @@ pre-commit:
 	pre-commit run --all-files
 
 test:
-	@restate-server --bind-ip 127.0.0.1 > /dev/null 2>&1 & RESTATE_PID=$$!; \
+	@	> /dev/null 2>&1 & RESTATE_PID=$$!; \
 	sleep 2; \
 	uv run pytest; \
 	TEST_EXIT=$$?; \
@@ -55,7 +55,7 @@ histories:
 	uv run python -m tests.temporal.record_histories
 
 restate-server:
-	restate-server
+	restate-server --bind-ip 127.0.0.1
 
 restate-service:
 	POC_CLUSTER_ROOT=.cluster uv run python -m poc.restate.run_service
