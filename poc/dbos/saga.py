@@ -46,6 +46,7 @@ class _Compensation:
     datatypes: list[str] | None = None
     desired_state: FamilyState | None = None
 
+@DBOS.dbos_class()
 class MoveDatatypeWorkflow:
     def __init__(self):
         self.flink_job_family_actor = FlinkJobFamilyActor()
@@ -183,3 +184,5 @@ class MoveDatatypeWorkflow:
                                 compensation_errors=errors,
                             ).model_dump())}"
             ) from err
+
+_ = MoveDatatypeWorkflow()

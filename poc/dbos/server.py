@@ -3,7 +3,9 @@ from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
+
 from dbos import DBOSClient, EnqueueOptions, SQLAlchemyDatasource, DBOS
+from poc.dbos.saga import MoveDatatypeWorkflow
 from sqlalchemy import text
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import FileResponse
@@ -11,6 +13,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from poc.common.domain import MoveDatatypeRequest
+
+workflow = MoveDatatypeWorkflow()
 
 # 1. Define a single shared database URL
 SHARED_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///app_and_dbos.sqlite")
