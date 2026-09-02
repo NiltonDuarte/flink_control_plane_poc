@@ -4,8 +4,8 @@ config.load_kube_config()
 
 v1 = client.CoreV1Api()
 
-namespace = "flink-jobs"
-configmap_name = "flink-config-sl0004-l-g01-kafka"
+namespace = "default"
+configmap_name = "sl0004-routes"
 
 new_routes_conf = """routes: [
   {

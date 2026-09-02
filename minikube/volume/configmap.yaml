@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sl0004-routes
+  namespace: default
+data:
+  routes.conf: |
+    routes: [
+      {
+        source: "shared_kafka_001"
+        topicName: "branddealclick"
+        targetTable: "branddealclick"
+        dataType: "branddealclick"
+      },
+      {
+        source: "shared_kafka_001"
+        topicName: "branddealnewsletterclick"
+        targetTable: "branddealnewsletterclick"
+        dataType: "branddealnewsletterclick"
+      },
+      {
+        source: "shared_kafka_001"
+        topicName: "branddealrewardassignation"
+        targetTable: "branddealrewardassignation"
+        dataType: "branddealrewardassignation"
+      },
+      {
+        source: "shared_kafka_001"
+        topicName: "partnerbenefitmanagement"
+        targetTable: "partnerbenefitmanagement"
+        dataType: "partnerbenefitmanagement"
+      },
+      {
+        source: "shared_kafka_001"
+        topicName: "partnermanagement"
+        targetTable: "partnermanagement"
+        dataType: "partnermanagement"
+      },
+      {
+        source: "shared_kafka_001"
+        topicName: "userbenefitassignation"
+        targetTable: "userbenefitassignation"
+        dataType: "userbenefitassignation"
+      }
+    ]
