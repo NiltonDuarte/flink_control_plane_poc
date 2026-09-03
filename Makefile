@@ -36,7 +36,7 @@ pre-commit:
 	pre-commit run --all-files
 
 test:
-	@	> /dev/null 2>&1 & RESTATE_PID=$$!; \
+	@restate-server --bind-ip 127.0.0.1 > /dev/null 2>&1 & RESTATE_PID=$$!; \
 	sleep 2; \
 	uv run pytest; \
 	TEST_EXIT=$$?; \
