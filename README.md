@@ -251,6 +251,26 @@ saga's shape changes on purpose, and review the diff as part of the change:
 uv run python -m tests.temporal.record_histories
 ```
 
+### 5. Testing Kubernetes Adapter
+
+Make sure you have minikube installed and start it
+
+```sh
+brew install minikube
+minikube start
+kubectl config use-context minikube # Do NOT forget this
+export MINIKUBE_HOME=minikube/volume
+```
+
+Apply the ConfigMap object:
+
+```sh
+kubectl apply -f ${MINIKUBE_HOME}/configmap.yaml
+```
+
+And apply the initial setup in the cluster:
+
+
 ## Known limitations
 
 - Instant state transitions. Real Flink suspends asynchronously; activities here
